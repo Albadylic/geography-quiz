@@ -18,7 +18,7 @@ Gate for every ticket: `npm run typecheck && npm run lint && npm run test`.
 - [x] **T1.1** — Seeded RNG
 - [x] **T1.2** — Question generation
 - [x] **T1.3** — Session and scoring
-- [ ] **T1.4** — Setup screen
+- [x] **T1.4** — Setup screen
 - [ ] **T1.5** — Play screen
 - [ ] **T1.6** — Basic results _(phase gate: Playwright 20-question easy flags quiz)_
 
@@ -308,3 +308,22 @@ each recorded answer is asserted to have exactly the three keys §5.1 lists.
 particular quiz, not a category of achievement, so two runs of the same setup
 compete for the same high score. Continents are sorted so a Europe+Asia run
 signs the same as an Asia+Europe one.
+
+### T1.4 — Setup screen
+
+Direction, difficulty, length and continents, with the pool summary recomputed
+live and the cap message shown *before* Start, per §5.2 step 2. Combo hides
+direction and difficulty since §6.3 fixes both.
+
+`ChoiceGroup` uses real `<input type="radio">` elements rather than buttons
+with `role="radio"`, so arrow-key navigation and the single-tab-stop-per-group
+behaviour come from the platform. The inputs are visually hidden, so the focus
+ring is drawn on the label with `has-[:focus-visible]:`.
+
+**A real bug the acceptance test caught.** The first version rendered all seven
+continents as checked while "Everywhere" was active, so clicking Oceania meant
+*deselect Oceania* and produced a 223-country pool rather than a 27-country
+one — the exact scenario the ticket asks about. "Everywhere" is now its own
+choice with the individual continents unchecked, and clicking one from that
+state selects just it. The checkbox state and the visual state also agreed
+wrongly before: `aria-checked` was true while the swatch rendered unselected.
