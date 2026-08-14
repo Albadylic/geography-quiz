@@ -3,10 +3,13 @@ import { Link, useNavigate, useParams } from 'react-router-dom';
 import { entities } from '@/data/entities.generated';
 import type { Entity } from '@/data/schema';
 import { currentQuestion, isFinished } from '@/engine/session';
+import { gradeChoice, gradeFreeText } from '@/engine/grading';
 import { optionLabel } from '@/engine/questions';
+import type { Answer, Question } from '@/engine/types';
 import { useSessionStore } from '@/store/sessionStore';
 import { FlagImage } from '@/components/FlagImage';
 import { OptionGrid } from '@/components/OptionGrid';
+import { Autocomplete } from '@/components/Autocomplete';
 
 const byId = new Map(entities.map((entity) => [entity.id, entity]));
 
@@ -17,19 +20,20 @@ export function PlayScreen() {
   const { mode } = useParams();
   const navigate = useNavigate();
   const session = useSessionStore((state) => state.session);
-  const answer = useSessionStore((state) => state.answer);
+  const submit = useSessionStore((state) => state.submit);
 
-  const [chosenId, setChosenId] = useState<string | null>(null);
+  /** The graded answer awaiting commit, or null while the question is open. */
+  const [revealed, setRevealed] = useState<Answer | null>(null);
+  const [typed, setTyped] = useState('');
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   /**
-   * The pending choice is held in a ref as well as in state. State drives the
-   * render; the ref is what `advance` reads, so the timeout callback cannot
-   * close over a stale value and a double-invoked updater cannot answer twice.
+   * Mirrors `revealed`. State drives the render; the ref is what `advance`
+   * reads, so the timeout cannot close over a stale value and a
+   * double-invoked updater cannot answer twice.
    */
-  const pending = useRef<string | null>(null);
+  const pending = useRef<Answer | null>(null);
 
   const question = session ? currentQuestion(session) : undefined;
-  const revealed = chosenId !== null;
 
   const clearTimer = () => {
     if (timer.current !== null) {
@@ -41,28 +45,43 @@ export function PlayScreen() {
   /** Commits the revealed answer and moves on. Safe to call twice. */
   const advance = useCallback(() => {
     clearTimer();
-    const chosen = pending.current;
-    if (chosen === null) return;
+    const answer = pending.current;
+    if (answer === null) return;
     pending.current = null;
-    setChosenId(null);
-    answer(chosen);
-  }, [answer]);
+    setRevealed(null);
+    setTyped('');
+    submit(answer);
+  }, [submit]);
 
-  const select = useCallback(
-    (id: string) => {
+  const reveal = useCallback(
+    (answer: Answer) => {
       if (pending.current !== null) return;
-      pending.current = id;
-      setChosenId(id);
+      pending.current = answer;
+      setRevealed(answer);
       clearTimer();
       timer.current = setTimeout(advance, REVEAL_MS);
     },
     [advance],
   );
 
+  const selectOption = useCallback(
+    (id: string) => {
+      if (!question) return;
+      reveal(gradeChoice(question, id));
+    },
+    [question, reveal],
+  );
+
+  const submitText = useCallback(() => {
+    if (!question) return;
+    const entity = byId.get(question.entityId);
+    if (!entity) return;
+    reveal(gradeFreeText(question, typed, entity));
+  }, [question, typed, reveal]);
+
   // Leaving mid-question must not fire the pending advance.
   useEffect(() => clearTimer, []);
 
-  // The run is over: hand off to the results screen.
   useEffect(() => {
     if (session && isFinished(session)) {
       navigate(`/results/${session.id}`, { replace: true });
@@ -88,10 +107,10 @@ export function PlayScreen() {
     .map((id) => byId.get(id))
     .filter((entity): entity is Entity => entity !== undefined);
 
+  const isExpert = question.options === undefined;
   const answerEntity = byId.get(question.entityId);
   const questionNumber = session.currentIndex + 1;
   const total = session.questions.length;
-  const wasCorrect = chosenId !== null && question.correctIds.includes(chosenId);
 
   return (
     <div className="flex min-h-dvh flex-col">
@@ -134,14 +153,25 @@ export function PlayScreen() {
         <Prompt question={question} />
 
         <div className="mt-6">
-          <OptionGrid
-            options={options}
-            answerKind={question.answerKind}
-            correctIds={question.correctIds}
-            chosenId={chosenId}
-            revealed={revealed}
-            onSelect={select}
-          />
+          {isExpert ? (
+            <ExpertAnswer
+              question={question}
+              value={typed}
+              onChange={setTyped}
+              onSubmit={submitText}
+              revealed={revealed}
+              answerEntity={answerEntity}
+            />
+          ) : (
+            <OptionGrid
+              options={options}
+              answerKind={question.answerKind}
+              correctIds={question.correctIds}
+              chosenId={revealed?.given ?? null}
+              revealed={revealed !== null}
+              onSelect={selectOption}
+            />
+          )}
         </div>
 
         {/*
@@ -150,7 +180,7 @@ export function PlayScreen() {
         */}
         <p aria-live="assertive" className="sr-only" data-testid="answer-announcement">
           {revealed && answerEntity
-            ? wasCorrect
+            ? revealed.correct
               ? 'Correct'
               : `Incorrect, the answer was ${optionLabel(answerEntity, question.answerKind) || answerEntity.name}`
             : ''}
@@ -170,8 +200,128 @@ export function PlayScreen() {
   );
 }
 
+/** Free-text answering — expert difficulty (T2.4). */
+function ExpertAnswer({
+  question,
+  value,
+  onChange,
+  onSubmit,
+  revealed,
+  answerEntity,
+}: {
+  question: Question;
+  value: string;
+  onChange: (value: string) => void;
+  onSubmit: () => void;
+  revealed: Answer | null;
+  answerEntity: Entity | undefined;
+}) {
+  if (revealed) {
+    return (
+      <ExpertFeedback question={question} answer={revealed} entity={answerEntity} />
+    );
+  }
+
+  return (
+    <div className="flex flex-col gap-4">
+      <Autocomplete
+        label={question.answerKind === 'capital' ? 'Capital city' : 'Country'}
+        value={value}
+        onChange={onChange}
+        onSubmit={onSubmit}
+        answerKind={question.answerKind}
+        placeholder="Type your answer"
+      />
+      <div className="flex gap-px">
+        <button
+          type="button"
+          onClick={onSubmit}
+          className="label-caps flex-1 bg-signal-red px-6 py-4 text-sm text-paper transition-colors hover:bg-paper hover:text-ink"
+        >
+          Answer
+        </button>
+        <button
+          type="button"
+          onClick={onSubmit}
+          className="label-caps bg-ink-raised px-6 py-4 text-sm text-paper-dim transition-colors hover:bg-ink-sunken"
+        >
+          Skip
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function ExpertFeedback({
+  question,
+  answer,
+  entity,
+}: {
+  question: Question;
+  answer: Answer;
+  entity: Entity | undefined;
+}) {
+  if (!entity) return null;
+
+  /**
+   * Multi-capital entities show every accepted answer, with its note, so the
+   * player learns why there was more than one (§3.3).
+   */
+  const alternatives =
+    question.answerKind === 'capital'
+      ? entity.capitals
+      : [];
+
+  return (
+    <div
+      className={`border-l-4 p-4 ${answer.correct ? 'border-correct bg-correct/15' : 'border-wrong bg-wrong/15'}`}
+    >
+      <p className="flex items-center gap-2">
+        <span role="img" aria-label={answer.correct ? 'Correct' : 'Incorrect'}>
+          <svg viewBox="0 0 24 24" width="24" height="24" fill="none" aria-hidden="true">
+            {answer.correct ? (
+              <path d="M4 13l5 5L20 6" stroke="currentColor" strokeWidth="3.5" strokeLinecap="square" />
+            ) : (
+              <path d="M5 5l14 14M19 5L5 19" stroke="currentColor" strokeWidth="3.5" strokeLinecap="square" />
+            )}
+          </svg>
+        </span>
+        <span className="display-md text-lg text-paper">
+          {answer.correct ? 'Correct' : 'Not quite'}
+        </span>
+      </p>
+
+      {answer.given && !answer.correct && (
+        <p className="mt-2 text-sm text-paper-dim">
+          You answered <span className="text-paper">{answer.given}</span>.
+        </p>
+      )}
+
+      <p className="mt-2 text-paper">
+        The answer is{' '}
+        <span className="display-md text-lg">
+          {optionLabel(entity, question.answerKind) || entity.name}
+        </span>
+        .
+      </p>
+
+      {alternatives.length > 1 && (
+        <ul className="mt-3 flex flex-col gap-1 text-sm text-paper-dim">
+          {alternatives.map((capital) => (
+            <li key={capital.name}>
+              <span className="text-paper">{capital.name}</span>
+              {capital.note ? ` — ${capital.note}` : ''}
+              {capital.isPrimary ? '' : ' (also accepted)'}
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}
+
 /** Renders whichever half of the pair is being asked about (§6.1, §6.2). */
-function Prompt({ question }: { question: NonNullable<ReturnType<typeof currentQuestion>> }) {
+function Prompt({ question }: { question: Question }) {
   const entity = byId.get(question.entityId);
 
   if (question.prompt.kind === 'flag' && entity) {

@@ -48,9 +48,25 @@ function promptIsFlag(promptKind: PromptKind): boolean {
   return promptKind === 'flag';
 }
 
-function directionFor(direction: Direction, rng: Rng): 'a-to-b' | 'b-to-a' {
+function directionFor(
+  direction: Direction,
+  mode: QuizConfig['mode'],
+  difficulty: QuizConfig['difficulty'],
+  rng: Rng,
+): 'a-to-b' | 'b-to-a' {
+  // Expert is free text, and a flag cannot be typed. "Country name → flag" has
+  // no free-text form, so expert flags questions are always flag → name.
+  if (difficulty === 'expert' && mode === 'flags') return 'a-to-b';
   if (direction === 'mixed') return rng() < 0.5 ? 'a-to-b' : 'b-to-a';
   return direction;
+}
+
+/** Whether this config can ask its question both ways round. */
+export function supportsBothDirections(
+  mode: QuizConfig['mode'],
+  difficulty: QuizConfig['difficulty'],
+): boolean {
+  return !(difficulty === 'expert' && mode === 'flags');
 }
 
 interface PromptSpec {
@@ -239,7 +255,7 @@ export function generateQuestions(
 
   const questions: Question[] = [];
   for (const [index, entity] of selected.entries()) {
-    const direction = directionFor(config.direction, rng);
+    const direction = directionFor(config.direction, config.mode, config.difficulty, rng);
     const spec = promptFor(entity, config.mode, direction);
     if (!spec) continue;
 

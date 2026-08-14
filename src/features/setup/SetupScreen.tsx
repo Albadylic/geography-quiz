@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { CONTINENTS, type Continent } from '@/data/schema';
 import { buildPool, summarisePool } from '@/engine/pool';
+import { supportsBothDirections } from '@/engine/questions';
 import { randomSeed } from '@/engine/rng';
 import type { Difficulty, Direction, QuizConfig, QuizLength, QuizMode } from '@/engine/types';
 import { useSessionStore } from '@/store/sessionStore';
@@ -72,6 +73,8 @@ export function SetupScreen() {
     };
   }, [mode, direction, difficulty, length, continents]);
 
+  const bothDirections = !isQuizMode(mode) || supportsBothDirections(mode, difficulty);
+
   const summary = useMemo(() => {
     if (!config) return null;
     return summarisePool(buildPool(config), config.length);
@@ -125,7 +128,7 @@ export function SetupScreen() {
       </h1>
 
       <div className="mt-8 flex flex-col gap-6">
-        {mode !== 'combo' && (
+        {mode !== 'combo' && bothDirections && (
           <ChoiceGroup
             legend="Direction"
             choices={DIRECTION_CHOICES[mode]}
@@ -133,6 +136,13 @@ export function SetupScreen() {
             onChange={setDirection}
             columns={3}
           />
+        )}
+
+        {mode !== 'combo' && !bothDirections && (
+          <p className="border-l-4 border-line bg-ink-raised px-4 py-3 text-sm text-paper-dim">
+            Expert flags questions show you a flag and ask you to type the country
+            &mdash; there&rsquo;s no way to type a flag.
+          </p>
         )}
 
         {mode !== 'combo' && (

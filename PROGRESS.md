@@ -26,8 +26,8 @@ Gate for every ticket: `npm run typecheck && npm run lint && npm run test`.
 
 - [x] **T2.1** — Text matching
 - [x] **T2.2** — Autocomplete component
-- [ ] **T2.3** — Capitals mode
-- [ ] **T2.4** — Expert difficulty
+- [x] **T2.3** — Capitals mode
+- [x] **T2.4** — Expert difficulty
 
 ## Phase 3 — Persistence and summaries
 
@@ -445,3 +445,35 @@ minimum query length, which still satisfies T2.2's criterion — verified
 exhaustively over all 676 two-character queries in both answer kinds — and
 there is a regression test asserting no suggestion ever disappears as more
 characters are typed.
+
+### T2.3 — Capitals mode
+
+Both directions, with the same-continent distractor rule and the empty-capitals
+exclusion already covered in the engine (T1.2). What this ticket added is the
+screen wiring plus tests at the mode level.
+
+The Antarctica test asserts the *mechanism*, not just the outcome: Antarctica
+is absent from the capitals pool, its `capitals` array is genuinely empty, and
+**every** entity dropped from the pool was dropped for that same reason — so
+the exclusion cannot quietly become a hard-coded list (locked decision 4).
+
+Tests that need a specific country search for a seed that produces it rather
+than hard-coding one. A pinned seed would keep passing while silently testing a
+different country if the dataset ever shifted.
+
+### T2.4 — Expert difficulty
+
+Free text wired into both modes. `PlayScreen` was refactored around a graded
+`Answer` rather than a chosen option id, so multiple choice and free text share
+one reveal-and-advance path — which is also what combo mode will need in T4.1.
+
+**One case the plan does not mention: expert flags has only one direction.**
+§6.1 gives flags mode a "country name → flag" direction and §6.2 makes expert
+free text, but a flag cannot be typed. Expert flags questions are therefore
+always flag → name; `supportsBothDirections` says so, generation enforces it,
+and the setup screen replaces the direction control with a line explaining why
+rather than offering a choice that silently does nothing.
+
+Multi-capital feedback shows every accepted capital with its note after
+answering, so a player who answered "Cape Town" learns why it was accepted and
+what the other two are.
