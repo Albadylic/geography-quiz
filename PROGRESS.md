@@ -44,10 +44,10 @@ Gate for every ticket: `npm run typecheck && npm run lint && npm run test`.
 
 ## Phase 5 — Adaptive and Revision
 
-- [ ] **T5.1** — Weighting
-- [ ] **T5.2** — Hardest-countries pool
-- [ ] **T5.3** — Leitner scheduling
-- [ ] **T5.4** — Flashcards
+- [x] **T5.1** — Weighting
+- [x] **T5.2** — Hardest-countries pool
+- [x] **T5.3** — Leitner scheduling
+- [x] **T5.4** — Flashcards
 
 ## Phase 6 — Colour the Flag
 
@@ -602,3 +602,59 @@ incorrect" — because a bare "incorrect" would not say which one was wrong.
 Combo's own high score entry falls out of the signature already being keyed on
 mode; a test confirms a finished run writes exactly one `combo|…` entry and
 that combo's streak bucket is separate from the flags and capitals ones.
+
+### T5.1 — Weighting
+
+`engine/adaptive.ts` implements §8 exactly: smoothed error rate x recency x
+unseen factor. All three acceptance criteria are covered — a 0/5 country
+outranks a 5/5, a stale 5/5 outranks a fresh one, and an unseen country sits
+between a fresh perfect one and a failed one.
+
+`weightForMode` selects on the record for the mode being played: being bad at
+Peru's capital says nothing about recognising its flag. Combo averages both,
+since it asks both.
+
+**A serious bug in the weighted sampler, found by the "consecutive sessions
+are not identical" criterion.** The A-Res key was computed as `u^(1/weight)`,
+straight from the textbook. At the 1e-6 weight used for entities with no
+recorded weight, the exponent is a million and *every* key underflows to
+exactly 0 — so the sort degenerated to input order and two different seeds
+produced the identical session, alphabetically ordered. Two fixes:
+
+- Keys are now computed in log space as `ln(u) / weight`, which is the same
+  ordering with no underflow anywhere in the usable range.
+- Missing weights default to §8's unseen weight rather than a near-zero
+  epsilon, because a near-zero weight is exactly what breaks the draw.
+
+This affected `rng.weightedSample` too, which had the same expression.
+
+### T5.2 — Hardest-countries pool
+
+Wired into setup as a "Which countries" choice, locked below 20 answered
+questions with the plan's copy. The weights are built in the store, not the
+engine — the engine may not reach into storage (§4) — and passed in as a map.
+
+The stats screen's "Practise these" link carries `?source=hardest`, which setup
+honours only if the mode is actually unlocked.
+
+### T5.3 — Leitner scheduling
+
+Boxes 1–5 with the 1/2/4/8/16 ladder. Knowing a card promotes it one box;
+missing it drops it straight back to box 1.
+
+**Intervals are counted in sessions, not days.** The plan says "review after
+1/2/4/8/16 sessions" and that is what is implemented — which also sits better
+with locked decision 5, since nothing in the app measures elapsed time.
+
+### T5.4 — Flashcards
+
+Deck by continent, "my hardest", or an untracked shuffle. Front is the country
+name; turning it over shows flag, capital and continent. Decks are ordered
+lowest-box-first, so what the learner keeps forgetting comes round soonest.
+
+**A bug typecheck caught that the tests had been passing through.** The review
+handler read `card.entityId`, but a card is an `Entity` whose id field is `id`
+— so every review was written under the key `"undefined"`. The test passed
+because it only asserted that *something* had reached box 2, and a stat stored
+under `"undefined"` satisfied that. Both are fixed: the code uses `card.id`,
+and the test now asserts the specific country on screen is the one promoted.

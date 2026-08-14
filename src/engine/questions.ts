@@ -1,5 +1,5 @@
 import type { Entity } from '@/data/schema';
-import { mulberry32, sample, shuffle, type Rng } from './rng';
+import { aresKey, mulberry32, sample, shuffle, type Rng } from './rng';
 import { buildPool, summarisePool, type PoolOptions } from './pool';
 import {
   optionCountFor,
@@ -364,15 +364,30 @@ function selectHardest(
   weights: ReadonlyMap<string, number>,
   count: number,
 ): Entity[] {
+  const weightOf = (id: string) => {
+    const stored = weights.get(id);
+    return stored !== undefined && stored > 0 ? stored : DEFAULT_WEIGHT;
+  };
+
   const ranked = [...pool].sort((a, b) => {
-    const difference = (weights.get(b.id) ?? 0) - (weights.get(a.id) ?? 0);
+    const difference = weightOf(b.id) - weightOf(a.id);
     // Ties break on id so the ranking is stable rather than sort-dependent.
+    // The weighted draw below is what stops equal weights producing the same
+    // session every time.
     return difference !== 0 ? difference : a.id.localeCompare(b.id);
   });
 
   const shortlist = ranked.slice(0, Math.min(count * 2, ranked.length));
   return weightedSampleEntities(rng, shortlist, weights, count);
 }
+
+/**
+ * Weight to use when an entity has no recorded weight at all. Not a tiny
+ * epsilon: a near-zero weight makes the A-Res key so extreme that the draw
+ * stops being random (see `aresKey`). This is the §8 unseen weight, which is
+ * what an entity with no history is worth anyway.
+ */
+const DEFAULT_WEIGHT = 0.5 * 0.55;
 
 function weightedSampleEntities(
   rng: Rng,
@@ -382,8 +397,9 @@ function weightedSampleEntities(
 ): Entity[] {
   const wanted = Math.min(count, items.length);
   const keyed = items.map((entity) => {
-    const weight = Math.max(weights.get(entity.id) ?? 0, 1e-6);
-    return { entity, key: Math.pow(Math.max(rng(), Number.MIN_VALUE), 1 / weight) };
+    const stored = weights.get(entity.id);
+    const weight = stored !== undefined && stored > 0 ? stored : DEFAULT_WEIGHT;
+    return { entity, key: aresKey(rng(), weight) };
   });
   keyed.sort((a, b) => b.key - a.key);
   return keyed.slice(0, wanted).map((entry) => entry.entity);

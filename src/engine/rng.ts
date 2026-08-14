@@ -61,12 +61,25 @@ export function pick<T>(rng: Rng, items: readonly T[]): T | undefined {
 }
 
 /**
+ * The A-Res key for one item, in log space.
+ *
+ * The textbook form is `u^(1/weight)`, but that underflows catastrophically:
+ * at a weight of 1e-6 the exponent is a million and every key rounds to
+ * exactly 0, so the sort degenerates to input order and the seed stops
+ * mattering at all. `ln(u) / weight` is the same ordering — ln is monotonic
+ * and `u < 1` makes it negative, so a heavier weight gives a key closer to
+ * zero, i.e. larger — with no underflow anywhere in the usable range.
+ */
+export function aresKey(u: number, weight: number): number {
+  return Math.log(Math.max(u, Number.MIN_VALUE)) / weight;
+}
+
+/**
  * Weighted sample without replacement, used by Hardest-countries mode (§8) so
  * consecutive sessions over the same weak list are not identical.
  *
- * Uses the exponential-jump / A-Res method: each item gets a key of
- * `rng^(1/weight)` and the top `count` keys win. Equivalent to repeated
- * weighted draws without replacement, in one pass.
+ * One pass, equivalent to repeated weighted draws without replacement: each
+ * item gets a key and the top `count` keys win.
  *
  * Items with a non-positive weight are treated as unselectable unless there
  * are too few positive-weight items to fill the request, in which case they
@@ -90,9 +103,7 @@ export function weightedSample<T>(
       ineligible.push(item);
       continue;
     }
-    // rng() can return exactly 0; nudge it so the key stays well defined.
-    const u = Math.max(rng(), Number.MIN_VALUE);
-    eligible.push({ item, key: Math.pow(u, 1 / weight) });
+    eligible.push({ item, key: aresKey(rng(), weight) });
   }
 
   eligible.sort((a, b) => b.key - a.key);

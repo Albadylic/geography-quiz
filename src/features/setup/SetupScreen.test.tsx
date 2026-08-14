@@ -98,7 +98,8 @@ describe('SetupScreen', () => {
     const user = userEvent.setup();
     const { router } = renderSetup();
 
-    await user.click(screen.getByRole('radio', { name: /hard/i }));
+    const difficulty = screen.getByRole('group', { name: /difficulty/i });
+    await user.click(within(difficulty).getByRole('radio', { name: /hard/i }));
     await user.click(screen.getByRole('radio', { name: '50' }));
     await user.click(screen.getByRole('button', { name: /start quiz/i }));
 

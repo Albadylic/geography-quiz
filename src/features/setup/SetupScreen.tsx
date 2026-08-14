@@ -1,10 +1,18 @@
 import { useMemo, useState } from 'react';
-import { Link, useNavigate, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { CONTINENTS, type Continent } from '@/data/schema';
 import { buildPool, summarisePool } from '@/engine/pool';
 import { supportsBothDirections } from '@/engine/questions';
 import { randomSeed } from '@/engine/rng';
-import type { Difficulty, Direction, QuizConfig, QuizLength, QuizMode } from '@/engine/types';
+import type {
+  Difficulty,
+  Direction,
+  PoolSource,
+  QuizConfig,
+  QuizLength,
+  QuizMode,
+} from '@/engine/types';
+import { HARDEST_UNLOCK_THRESHOLD } from '@/engine/stats';
 import { useSessionStore } from '@/store/sessionStore';
 import { useStatsStore } from '@/store/statsStore';
 import { ChoiceGroup, type Choice } from '@/components/ChoiceGroup';
@@ -59,11 +67,22 @@ export function SetupScreen() {
   // §3.3: the toggle is a filter on `status`, applied to the pool — the
   // dataset itself never changes.
   const unMembersOnly = useStatsStore((state) => state.data.settings.unMembersOnly);
+  const answered = useStatsStore((state) => state.data.totals.questionsAnswered);
 
   const [direction, setDirection] = useState<Direction>('a-to-b');
   const [difficulty, setDifficulty] = useState<Difficulty>('easy');
   const [length, setLength] = useState<QuizLength>(20);
   const [continents, setContinents] = useState<Continent[] | 'all'>('all');
+  const [searchParams] = useSearchParams();
+
+  // §8: Hardest needs the player's own history, so it stays locked until there
+  // is enough of it to select on.
+  const hardestUnlocked = answered >= HARDEST_UNLOCK_THRESHOLD;
+  const requestedHardest = searchParams.get('source') === 'hardest';
+  const [source, setSource] = useState<PoolSource>(
+    requestedHardest && answered >= HARDEST_UNLOCK_THRESHOLD ? 'hardest' : 'all',
+  );
+  const effectiveSource: PoolSource = hardestUnlocked ? source : 'all';
 
   const config = useMemo<QuizConfig | null>(() => {
     if (!isQuizMode(mode)) return null;
@@ -75,10 +94,10 @@ export function SetupScreen() {
       // fixed at four by generation, not by this.
       difficulty: mode === 'combo' ? 'medium' : difficulty,
       length,
-      pool: { continents, source: 'all' },
+      pool: { continents, source: effectiveSource },
       seed: 0, // replaced with a fresh seed on start
     };
-  }, [mode, direction, difficulty, length, continents]);
+  }, [mode, direction, difficulty, length, continents, effectiveSource]);
 
   const bothDirections = !isQuizMode(mode) || supportsBothDirections(mode, difficulty);
 
@@ -169,6 +188,51 @@ export function SetupScreen() {
           onChange={(value) => setLength(parseLength(value))}
           columns={4}
         />
+
+        <fieldset>
+          <legend className="label-caps mb-2 text-xs text-paper-faint">Which countries</legend>
+          <div className="grid grid-cols-1 gap-px border-2 border-line bg-line sm:grid-cols-2">
+            {(['all', 'hardest'] as const).map((option) => {
+              const selected = effectiveSource === option;
+              const locked = option === 'hardest' && !hardestUnlocked;
+              return (
+                <label
+                  key={option}
+                  className={[
+                    'flex min-h-11 cursor-pointer flex-col justify-center px-4 py-3 transition-colors',
+                    'has-[:focus-visible]:outline-3 has-[:focus-visible]:outline-signal-yellow has-[:focus-visible]:-outline-offset-3',
+                    locked
+                      ? 'cursor-not-allowed bg-ink-raised text-paper-faint'
+                      : selected
+                        ? 'bg-paper text-ink'
+                        : 'bg-ink-raised text-paper hover:bg-ink-sunken',
+                  ].join(' ')}
+                >
+                  <input
+                    type="radio"
+                    name="pool-source"
+                    checked={selected}
+                    disabled={locked}
+                    onChange={() => setSource(option)}
+                    className="sr-only"
+                  />
+                  <span className="display-md text-sm">
+                    {option === 'all' ? 'Everything' : 'My hardest'}
+                  </span>
+                  <span
+                    className={`text-xs ${selected && !locked ? 'text-ink/70' : 'text-paper-faint'}`}
+                  >
+                    {option === 'all'
+                      ? 'Draw from the whole pool'
+                      : locked
+                        ? `Play a few rounds first — this mode uses your own results. ${answered}/${HARDEST_UNLOCK_THRESHOLD} answered.`
+                        : 'The countries you keep getting wrong'}
+                  </span>
+                </label>
+              );
+            })}
+          </div>
+        </fieldset>
 
         <fieldset>
           <legend className="label-caps mb-2 text-xs text-paper-faint">Continents</legend>

@@ -9,6 +9,8 @@ import {
 import type { Answer, QuizConfig } from '@/engine/types';
 import { recordAnswer } from '@/engine/session';
 import { useStatsStore } from './statsStore';
+import { buildPool } from '@/engine/pool';
+import { buildWeights, statModeForQuiz } from '@/engine/adaptive';
 
 /**
  * The live session lives here rather than in a route or in context, so it
@@ -36,10 +38,28 @@ export const useSessionStore = create<SessionState>((set, get) => ({
   results: {},
 
   start: (config, options = {}) => {
+    // Hardest mode weights the pool by the player's own record (§8). The
+    // weights are built here rather than in the engine, which may not reach
+    // into storage.
+    const stats = useStatsStore.getState().data;
+    const weights =
+      config.pool.source === 'hardest'
+        ? buildWeights(
+            stats,
+            buildPool(config, {
+              ...(options.unMembersOnly === undefined
+                ? {}
+                : { unMembersOnly: options.unMembersOnly }),
+            }).map((entity) => entity.id),
+            statModeForQuiz(config.mode),
+          )
+        : undefined;
+
     const session = createSession(config, {
       ...(options.unMembersOnly === undefined
         ? {}
         : { unMembersOnly: options.unMembersOnly }),
+      ...(weights ? { weights } : {}),
     });
     set({ session });
     return session;
