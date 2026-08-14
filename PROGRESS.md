@@ -15,7 +15,7 @@ Gate for every ticket: `npm run typecheck && npm run lint && npm run test`.
 
 ## Phase 1 — Flag mode
 
-- [ ] **T1.1** — Seeded RNG
+- [x] **T1.1** — Seeded RNG
 - [ ] **T1.2** — Question generation
 - [ ] **T1.3** — Session and scoring
 - [ ] **T1.4** — Setup screen
@@ -225,3 +225,21 @@ picks this up at the Phase 1 gate.
 `playwright.config.ts` now detects a preinstalled Chromium under
 `PLAYWRIGHT_BROWSERS_PATH` whose revision differs from the one this Playwright
 version manages, and falls back cleanly when there isn't one.
+
+### T1.1 — Seeded RNG
+
+mulberry32 plus `shuffle` (Fisher–Yates), `sample`, `pick` and
+`weightedSample`. `randomSeed()` is the single place a non-seeded random is
+allowed; everything else in the engine takes an `Rng`.
+
+`weightedSample` uses the A-Res / exponential-jump method — each item keyed by
+`rng^(1/weight)`, top `count` keys win — which is one pass and equivalent to
+repeated weighted draws without replacement. It back-fills zero-weight items
+rather than returning a short list, so §8's Hardest mode still fills a session
+when a user has very few weak entities.
+
+The §12 criterion "shuffle is uniform over 10k trials within tolerance" was
+checked for teeth the same way as T0.5: a deliberately biased shuffle (drawing
+`j` from `[0, length)` instead of `[0, i]` — the standard mistake) was run
+through the same assertion and exceeded the tolerance, confirming the test can
+fail.
