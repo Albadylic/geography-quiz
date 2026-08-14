@@ -25,7 +25,7 @@ Gate for every ticket: `npm run typecheck && npm run lint && npm run test`.
 ## Phase 2 — Capitals and Expert
 
 - [x] **T2.1** — Text matching
-- [ ] **T2.2** — Autocomplete component
+- [x] **T2.2** — Autocomplete component
 - [ ] **T2.3** — Capitals mode
 - [ ] **T2.4** — Expert difficulty
 
@@ -414,3 +414,34 @@ Sint Eustatius; Jerusalem is listed for both Israel and Palestine. Typing a
 name the target genuinely holds is correct for either, so the test excludes
 real shared names and asserts only that no *fuzzy* match crosses between
 countries.
+
+### T2.2 — Autocomplete component
+
+Suggestion policy lives in `engine/suggest.ts`, not the component: how many,
+how short a query is allowed, and when a lone suggestion may be shown are quiz
+decisions. The component is the ARIA combobox around it — focus stays in the
+input and the active option is pointed at with `aria-activedescendant`, so
+arrow keys announce correctly instead of moving focus into the list.
+
+**Two design corrections, both found by tests rather than reasoning.**
+
+1. **Aliases match but are never displayed.** Excluding aliases outright meant
+   someone who knows the country as "Côte d'Ivoire" typed "cote" and got
+   nothing. Including them as *labels* would teach "Holland" as the answer.
+   Matching on aliases while offering the canonical name does both jobs:
+   "cote" and "holl" find their countries and are shown "Ivory Coast" and
+   "Netherlands".
+
+2. **Substring matching applies only to the displayed name, not to aliases.**
+   With aliases included, "zim" suggested Comoros — its alias "Udzima wa
+   Komori" contains "zim". The case substring matching exists for, "guinea"
+   finding Papua New Guinea, is about the name itself.
+
+**The lone-suggestion threshold had to come down from 4 to 3.** At 4, "fr"
+offered France, "fra" offered *nothing* (France being the only match, the lone
+result was withheld), and "fran" offered it again. A suggestion that vanishes
+as you type reads as a broken input. The threshold is now exactly one above the
+minimum query length, which still satisfies T2.2's criterion — verified
+exhaustively over all 676 two-character queries in both answer kinds — and
+there is a regression test asserting no suggestion ever disappears as more
+characters are typed.
