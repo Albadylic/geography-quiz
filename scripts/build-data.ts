@@ -20,8 +20,10 @@ import { mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'nod
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import worldCountries from 'world-countries';
+import { templateById } from '../src/data/flag-templates/index.ts';
 import {
   COLOUR_TOKENS,
+  ColourTokenSchema,
   EntityListSchema,
   type ColourToken,
   type Continent,
@@ -45,7 +47,13 @@ interface CapitalOverride {
   note?: string;
 }
 
+interface ColouringOverride {
+  templateId: string;
+  regions: Record<string, string>;
+}
+
 interface Overrides {
+  colouring: Record<string, ColouringOverride>;
   statuses: Record<string, Status>;
   sovereigns: Record<string, string>;
   altContinents: Record<string, Continent[]>;
@@ -278,11 +286,24 @@ function buildFlagAsset(iso2: string, id: string): FlagAsset {
   const [width, height] = svgDimensions(svg, code);
 
   const colours: ColourToken[] = [];
+  const addToken = (token: ColourToken) => {
+    if (!colours.includes(token)) colours.push(token);
+  };
+
+  /**
+   * A `<path>` with no `fill` attribute renders black — that is the SVG
+   * default, not an absent colour. Syria's flag is drawn exactly that way, and
+   * missing it made the extracted palette claim the flag had no black in it.
+   */
+  for (const match of svg.matchAll(/<(?:path|rect|circle|polygon|ellipse)\b([^>]*)>/g)) {
+    const attributes = match[1] ?? '';
+    if (!/\bfill=/.test(attributes)) addToken('black');
+  }
+
   for (const match of svg.matchAll(/(?:fill|stop-color)="([^"]+)"/g)) {
     const rgb = parseColour(match[1]!);
     if (!rgb) continue;
-    const token = nearestToken(rgb);
-    if (!colours.includes(token)) colours.push(token);
+    addToken(nearestToken(rgb));
   }
   if (colours.length === 0) {
     warnings.push(`${id}: no colours could be read from ${code}.svg; defaulted to white`);
@@ -434,6 +455,19 @@ function buildEntities(): Entity[] {
     const partners = confusable.get(id);
     if (partners) entity.confusableWith = [...partners].sort();
 
+    const colouring = overrides.colouring[id];
+    if (colouring) {
+      entity.colouring = {
+        templateId: colouring.templateId,
+        regions: Object.fromEntries(
+          Object.entries(colouring.regions).map(([region, token]) => [
+            region,
+            ColourTokenSchema.parse(token),
+          ]),
+        ),
+      };
+    }
+
     return entity;
   });
 
@@ -496,6 +530,8 @@ function auditEntities(entities: Entity[]): void {
     }
   }
 
+  auditColouring(entities);
+
   const unMembers = entities.filter((e) => e.status === 'un-member');
   if (unMembers.length !== 193) {
     warnings.push(
@@ -507,6 +543,96 @@ function auditEntities(entities: Entity[]): void {
     if (entity.capitals.length === 0 && entity.status === 'un-member') {
       warnings.push(`${entity.id} is a UN member with no capital — is that right?`);
     }
+  }
+}
+
+/**
+ * Colour the Flag specs — §7 and T6.2.
+ *
+ * Two checks. The first is structural: every region in a spec must exist in
+ * its template, and every region of the template must be assigned, or the
+ * player would be asked to fill a region with no right answer.
+ *
+ * The second is factual, and is the one that earns its keep: every colour a
+ * spec claims must actually appear in the palette extracted from that entity's
+ * real SVG. A spec written from a mis-remembered flag — Ireland as green,
+ * white and *red* — fails the build instead of teaching the wrong thing.
+ */
+const COLOUR_FAMILIES: Record<string, string> = {
+  red: 'red',
+  crimson: 'red',
+  maroon: 'red',
+  orange: 'orange',
+  yellow: 'yellow',
+  gold: 'yellow',
+  green: 'green',
+  'dark-green': 'green',
+  'light-green': 'green',
+  blue: 'blue',
+  navy: 'blue',
+  'light-blue': 'blue',
+  cyan: 'blue',
+  purple: 'purple',
+  magenta: 'purple',
+  pink: 'pink',
+  brown: 'brown',
+  black: 'black',
+  white: 'white',
+  grey: 'grey',
+};
+
+function familyOf(token: string): string {
+  return COLOUR_FAMILIES[token] ?? token;
+}
+
+function auditColouring(entities: Entity[]): void {
+  const problems: string[] = [];
+
+  for (const entity of entities) {
+    const spec = entity.colouring;
+    if (!spec) continue;
+
+    const template = templateById(spec.templateId);
+    if (!template) {
+      problems.push(`${entity.id}: unknown template "${spec.templateId}"`);
+      continue;
+    }
+
+    const templateRegions = new Set(template.regions.map((region) => region.id));
+    const specRegions = new Set(Object.keys(spec.regions));
+
+    for (const region of specRegions) {
+      if (!templateRegions.has(region)) {
+        problems.push(`${entity.id}: region "${region}" is not in template ${template.id}`);
+      }
+    }
+    for (const region of templateRegions) {
+      if (!specRegions.has(region)) {
+        problems.push(`${entity.id}: region "${region}" of ${template.id} is unassigned`);
+      }
+    }
+
+    /**
+     * Compared by colour *family*, not by exact token. The palette is bucketed
+     * from the SVG's real hex values, which are finer-grained than anyone
+     * names a flag: France's blue reads as navy, Japan's disc as crimson,
+     * Germany's gold as yellow. Requiring an exact match would reject correct
+     * specs over shade. Families still catch the mistakes that matter — a spec
+     * claiming Ireland's third band is red fails, because red and orange are
+     * different families.
+     */
+    const paletteFamilies = new Set(entity.flag.colours.map(familyOf));
+    for (const [region, token] of Object.entries(spec.regions)) {
+      if (!paletteFamilies.has(familyOf(token))) {
+        problems.push(
+          `${entity.id}: "${region}" is ${token}, but its flag palette is [${entity.flag.colours.join(', ')}]`,
+        );
+      }
+    }
+  }
+
+  if (problems.length > 0) {
+    throw new Error(`Colouring specs failed validation:\n  ${problems.join('\n  ')}`);
   }
 }
 

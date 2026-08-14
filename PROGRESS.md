@@ -51,11 +51,11 @@ Gate for every ticket: `npm run typecheck && npm run lint && npm run test`.
 
 ## Phase 6 — Colour the Flag
 
-- [ ] **T6.1** — Template format and first 6 templates
-- [ ] **T6.2** — Colouring specs for ~60 entities
-- [ ] **T6.3** — Painting UI
-- [ ] **T6.4** — Palette difficulty and grading
-- [ ] **T6.5** — Expand to 14 templates and ~120 entities
+- [x] **T6.1** — Template format and first 6 templates
+- [x] **T6.2** — Colouring specs for ~60 entities
+- [x] **T6.3** — Painting UI
+- [x] **T6.4** — Palette difficulty and grading
+- [x] **T6.5** — Expand to 14 templates and ~120 entities
 
 ## Phase 7 — Polish
 
@@ -658,3 +658,61 @@ handler read `card.entityId`, but a card is an `Entity` whose id field is `id`
 because it only asserted that *something* had reached box 2, and a stat stored
 under `"undefined"` satisfied that. Both are fixed: the code uses `card.id`,
 and the test now asserts the specific country on screen is the one promoted.
+
+### T6.1 — Template format and templates
+
+Templates are data, not files: a viewBox plus regions of SVG path data, each
+with an id and a spoken label. Filling a region is setting a fill on a path —
+no flood fill anywhere, as §7 requires.
+
+All 14 templates §7 names are built (T6.1's six plus T6.5's eight).
+
+### T6.2 / T6.5 — Colouring specs
+
+**89 entities**, against the plan's "~60" for T6.2 and "~120" for T6.5. The
+shortfall against 120 is deliberate and worth stating plainly: a spec is only
+written where the template is a *faithful* rendering of the flag's field.
+Chile, Greece, Sri Lanka and Nauru were each drafted and then removed, because
+no available template shows them without losing a colour or a defining feature.
+Reaching 120 would mean teaching shapes that are not the flag.
+
+Flags with a small central emblem (Mexico, Ghana, Bolivia) *are* included: the
+band colours are what the mode teaches, and §7's summary shows the real flag
+alongside the result, so the emblem is never hidden from the learner.
+
+**The build validates specs against the real artwork, and it earned its keep.**
+Two checks: structural (every region assigned, no unknown regions) and factual
+(every colour claimed must appear in the palette extracted from that entity's
+own SVG). The factual check is compared by colour *family*, because the
+extracted palette is finer-grained than anyone names a flag — France's blue
+reads as navy, Japan's disc as crimson, Germany's gold as yellow. Families
+still catch what matters: a spec claiming Ireland's third band is red fails,
+since red and orange are different families.
+
+It caught a real error: **Syria's spec was the pre-2024 red/white/black flag**,
+while the shipped asset is the current green/white/black one. It also exposed a
+gap in the palette extractor — Syria's black band is a `<path>` with *no* fill
+attribute, which SVG renders black, and the extractor was ignoring it. Both
+fixed.
+
+**`canton-plain` ships with no entities.** Every real canton carries a device —
+a Union Jack, a constellation, a star — so no flag in the dataset is a plain
+field plus a plain canton. The template ships because §7 specifies it; a test
+pins it as the *only* unused template so a second one cannot creep in.
+
+### T6.3 / T6.4 — Painting UI, palette difficulty and grading
+
+Palette selection, tap to fill, single-region eraser, clear all, and undo/redo
+over an action stack. Regions are keyboard-operable and announce their own
+label and current colour, so the mode is playable without a pointer (§11).
+
+Every swatch carries a **visible colour name** beside its chip — §7 calls this
+non-negotiable, and there is a test asserting no swatch is a bare chip.
+
+Decoys are drawn one-per-colour-family and never from a family already used by
+a correct colour, so a palette never contains two blues. Grading is exact token
+equality, so `navy` against a correct `blue` is wrong — which is precisely why
+the decoy rule has to hold. Both are tested across 50 seeds.
+
+The summary reports every region with its expected colour and what the player
+said, next to the real flag.

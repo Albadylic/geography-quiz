@@ -38,6 +38,14 @@ export const entities: readonly Entity[] = [
       ],
       "aspectRatio": 1.3333
     },
+    "colouring": {
+      "templateId": "horizontal-3",
+      "regions": {
+        "top": "black",
+        "middle": "red",
+        "bottom": "green"
+      }
+    },
     "tier": 1
   },
   {
@@ -65,6 +73,7 @@ export const entities: readonly Entity[] = [
     "flag": {
       "file": "/flags/ax.svg",
       "colours": [
+        "black",
         "blue",
         "yellow",
         "red"
@@ -136,6 +145,13 @@ export const entities: readonly Entity[] = [
       ],
       "aspectRatio": 1.3333
     },
+    "colouring": {
+      "templateId": "vertical-2",
+      "regions": {
+        "left": "green",
+        "right": "white"
+      }
+    },
     "tier": 1
   },
   {
@@ -163,6 +179,7 @@ export const entities: readonly Entity[] = [
     "flag": {
       "file": "/flags/as.svg",
       "colours": [
+        "black",
         "navy",
         "crimson",
         "white",
@@ -197,6 +214,7 @@ export const entities: readonly Entity[] = [
     "flag": {
       "file": "/flags/ad.svg",
       "colours": [
+        "black",
         "red",
         "yellow",
         "blue",
@@ -205,6 +223,14 @@ export const entities: readonly Entity[] = [
         "white"
       ],
       "aspectRatio": 1.3333
+    },
+    "colouring": {
+      "templateId": "vertical-3",
+      "regions": {
+        "left": "blue",
+        "middle": "yellow",
+        "right": "red"
+      }
     },
     "confusableWith": [
       "chad"
@@ -263,6 +289,7 @@ export const entities: readonly Entity[] = [
     "flag": {
       "file": "/flags/ai.svg",
       "colours": [
+        "black",
         "orange",
         "navy",
         "white",
@@ -313,8 +340,8 @@ export const entities: readonly Entity[] = [
     "flag": {
       "file": "/flags/ag.svg",
       "colours": [
-        "white",
         "black",
+        "white",
         "blue",
         "red",
         "yellow"
@@ -353,6 +380,14 @@ export const entities: readonly Entity[] = [
       ],
       "aspectRatio": 1.3333
     },
+    "colouring": {
+      "templateId": "horizontal-3",
+      "regions": {
+        "top": "light-blue",
+        "middle": "white",
+        "bottom": "light-blue"
+      }
+    },
     "confusableWith": [
       "guatemala"
     ],
@@ -387,6 +422,14 @@ export const entities: readonly Entity[] = [
       ],
       "aspectRatio": 1.3333
     },
+    "colouring": {
+      "templateId": "horizontal-3",
+      "regions": {
+        "top": "red",
+        "middle": "blue",
+        "bottom": "orange"
+      }
+    },
     "tier": 2
   },
   {
@@ -410,6 +453,7 @@ export const entities: readonly Entity[] = [
     "flag": {
       "file": "/flags/aw.svg",
       "colours": [
+        "black",
         "light-blue",
         "yellow",
         "grey",
@@ -484,6 +528,14 @@ export const entities: readonly Entity[] = [
       ],
       "aspectRatio": 1.3333
     },
+    "colouring": {
+      "templateId": "horizontal-3",
+      "regions": {
+        "top": "red",
+        "middle": "white",
+        "bottom": "red"
+      }
+    },
     "confusableWith": [
       "latvia",
       "poland"
@@ -547,10 +599,10 @@ export const entities: readonly Entity[] = [
     "flag": {
       "file": "/flags/bs.svg",
       "colours": [
+        "black",
         "white",
         "yellow",
-        "cyan",
-        "black"
+        "cyan"
       ],
       "aspectRatio": 1.3333
     },
@@ -617,6 +669,13 @@ export const entities: readonly Entity[] = [
       ],
       "aspectRatio": 1.3333
     },
+    "colouring": {
+      "templateId": "disc-offset",
+      "regions": {
+        "field": "dark-green",
+        "disc": "red"
+      }
+    },
     "tier": 2
   },
   {
@@ -670,6 +729,7 @@ export const entities: readonly Entity[] = [
     "flag": {
       "file": "/flags/by.svg",
       "colours": [
+        "black",
         "red",
         "white",
         "green"
@@ -713,6 +773,14 @@ export const entities: readonly Entity[] = [
       ],
       "aspectRatio": 1.3333
     },
+    "colouring": {
+      "templateId": "vertical-3",
+      "regions": {
+        "left": "black",
+        "middle": "yellow",
+        "right": "red"
+      }
+    },
     "confusableWith": [
       "germany"
     ],
@@ -738,6 +806,7 @@ export const entities: readonly Entity[] = [
     "flag": {
       "file": "/flags/bz.svg",
       "colours": [
+        "black",
         "yellow",
         "orange",
         "brown",
@@ -751,8 +820,7 @@ export const entities: readonly Entity[] = [
         "light-green",
         "pink",
         "purple",
-        "gold",
-        "black"
+        "gold"
       ],
       "aspectRatio": 1.3333
     },
@@ -822,6 +890,7 @@ export const entities: readonly Entity[] = [
     "flag": {
       "file": "/flags/bm.svg",
       "colours": [
+        "black",
         "red",
         "white",
         "green",
@@ -857,6 +926,7 @@ export const entities: readonly Entity[] = [
     "flag": {
       "file": "/flags/bt.svg",
       "colours": [
+        "black",
         "yellow",
         "orange",
         "white"
@@ -901,6 +971,7 @@ export const entities: readonly Entity[] = [
     "flag": {
       "file": "/flags/bo.svg",
       "colours": [
+        "black",
         "green",
         "yellow",
         "red",
@@ -914,6 +985,14 @@ export const entities: readonly Entity[] = [
         "pink"
       ],
       "aspectRatio": 1.3333
+    },
+    "colouring": {
+      "templateId": "horizontal-3",
+      "regions": {
+        "top": "red",
+        "middle": "yellow",
+        "bottom": "green"
+      }
     },
     "tier": 1
   },
@@ -939,6 +1018,7 @@ export const entities: readonly Entity[] = [
     "flag": {
       "file": "/flags/ba.svg",
       "colours": [
+        "black",
         "navy",
         "yellow",
         "white"
@@ -976,6 +1056,14 @@ export const entities: readonly Entity[] = [
       ],
       "aspectRatio": 1.3333
     },
+    "colouring": {
+      "templateId": "horizontal-3",
+      "regions": {
+        "top": "light-blue",
+        "middle": "black",
+        "bottom": "light-blue"
+      }
+    },
     "tier": 1
   },
   {
@@ -995,6 +1083,7 @@ export const entities: readonly Entity[] = [
     "flag": {
       "file": "/flags/bv.svg",
       "colours": [
+        "black",
         "white",
         "red",
         "blue"
@@ -1057,6 +1146,7 @@ export const entities: readonly Entity[] = [
     "flag": {
       "file": "/flags/io.svg",
       "colours": [
+        "black",
         "white",
         "navy",
         "brown",
@@ -1092,6 +1182,7 @@ export const entities: readonly Entity[] = [
     "flag": {
       "file": "/flags/vg.svg",
       "colours": [
+        "black",
         "red",
         "yellow",
         "navy",
@@ -1128,9 +1219,9 @@ export const entities: readonly Entity[] = [
     "flag": {
       "file": "/flags/bn.svg",
       "colours": [
+        "black",
         "yellow",
         "white",
-        "black",
         "red"
       ],
       "aspectRatio": 1.3333
@@ -1164,6 +1255,14 @@ export const entities: readonly Entity[] = [
         "red"
       ],
       "aspectRatio": 1.3333
+    },
+    "colouring": {
+      "templateId": "horizontal-3",
+      "regions": {
+        "top": "white",
+        "middle": "green",
+        "bottom": "red"
+      }
     },
     "confusableWith": [
       "hungary"
@@ -1222,11 +1321,19 @@ export const entities: readonly Entity[] = [
     "flag": {
       "file": "/flags/bi.svg",
       "colours": [
+        "black",
         "green",
         "red",
         "white"
       ],
       "aspectRatio": 1.3333
+    },
+    "colouring": {
+      "templateId": "saltire",
+      "regions": {
+        "field": "green",
+        "saltire": "white"
+      }
     },
     "tier": 2
   },
@@ -1252,6 +1359,7 @@ export const entities: readonly Entity[] = [
     "flag": {
       "file": "/flags/kh.svg",
       "colours": [
+        "black",
         "blue",
         "red",
         "white"
@@ -1283,11 +1391,20 @@ export const entities: readonly Entity[] = [
     "flag": {
       "file": "/flags/cm.svg",
       "colours": [
+        "black",
         "green",
         "red",
         "yellow"
       ],
       "aspectRatio": 1.3333
+    },
+    "colouring": {
+      "templateId": "vertical-3",
+      "regions": {
+        "left": "green",
+        "middle": "red",
+        "right": "yellow"
+      }
     },
     "confusableWith": [
       "senegal"
@@ -1345,6 +1462,7 @@ export const entities: readonly Entity[] = [
     "flag": {
       "file": "/flags/cv.svg",
       "colours": [
+        "black",
         "white",
         "navy",
         "red",
@@ -1417,13 +1535,13 @@ export const entities: readonly Entity[] = [
     "flag": {
       "file": "/flags/ky.svg",
       "colours": [
+        "black",
         "navy",
         "white",
         "red",
         "gold",
         "dark-green",
         "green",
-        "black",
         "blue"
       ],
       "aspectRatio": 1.3333
@@ -1452,6 +1570,7 @@ export const entities: readonly Entity[] = [
     "flag": {
       "file": "/flags/cf.svg",
       "colours": [
+        "black",
         "blue",
         "yellow",
         "green",
@@ -1492,6 +1611,14 @@ export const entities: readonly Entity[] = [
       ],
       "aspectRatio": 1.3333
     },
+    "colouring": {
+      "templateId": "vertical-3",
+      "regions": {
+        "left": "blue",
+        "middle": "yellow",
+        "right": "red"
+      }
+    },
     "confusableWith": [
       "andorra",
       "moldova",
@@ -1522,6 +1649,7 @@ export const entities: readonly Entity[] = [
     "flag": {
       "file": "/flags/cl.svg",
       "colours": [
+        "black",
         "white",
         "blue",
         "red"
@@ -1592,6 +1720,7 @@ export const entities: readonly Entity[] = [
     "flag": {
       "file": "/flags/cx.svg",
       "colours": [
+        "black",
         "blue",
         "green",
         "gold",
@@ -1625,6 +1754,7 @@ export const entities: readonly Entity[] = [
     "flag": {
       "file": "/flags/cc.svg",
       "colours": [
+        "black",
         "dark-green",
         "yellow",
         "maroon"
@@ -1662,6 +1792,14 @@ export const entities: readonly Entity[] = [
       ],
       "aspectRatio": 1.3333
     },
+    "colouring": {
+      "templateId": "horizontal-3-uneven",
+      "regions": {
+        "top": "yellow",
+        "middle": "blue",
+        "bottom": "red"
+      }
+    },
     "confusableWith": [
       "ecuador",
       "venezuela"
@@ -1693,6 +1831,7 @@ export const entities: readonly Entity[] = [
     "flag": {
       "file": "/flags/km.svg",
       "colours": [
+        "black",
         "yellow",
         "white",
         "crimson",
@@ -1767,6 +1906,16 @@ export const entities: readonly Entity[] = [
       ],
       "aspectRatio": 1.3333
     },
+    "colouring": {
+      "templateId": "horizontal-5",
+      "regions": {
+        "top": "blue",
+        "upper": "white",
+        "middle": "red",
+        "lower": "white",
+        "bottom": "blue"
+      }
+    },
     "tier": 1
   },
   {
@@ -1793,6 +1942,7 @@ export const entities: readonly Entity[] = [
     "flag": {
       "file": "/flags/hr.svg",
       "colours": [
+        "black",
         "navy",
         "white",
         "red",
@@ -1829,6 +1979,7 @@ export const entities: readonly Entity[] = [
     "flag": {
       "file": "/flags/cu.svg",
       "colours": [
+        "black",
         "navy",
         "white",
         "red"
@@ -1867,6 +2018,7 @@ export const entities: readonly Entity[] = [
     "flag": {
       "file": "/flags/cw.svg",
       "colours": [
+        "black",
         "navy",
         "yellow",
         "white"
@@ -1941,6 +2093,14 @@ export const entities: readonly Entity[] = [
       ],
       "aspectRatio": 1.3333
     },
+    "colouring": {
+      "templateId": "triangle-hoist",
+      "regions": {
+        "top": "white",
+        "bottom": "red",
+        "triangle": "blue"
+      }
+    },
     "confusableWith": [
       "philippines"
     ],
@@ -1975,6 +2135,13 @@ export const entities: readonly Entity[] = [
       ],
       "aspectRatio": 1.3333
     },
+    "colouring": {
+      "templateId": "nordic-cross",
+      "regions": {
+        "field": "red",
+        "cross": "white"
+      }
+    },
     "confusableWith": [
       "switzerland"
     ],
@@ -2007,6 +2174,7 @@ export const entities: readonly Entity[] = [
     "flag": {
       "file": "/flags/dj.svg",
       "colours": [
+        "black",
         "green",
         "light-blue",
         "white",
@@ -2039,9 +2207,9 @@ export const entities: readonly Entity[] = [
     "flag": {
       "file": "/flags/dm.svg",
       "colours": [
+        "black",
         "green",
         "yellow",
-        "black",
         "white",
         "red",
         "brown",
@@ -2071,10 +2239,10 @@ export const entities: readonly Entity[] = [
     "flag": {
       "file": "/flags/do.svg",
       "colours": [
+        "black",
         "white",
         "navy",
         "red",
-        "black",
         "yellow",
         "dark-green",
         "green",
@@ -2142,6 +2310,7 @@ export const entities: readonly Entity[] = [
     "flag": {
       "file": "/flags/ec.svg",
       "colours": [
+        "black",
         "yellow",
         "navy",
         "red",
@@ -2193,6 +2362,14 @@ export const entities: readonly Entity[] = [
       ],
       "aspectRatio": 1.3333
     },
+    "colouring": {
+      "templateId": "horizontal-3",
+      "regions": {
+        "top": "red",
+        "middle": "white",
+        "bottom": "black"
+      }
+    },
     "confusableWith": [
       "iraq",
       "syria",
@@ -2223,15 +2400,23 @@ export const entities: readonly Entity[] = [
     "flag": {
       "file": "/flags/sv.svg",
       "colours": [
+        "black",
         "blue",
         "white",
         "red",
         "dark-green",
-        "black",
         "navy",
         "yellow"
       ],
       "aspectRatio": 1.3333
+    },
+    "colouring": {
+      "templateId": "horizontal-3",
+      "regions": {
+        "top": "blue",
+        "middle": "white",
+        "bottom": "blue"
+      }
     },
     "confusableWith": [
       "guatemala",
@@ -2265,6 +2450,7 @@ export const entities: readonly Entity[] = [
     "flag": {
       "file": "/flags/gq.svg",
       "colours": [
+        "black",
         "red",
         "white",
         "green",
@@ -2338,6 +2524,14 @@ export const entities: readonly Entity[] = [
       ],
       "aspectRatio": 1.3333
     },
+    "colouring": {
+      "templateId": "horizontal-3",
+      "regions": {
+        "top": "blue",
+        "middle": "black",
+        "bottom": "white"
+      }
+    },
     "confusableWith": [
       "gambia"
     ],
@@ -2377,6 +2571,7 @@ export const entities: readonly Entity[] = [
     "flag": {
       "file": "/flags/sz.svg",
       "colours": [
+        "black",
         "blue",
         "yellow",
         "crimson",
@@ -2410,12 +2605,21 @@ export const entities: readonly Entity[] = [
     "flag": {
       "file": "/flags/et.svg",
       "colours": [
+        "black",
         "yellow",
         "red",
         "green",
         "blue"
       ],
       "aspectRatio": 1.3333
+    },
+    "colouring": {
+      "templateId": "horizontal-3",
+      "regions": {
+        "top": "green",
+        "middle": "yellow",
+        "bottom": "red"
+      }
     },
     "tier": 1
   },
@@ -2443,6 +2647,7 @@ export const entities: readonly Entity[] = [
     "flag": {
       "file": "/flags/fk.svg",
       "colours": [
+        "black",
         "brown",
         "white",
         "navy",
@@ -2482,6 +2687,7 @@ export const entities: readonly Entity[] = [
     "flag": {
       "file": "/flags/fo.svg",
       "colours": [
+        "black",
         "white",
         "blue",
         "red"
@@ -2518,13 +2724,13 @@ export const entities: readonly Entity[] = [
     "flag": {
       "file": "/flags/fj.svg",
       "colours": [
+        "black",
         "light-blue",
         "white",
         "red",
         "yellow",
         "green",
         "brown",
-        "black",
         "navy"
       ],
       "aspectRatio": 1.3333
@@ -2560,6 +2766,13 @@ export const entities: readonly Entity[] = [
         "navy"
       ],
       "aspectRatio": 1.3333
+    },
+    "colouring": {
+      "templateId": "nordic-cross",
+      "regions": {
+        "field": "white",
+        "cross": "blue"
+      }
     },
     "confusableWith": [
       "sweden"
@@ -2604,6 +2817,14 @@ export const entities: readonly Entity[] = [
         "saint-pierre-and-miquelon",
         "wallis-and-futuna"
       ]
+    },
+    "colouring": {
+      "templateId": "vertical-3",
+      "regions": {
+        "left": "blue",
+        "middle": "white",
+        "right": "red"
+      }
     },
     "tier": 1
   },
@@ -2673,6 +2894,7 @@ export const entities: readonly Entity[] = [
     "flag": {
       "file": "/flags/pf.svg",
       "colours": [
+        "black",
         "white",
         "blue",
         "red",
@@ -2741,6 +2963,14 @@ export const entities: readonly Entity[] = [
       ],
       "aspectRatio": 1.3333
     },
+    "colouring": {
+      "templateId": "horizontal-3",
+      "regions": {
+        "top": "green",
+        "middle": "yellow",
+        "bottom": "blue"
+      }
+    },
     "tier": 2
   },
   {
@@ -2765,12 +2995,21 @@ export const entities: readonly Entity[] = [
     "flag": {
       "file": "/flags/gm.svg",
       "colours": [
+        "black",
         "red",
         "white",
         "navy",
         "green"
       ],
       "aspectRatio": 1.3333
+    },
+    "colouring": {
+      "templateId": "horizontal-3",
+      "regions": {
+        "top": "red",
+        "middle": "blue",
+        "bottom": "green"
+      }
     },
     "confusableWith": [
       "estonia"
@@ -2838,6 +3077,14 @@ export const entities: readonly Entity[] = [
       ],
       "aspectRatio": 1.3333
     },
+    "colouring": {
+      "templateId": "horizontal-3",
+      "regions": {
+        "top": "black",
+        "middle": "red",
+        "bottom": "gold"
+      }
+    },
     "confusableWith": [
       "belgium"
     ],
@@ -2870,6 +3117,14 @@ export const entities: readonly Entity[] = [
       ],
       "aspectRatio": 1.3333
     },
+    "colouring": {
+      "templateId": "horizontal-3",
+      "regions": {
+        "top": "red",
+        "middle": "yellow",
+        "bottom": "green"
+      }
+    },
     "tier": 1
   },
   {
@@ -2893,9 +3148,9 @@ export const entities: readonly Entity[] = [
     "flag": {
       "file": "/flags/gi.svg",
       "colours": [
+        "black",
         "red",
         "white",
-        "black",
         "yellow"
       ],
       "aspectRatio": 1.3333
@@ -2925,6 +3180,7 @@ export const entities: readonly Entity[] = [
     "flag": {
       "file": "/flags/gr.svg",
       "colours": [
+        "black",
         "blue",
         "white"
       ],
@@ -2987,6 +3243,13 @@ export const entities: readonly Entity[] = [
         "green"
       ],
       "aspectRatio": 1.3333
+    },
+    "colouring": {
+      "templateId": "saltire",
+      "regions": {
+        "field": "green",
+        "saltire": "yellow"
+      }
     },
     "tier": 3
   },
@@ -3054,6 +3317,7 @@ export const entities: readonly Entity[] = [
     "flag": {
       "file": "/flags/gu.svg",
       "colours": [
+        "black",
         "crimson",
         "blue",
         "white",
@@ -3084,6 +3348,7 @@ export const entities: readonly Entity[] = [
     "flag": {
       "file": "/flags/gt.svg",
       "colours": [
+        "black",
         "white",
         "gold",
         "crimson",
@@ -3097,6 +3362,14 @@ export const entities: readonly Entity[] = [
         "yellow"
       ],
       "aspectRatio": 1.3333
+    },
+    "colouring": {
+      "templateId": "vertical-3",
+      "regions": {
+        "left": "light-blue",
+        "middle": "white",
+        "right": "light-blue"
+      }
     },
     "confusableWith": [
       "argentina",
@@ -3167,6 +3440,14 @@ export const entities: readonly Entity[] = [
       ],
       "aspectRatio": 1.3333
     },
+    "colouring": {
+      "templateId": "vertical-3",
+      "regions": {
+        "left": "red",
+        "middle": "yellow",
+        "right": "green"
+      }
+    },
     "confusableWith": [
       "mali",
       "senegal"
@@ -3202,6 +3483,14 @@ export const entities: readonly Entity[] = [
         "black"
       ],
       "aspectRatio": 1.3333
+    },
+    "colouring": {
+      "templateId": "vertical-3",
+      "regions": {
+        "left": "red",
+        "middle": "yellow",
+        "right": "green"
+      }
     },
     "tier": 2
   },
@@ -3261,15 +3550,22 @@ export const entities: readonly Entity[] = [
     "flag": {
       "file": "/flags/ht.svg",
       "colours": [
+        "black",
         "red",
         "blue",
         "gold",
         "white",
         "dark-green",
-        "maroon",
-        "black"
+        "maroon"
       ],
       "aspectRatio": 1.3333
+    },
+    "colouring": {
+      "templateId": "horizontal-2",
+      "regions": {
+        "top": "blue",
+        "bottom": "red"
+      }
     },
     "tier": 2
   },
@@ -3321,10 +3617,19 @@ export const entities: readonly Entity[] = [
     "flag": {
       "file": "/flags/hn.svg",
       "colours": [
+        "black",
         "cyan",
         "white"
       ],
       "aspectRatio": 1.3333
+    },
+    "colouring": {
+      "templateId": "horizontal-3",
+      "regions": {
+        "top": "light-blue",
+        "middle": "white",
+        "bottom": "light-blue"
+      }
     },
     "confusableWith": [
       "el-salvador",
@@ -3380,6 +3685,14 @@ export const entities: readonly Entity[] = [
       ],
       "aspectRatio": 1.3333
     },
+    "colouring": {
+      "templateId": "horizontal-3",
+      "regions": {
+        "top": "red",
+        "middle": "white",
+        "bottom": "green"
+      }
+    },
     "confusableWith": [
       "bulgaria",
       "tajikistan"
@@ -3410,6 +3723,7 @@ export const entities: readonly Entity[] = [
     "flag": {
       "file": "/flags/is.svg",
       "colours": [
+        "black",
         "blue",
         "white",
         "red"
@@ -3446,12 +3760,21 @@ export const entities: readonly Entity[] = [
     "flag": {
       "file": "/flags/in.svg",
       "colours": [
+        "black",
         "orange",
         "white",
         "green",
         "navy"
       ],
       "aspectRatio": 1.3333
+    },
+    "colouring": {
+      "templateId": "vertical-3",
+      "regions": {
+        "left": "orange",
+        "middle": "white",
+        "right": "green"
+      }
     },
     "confusableWith": [
       "ireland"
@@ -3489,6 +3812,13 @@ export const entities: readonly Entity[] = [
       ],
       "aspectRatio": 1.3333
     },
+    "colouring": {
+      "templateId": "horizontal-2",
+      "regions": {
+        "top": "red",
+        "bottom": "white"
+      }
+    },
     "confusableWith": [
       "monaco",
       "poland"
@@ -3519,6 +3849,7 @@ export const entities: readonly Entity[] = [
     "flag": {
       "file": "/flags/ir.svg",
       "colours": [
+        "black",
         "white",
         "red",
         "green"
@@ -3549,12 +3880,20 @@ export const entities: readonly Entity[] = [
     "flag": {
       "file": "/flags/iq.svg",
       "colours": [
+        "black",
         "white",
         "red",
-        "black",
         "green"
       ],
       "aspectRatio": 1.3333
+    },
+    "colouring": {
+      "templateId": "horizontal-3",
+      "regions": {
+        "top": "red",
+        "middle": "white",
+        "bottom": "black"
+      }
     },
     "confusableWith": [
       "egypt"
@@ -3591,6 +3930,14 @@ export const entities: readonly Entity[] = [
       ],
       "aspectRatio": 1.3333
     },
+    "colouring": {
+      "templateId": "vertical-3",
+      "regions": {
+        "left": "green",
+        "middle": "white",
+        "right": "orange"
+      }
+    },
     "confusableWith": [
       "india",
       "italy",
@@ -3623,6 +3970,7 @@ export const entities: readonly Entity[] = [
     "flag": {
       "file": "/flags/im.svg",
       "colours": [
+        "black",
         "crimson",
         "yellow",
         "white"
@@ -3654,6 +4002,7 @@ export const entities: readonly Entity[] = [
     "flag": {
       "file": "/flags/il.svg",
       "colours": [
+        "black",
         "white",
         "blue"
       ],
@@ -3689,6 +4038,14 @@ export const entities: readonly Entity[] = [
         "red"
       ],
       "aspectRatio": 1.3333
+    },
+    "colouring": {
+      "templateId": "vertical-3",
+      "regions": {
+        "left": "green",
+        "middle": "white",
+        "right": "red"
+      }
     },
     "confusableWith": [
       "ireland"
@@ -3733,6 +4090,14 @@ export const entities: readonly Entity[] = [
       ],
       "aspectRatio": 1.3333
     },
+    "colouring": {
+      "templateId": "vertical-3",
+      "regions": {
+        "left": "orange",
+        "middle": "white",
+        "right": "green"
+      }
+    },
     "confusableWith": [
       "ireland"
     ],
@@ -3764,6 +4129,13 @@ export const entities: readonly Entity[] = [
       ],
       "aspectRatio": 1.3333
     },
+    "colouring": {
+      "templateId": "saltire",
+      "regions": {
+        "field": "green",
+        "saltire": "yellow"
+      }
+    },
     "tier": 1
   },
   {
@@ -3789,10 +4161,18 @@ export const entities: readonly Entity[] = [
     "flag": {
       "file": "/flags/jp.svg",
       "colours": [
+        "black",
         "white",
         "crimson"
       ],
       "aspectRatio": 1.3333
+    },
+    "colouring": {
+      "templateId": "disc-centre",
+      "regions": {
+        "field": "white",
+        "disc": "red"
+      }
     },
     "tier": 1
   },
@@ -3821,13 +4201,13 @@ export const entities: readonly Entity[] = [
     "flag": {
       "file": "/flags/je.svg",
       "colours": [
+        "black",
         "white",
         "red",
         "yellow",
         "blue",
         "brown",
-        "gold",
-        "black"
+        "gold"
       ],
       "aspectRatio": 1.3333
     },
@@ -3863,6 +4243,14 @@ export const entities: readonly Entity[] = [
       ],
       "aspectRatio": 1.3333
     },
+    "colouring": {
+      "templateId": "horizontal-3",
+      "regions": {
+        "top": "black",
+        "middle": "white",
+        "bottom": "green"
+      }
+    },
     "confusableWith": [
       "sudan",
       "united-arab-emirates"
@@ -3897,6 +4285,7 @@ export const entities: readonly Entity[] = [
     "flag": {
       "file": "/flags/kz.svg",
       "colours": [
+        "black",
         "cyan",
         "yellow"
       ],
@@ -3927,8 +4316,8 @@ export const entities: readonly Entity[] = [
     "flag": {
       "file": "/flags/ke.svg",
       "colours": [
-        "white",
         "black",
+        "white",
         "dark-green",
         "crimson"
       ],
@@ -3959,6 +4348,7 @@ export const entities: readonly Entity[] = [
     "flag": {
       "file": "/flags/ki.svg",
       "colours": [
+        "black",
         "red",
         "gold",
         "blue",
@@ -4019,12 +4409,20 @@ export const entities: readonly Entity[] = [
     "flag": {
       "file": "/flags/kw.svg",
       "colours": [
+        "black",
         "white",
         "red",
-        "green",
-        "black"
+        "green"
       ],
       "aspectRatio": 1.3333
+    },
+    "colouring": {
+      "templateId": "horizontal-3",
+      "regions": {
+        "top": "green",
+        "middle": "white",
+        "bottom": "red"
+      }
     },
     "confusableWith": [
       "united-arab-emirates"
@@ -4086,11 +4484,20 @@ export const entities: readonly Entity[] = [
     "flag": {
       "file": "/flags/la.svg",
       "colours": [
+        "black",
         "red",
         "navy",
         "white"
       ],
       "aspectRatio": 1.3333
+    },
+    "colouring": {
+      "templateId": "horizontal-3",
+      "regions": {
+        "top": "red",
+        "middle": "blue",
+        "bottom": "red"
+      }
     },
     "tier": 2
   },
@@ -4122,6 +4529,14 @@ export const entities: readonly Entity[] = [
       ],
       "aspectRatio": 1.3333
     },
+    "colouring": {
+      "templateId": "horizontal-3-uneven",
+      "regions": {
+        "top": "maroon",
+        "middle": "white",
+        "bottom": "maroon"
+      }
+    },
     "confusableWith": [
       "austria"
     ],
@@ -4150,11 +4565,20 @@ export const entities: readonly Entity[] = [
     "flag": {
       "file": "/flags/lb.svg",
       "colours": [
+        "black",
         "red",
         "white",
         "green"
       ],
       "aspectRatio": 1.3333
+    },
+    "colouring": {
+      "templateId": "horizontal-3",
+      "regions": {
+        "top": "red",
+        "middle": "white",
+        "bottom": "red"
+      }
     },
     "tier": 1
   },
@@ -4181,6 +4605,7 @@ export const entities: readonly Entity[] = [
     "flag": {
       "file": "/flags/ls.svg",
       "colours": [
+        "black",
         "white",
         "green",
         "blue"
@@ -4211,6 +4636,7 @@ export const entities: readonly Entity[] = [
     "flag": {
       "file": "/flags/lr.svg",
       "colours": [
+        "black",
         "white",
         "navy",
         "red"
@@ -4245,8 +4671,8 @@ export const entities: readonly Entity[] = [
     "flag": {
       "file": "/flags/ly.svg",
       "colours": [
-        "green",
         "black",
+        "green",
         "red",
         "white"
       ],
@@ -4277,10 +4703,10 @@ export const entities: readonly Entity[] = [
     "flag": {
       "file": "/flags/li.svg",
       "colours": [
+        "black",
         "navy",
         "red",
-        "yellow",
-        "black"
+        "yellow"
       ],
       "aspectRatio": 1.3333
     },
@@ -4315,6 +4741,14 @@ export const entities: readonly Entity[] = [
       ],
       "aspectRatio": 1.3333
     },
+    "colouring": {
+      "templateId": "horizontal-3",
+      "regions": {
+        "top": "yellow",
+        "middle": "green",
+        "bottom": "red"
+      }
+    },
     "tier": 2
   },
   {
@@ -4347,6 +4781,14 @@ export const entities: readonly Entity[] = [
         "cyan"
       ],
       "aspectRatio": 1.3333
+    },
+    "colouring": {
+      "templateId": "horizontal-3",
+      "regions": {
+        "top": "red",
+        "middle": "white",
+        "bottom": "light-blue"
+      }
     },
     "confusableWith": [
       "netherlands"
@@ -4434,9 +4876,9 @@ export const entities: readonly Entity[] = [
     "flag": {
       "file": "/flags/mw.svg",
       "colours": [
+        "black",
         "red",
-        "green",
-        "black"
+        "green"
       ],
       "aspectRatio": 1.3333
     },
@@ -4535,6 +4977,14 @@ export const entities: readonly Entity[] = [
       ],
       "aspectRatio": 1.3333
     },
+    "colouring": {
+      "templateId": "vertical-3",
+      "regions": {
+        "left": "green",
+        "middle": "yellow",
+        "right": "red"
+      }
+    },
     "confusableWith": [
       "guinea",
       "senegal"
@@ -4564,10 +5014,18 @@ export const entities: readonly Entity[] = [
     "flag": {
       "file": "/flags/mt.svg",
       "colours": [
+        "black",
         "white",
         "red"
       ],
       "aspectRatio": 1.3333
+    },
+    "colouring": {
+      "templateId": "vertical-2",
+      "regions": {
+        "left": "white",
+        "right": "red"
+      }
     },
     "tier": 1
   },
@@ -4658,6 +5116,14 @@ export const entities: readonly Entity[] = [
         "yellow"
       ],
       "aspectRatio": 1.3333
+    },
+    "colouring": {
+      "templateId": "crescent-star",
+      "regions": {
+        "field": "green",
+        "crescent": "yellow",
+        "star": "yellow"
+      }
     },
     "tier": 1
   },
@@ -4759,6 +5225,7 @@ export const entities: readonly Entity[] = [
     "flag": {
       "file": "/flags/mx.svg",
       "colours": [
+        "black",
         "white",
         "pink",
         "red",
@@ -4767,7 +5234,6 @@ export const entities: readonly Entity[] = [
         "grey",
         "brown",
         "light-blue",
-        "black",
         "green",
         "yellow",
         "navy",
@@ -4775,6 +5241,14 @@ export const entities: readonly Entity[] = [
         "orange"
       ],
       "aspectRatio": 1.3333
+    },
+    "colouring": {
+      "templateId": "vertical-3",
+      "regions": {
+        "left": "green",
+        "middle": "white",
+        "right": "red"
+      }
     },
     "tier": 1
   },
@@ -4801,6 +5275,7 @@ export const entities: readonly Entity[] = [
     "flag": {
       "file": "/flags/fm.svg",
       "colours": [
+        "black",
         "light-blue",
         "white"
       ],
@@ -4832,6 +5307,7 @@ export const entities: readonly Entity[] = [
     "flag": {
       "file": "/flags/md.svg",
       "colours": [
+        "black",
         "blue",
         "yellow",
         "red",
@@ -4841,6 +5317,14 @@ export const entities: readonly Entity[] = [
         "green"
       ],
       "aspectRatio": 1.3333
+    },
+    "colouring": {
+      "templateId": "vertical-3",
+      "regions": {
+        "left": "blue",
+        "middle": "yellow",
+        "right": "red"
+      }
     },
     "confusableWith": [
       "chad"
@@ -4875,6 +5359,13 @@ export const entities: readonly Entity[] = [
       ],
       "aspectRatio": 1.3333
     },
+    "colouring": {
+      "templateId": "horizontal-2",
+      "regions": {
+        "top": "red",
+        "bottom": "white"
+      }
+    },
     "confusableWith": [
       "indonesia",
       "poland"
@@ -4901,11 +5392,20 @@ export const entities: readonly Entity[] = [
     "flag": {
       "file": "/flags/mn.svg",
       "colours": [
+        "black",
         "yellow",
         "red",
         "blue"
       ],
       "aspectRatio": 1.3333
+    },
+    "colouring": {
+      "templateId": "vertical-3",
+      "regions": {
+        "left": "red",
+        "middle": "blue",
+        "right": "red"
+      }
     },
     "tier": 1
   },
@@ -4961,6 +5461,7 @@ export const entities: readonly Entity[] = [
     "flag": {
       "file": "/flags/ms.svg",
       "colours": [
+        "black",
         "navy",
         "white",
         "cyan",
@@ -5029,9 +5530,9 @@ export const entities: readonly Entity[] = [
     "flag": {
       "file": "/flags/mz.svg",
       "colours": [
+        "black",
         "green",
         "white",
-        "black",
         "yellow",
         "red"
       ],
@@ -5070,6 +5571,14 @@ export const entities: readonly Entity[] = [
       ],
       "aspectRatio": 1.3333
     },
+    "colouring": {
+      "templateId": "horizontal-3",
+      "regions": {
+        "top": "yellow",
+        "middle": "green",
+        "bottom": "red"
+      }
+    },
     "tier": 1
   },
   {
@@ -5095,6 +5604,7 @@ export const entities: readonly Entity[] = [
     "flag": {
       "file": "/flags/na.svg",
       "colours": [
+        "black",
         "white",
         "blue",
         "green",
@@ -5130,6 +5640,7 @@ export const entities: readonly Entity[] = [
     "flag": {
       "file": "/flags/nr.svg",
       "colours": [
+        "black",
         "navy",
         "yellow",
         "white"
@@ -5161,6 +5672,7 @@ export const entities: readonly Entity[] = [
     "flag": {
       "file": "/flags/np.svg",
       "colours": [
+        "black",
         "red",
         "white"
       ],
@@ -5208,6 +5720,14 @@ export const entities: readonly Entity[] = [
       ],
       "aspectRatio": 1.3333
     },
+    "colouring": {
+      "templateId": "horizontal-3",
+      "regions": {
+        "top": "red",
+        "middle": "white",
+        "bottom": "blue"
+      }
+    },
     "confusableWith": [
       "croatia",
       "luxembourg"
@@ -5235,11 +5755,11 @@ export const entities: readonly Entity[] = [
     "flag": {
       "file": "/flags/nc.svg",
       "colours": [
+        "black",
         "green",
         "red",
         "blue",
-        "yellow",
-        "black"
+        "yellow"
       ],
       "aspectRatio": 1.3333
     },
@@ -5267,6 +5787,7 @@ export const entities: readonly Entity[] = [
     "flag": {
       "file": "/flags/nz.svg",
       "colours": [
+        "black",
         "navy",
         "white",
         "red"
@@ -5302,6 +5823,7 @@ export const entities: readonly Entity[] = [
     "flag": {
       "file": "/flags/ni.svg",
       "colours": [
+        "black",
         "maroon",
         "crimson",
         "red",
@@ -5317,6 +5839,14 @@ export const entities: readonly Entity[] = [
         "purple"
       ],
       "aspectRatio": 1.3333
+    },
+    "colouring": {
+      "templateId": "horizontal-3",
+      "regions": {
+        "top": "blue",
+        "middle": "white",
+        "bottom": "blue"
+      }
     },
     "confusableWith": [
       "el-salvador",
@@ -5382,6 +5912,14 @@ export const entities: readonly Entity[] = [
         "green"
       ],
       "aspectRatio": 1.3333
+    },
+    "colouring": {
+      "templateId": "vertical-3",
+      "regions": {
+        "left": "green",
+        "middle": "white",
+        "right": "green"
+      }
     },
     "tier": 1
   },
@@ -5471,6 +6009,7 @@ export const entities: readonly Entity[] = [
     "flag": {
       "file": "/flags/kp.svg",
       "colours": [
+        "black",
         "white",
         "blue",
         "red"
@@ -5535,6 +6074,7 @@ export const entities: readonly Entity[] = [
     "flag": {
       "file": "/flags/mp.svg",
       "colours": [
+        "black",
         "blue",
         "white",
         "dark-green",
@@ -5608,6 +6148,7 @@ export const entities: readonly Entity[] = [
     "flag": {
       "file": "/flags/om.svg",
       "colours": [
+        "black",
         "red",
         "green",
         "white"
@@ -5640,10 +6181,18 @@ export const entities: readonly Entity[] = [
     "flag": {
       "file": "/flags/pk.svg",
       "colours": [
+        "black",
         "dark-green",
         "white"
       ],
       "aspectRatio": 1.3333
+    },
+    "colouring": {
+      "templateId": "vertical-2",
+      "regions": {
+        "left": "white",
+        "right": "green"
+      }
     },
     "tier": 1
   },
@@ -5670,10 +6219,18 @@ export const entities: readonly Entity[] = [
     "flag": {
       "file": "/flags/pw.svg",
       "colours": [
+        "black",
         "light-blue",
         "yellow"
       ],
       "aspectRatio": 1.3333
+    },
+    "colouring": {
+      "templateId": "disc-offset",
+      "regions": {
+        "field": "light-blue",
+        "disc": "yellow"
+      }
     },
     "tier": 3
   },
@@ -5710,11 +6267,20 @@ export const entities: readonly Entity[] = [
     "flag": {
       "file": "/flags/ps.svg",
       "colours": [
+        "black",
         "green",
         "white",
         "red"
       ],
       "aspectRatio": 1.3333
+    },
+    "colouring": {
+      "templateId": "horizontal-3",
+      "regions": {
+        "top": "black",
+        "middle": "white",
+        "bottom": "green"
+      }
     },
     "confusableWith": [
       "sudan",
@@ -5745,6 +6311,7 @@ export const entities: readonly Entity[] = [
     "flag": {
       "file": "/flags/pa.svg",
       "colours": [
+        "black",
         "white",
         "red",
         "navy"
@@ -5783,6 +6350,13 @@ export const entities: readonly Entity[] = [
       ],
       "aspectRatio": 1.3333
     },
+    "colouring": {
+      "templateId": "diagonal-split",
+      "regions": {
+        "upper": "black",
+        "lower": "red"
+      }
+    },
     "tier": 1
   },
   {
@@ -5809,6 +6383,7 @@ export const entities: readonly Entity[] = [
     "flag": {
       "file": "/flags/py.svg",
       "colours": [
+        "black",
         "blue",
         "white",
         "red",
@@ -5816,6 +6391,14 @@ export const entities: readonly Entity[] = [
         "yellow"
       ],
       "aspectRatio": 1.3333
+    },
+    "colouring": {
+      "templateId": "horizontal-3",
+      "regions": {
+        "top": "red",
+        "middle": "white",
+        "bottom": "blue"
+      }
     },
     "tier": 1
   },
@@ -5846,6 +6429,14 @@ export const entities: readonly Entity[] = [
         "white"
       ],
       "aspectRatio": 1.3333
+    },
+    "colouring": {
+      "templateId": "vertical-3",
+      "regions": {
+        "left": "red",
+        "middle": "white",
+        "right": "red"
+      }
     },
     "tier": 1
   },
@@ -5879,6 +6470,14 @@ export const entities: readonly Entity[] = [
       ],
       "aspectRatio": 1.3333
     },
+    "colouring": {
+      "templateId": "triangle-hoist",
+      "regions": {
+        "top": "blue",
+        "bottom": "red",
+        "triangle": "white"
+      }
+    },
     "confusableWith": [
       "czechia"
     ],
@@ -5908,6 +6507,7 @@ export const entities: readonly Entity[] = [
     "flag": {
       "file": "/flags/pn.svg",
       "colours": [
+        "black",
         "navy",
         "white",
         "red",
@@ -5948,6 +6548,13 @@ export const entities: readonly Entity[] = [
       ],
       "aspectRatio": 1.3333
     },
+    "colouring": {
+      "templateId": "horizontal-2",
+      "regions": {
+        "top": "white",
+        "bottom": "red"
+      }
+    },
     "confusableWith": [
       "austria",
       "indonesia",
@@ -5979,14 +6586,21 @@ export const entities: readonly Entity[] = [
     "flag": {
       "file": "/flags/pt.svg",
       "colours": [
+        "black",
         "red",
         "dark-green",
         "yellow",
         "white",
-        "black",
         "blue"
       ],
       "aspectRatio": 1.3333
+    },
+    "colouring": {
+      "templateId": "vertical-2",
+      "regions": {
+        "left": "green",
+        "right": "red"
+      }
     },
     "tier": 1
   },
@@ -6014,6 +6628,7 @@ export const entities: readonly Entity[] = [
     "flag": {
       "file": "/flags/pr.svg",
       "colours": [
+        "black",
         "red",
         "white",
         "blue"
@@ -6078,6 +6693,7 @@ export const entities: readonly Entity[] = [
     "flag": {
       "file": "/flags/cg.svg",
       "colours": [
+        "black",
         "yellow",
         "green",
         "red"
@@ -6157,6 +6773,14 @@ export const entities: readonly Entity[] = [
       ],
       "aspectRatio": 1.3333
     },
+    "colouring": {
+      "templateId": "vertical-3",
+      "regions": {
+        "left": "blue",
+        "middle": "yellow",
+        "right": "red"
+      }
+    },
     "confusableWith": [
       "chad"
     ],
@@ -6193,6 +6817,14 @@ export const entities: readonly Entity[] = [
       ],
       "aspectRatio": 1.3333
     },
+    "colouring": {
+      "templateId": "horizontal-3",
+      "regions": {
+        "top": "white",
+        "middle": "blue",
+        "bottom": "red"
+      }
+    },
     "confusableWith": [
       "slovakia",
       "slovenia"
@@ -6228,6 +6860,14 @@ export const entities: readonly Entity[] = [
         "cyan"
       ],
       "aspectRatio": 1.3333
+    },
+    "colouring": {
+      "templateId": "horizontal-3",
+      "regions": {
+        "top": "light-blue",
+        "middle": "yellow",
+        "bottom": "green"
+      }
     },
     "tier": 2
   },
@@ -6298,12 +6938,12 @@ export const entities: readonly Entity[] = [
     "flag": {
       "file": "/flags/sh.svg",
       "colours": [
+        "black",
         "navy",
         "grey",
         "gold",
         "white",
         "pink",
-        "black",
         "brown",
         "red"
       ],
@@ -6333,10 +6973,10 @@ export const entities: readonly Entity[] = [
     "flag": {
       "file": "/flags/kn.svg",
       "colours": [
+        "black",
         "yellow",
         "green",
         "red",
-        "black",
         "white"
       ],
       "aspectRatio": 1.3333
@@ -6537,6 +7177,7 @@ export const entities: readonly Entity[] = [
     "flag": {
       "file": "/flags/sm.svg",
       "colours": [
+        "black",
         "cyan",
         "white",
         "yellow",
@@ -6548,6 +7189,13 @@ export const entities: readonly Entity[] = [
         "dark-green"
       ],
       "aspectRatio": 1.3333
+    },
+    "colouring": {
+      "templateId": "horizontal-2",
+      "regions": {
+        "top": "white",
+        "bottom": "light-blue"
+      }
     },
     "tier": 3
   },
@@ -6607,6 +7255,7 @@ export const entities: readonly Entity[] = [
     "flag": {
       "file": "/flags/sa.svg",
       "colours": [
+        "black",
         "dark-green",
         "white"
       ],
@@ -6643,6 +7292,14 @@ export const entities: readonly Entity[] = [
       ],
       "aspectRatio": 1.3333
     },
+    "colouring": {
+      "templateId": "vertical-3",
+      "regions": {
+        "left": "green",
+        "middle": "yellow",
+        "right": "red"
+      }
+    },
     "confusableWith": [
       "cameroon",
       "guinea",
@@ -6674,10 +7331,10 @@ export const entities: readonly Entity[] = [
     "flag": {
       "file": "/flags/rs.svg",
       "colours": [
+        "black",
         "white",
         "navy",
         "red",
-        "black",
         "gold"
       ],
       "aspectRatio": 1.3333
@@ -6749,6 +7406,14 @@ export const entities: readonly Entity[] = [
       ],
       "aspectRatio": 1.3333
     },
+    "colouring": {
+      "templateId": "horizontal-3",
+      "regions": {
+        "top": "green",
+        "middle": "white",
+        "bottom": "blue"
+      }
+    },
     "tier": 2
   },
   {
@@ -6774,10 +7439,18 @@ export const entities: readonly Entity[] = [
     "flag": {
       "file": "/flags/sg.svg",
       "colours": [
+        "black",
         "white",
         "red"
       ],
       "aspectRatio": 1.3333
+    },
+    "colouring": {
+      "templateId": "horizontal-2",
+      "regions": {
+        "top": "red",
+        "bottom": "white"
+      }
     },
     "tier": 1
   },
@@ -6804,6 +7477,7 @@ export const entities: readonly Entity[] = [
     "flag": {
       "file": "/flags/sx.svg",
       "colours": [
+        "black",
         "red",
         "blue",
         "white",
@@ -6875,6 +7549,7 @@ export const entities: readonly Entity[] = [
     "flag": {
       "file": "/flags/si.svg",
       "colours": [
+        "black",
         "white",
         "red",
         "blue",
@@ -6909,6 +7584,7 @@ export const entities: readonly Entity[] = [
     "flag": {
       "file": "/flags/sb.svg",
       "colours": [
+        "black",
         "blue",
         "dark-green",
         "yellow",
@@ -6943,6 +7619,7 @@ export const entities: readonly Entity[] = [
     "flag": {
       "file": "/flags/so.svg",
       "colours": [
+        "black",
         "light-blue",
         "white"
       ],
@@ -7022,6 +7699,7 @@ export const entities: readonly Entity[] = [
     "flag": {
       "file": "/flags/gs.svg",
       "colours": [
+        "black",
         "white",
         "brown",
         "orange",
@@ -7063,8 +7741,8 @@ export const entities: readonly Entity[] = [
     "flag": {
       "file": "/flags/kr.svg",
       "colours": [
-        "white",
         "black",
+        "white",
         "red",
         "blue"
       ],
@@ -7126,6 +7804,7 @@ export const entities: readonly Entity[] = [
     "flag": {
       "file": "/flags/es.svg",
       "colours": [
+        "black",
         "crimson",
         "yellow",
         "gold",
@@ -7173,11 +7852,11 @@ export const entities: readonly Entity[] = [
     "flag": {
       "file": "/flags/lk.svg",
       "colours": [
+        "black",
         "yellow",
         "orange",
         "dark-green",
-        "maroon",
-        "black"
+        "maroon"
       ],
       "aspectRatio": 1.3333
     },
@@ -7212,6 +7891,14 @@ export const entities: readonly Entity[] = [
         "green"
       ],
       "aspectRatio": 1.3333
+    },
+    "colouring": {
+      "templateId": "horizontal-3",
+      "regions": {
+        "top": "red",
+        "middle": "white",
+        "bottom": "black"
+      }
     },
     "confusableWith": [
       "jordan",
@@ -7313,6 +8000,13 @@ export const entities: readonly Entity[] = [
       ],
       "aspectRatio": 1.3333
     },
+    "colouring": {
+      "templateId": "nordic-cross",
+      "regions": {
+        "field": "blue",
+        "cross": "yellow"
+      }
+    },
     "confusableWith": [
       "aland-islands",
       "finland"
@@ -7345,6 +8039,7 @@ export const entities: readonly Entity[] = [
     "flag": {
       "file": "/flags/ch.svg",
       "colours": [
+        "black",
         "red",
         "white"
       ],
@@ -7377,11 +8072,20 @@ export const entities: readonly Entity[] = [
     "flag": {
       "file": "/flags/sy.svg",
       "colours": [
+        "black",
         "white",
         "green",
         "red"
       ],
       "aspectRatio": 1.3333
+    },
+    "colouring": {
+      "templateId": "horizontal-3",
+      "regions": {
+        "top": "green",
+        "middle": "white",
+        "bottom": "black"
+      }
     },
     "confusableWith": [
       "egypt",
@@ -7414,6 +8118,7 @@ export const entities: readonly Entity[] = [
     "flag": {
       "file": "/flags/tw.svg",
       "colours": [
+        "black",
         "red",
         "navy",
         "white"
@@ -7446,12 +8151,21 @@ export const entities: readonly Entity[] = [
     "flag": {
       "file": "/flags/tj.svg",
       "colours": [
+        "black",
         "dark-green",
         "white",
         "red",
         "yellow"
       ],
       "aspectRatio": 1.3333
+    },
+    "colouring": {
+      "templateId": "horizontal-3",
+      "regions": {
+        "top": "red",
+        "middle": "white",
+        "bottom": "green"
+      }
     },
     "confusableWith": [
       "hungary"
@@ -7482,9 +8196,9 @@ export const entities: readonly Entity[] = [
     "flag": {
       "file": "/flags/tz.svg",
       "colours": [
+        "black",
         "cyan",
         "green",
-        "black",
         "yellow"
       ],
       "aspectRatio": 1.3333
@@ -7522,6 +8236,16 @@ export const entities: readonly Entity[] = [
       ],
       "aspectRatio": 1.3333
     },
+    "colouring": {
+      "templateId": "horizontal-5",
+      "regions": {
+        "top": "red",
+        "upper": "white",
+        "middle": "navy",
+        "lower": "white",
+        "bottom": "red"
+      }
+    },
     "tier": 1
   },
   {
@@ -7552,9 +8276,9 @@ export const entities: readonly Entity[] = [
     "flag": {
       "file": "/flags/tl.svg",
       "colours": [
+        "black",
         "red",
         "yellow",
-        "black",
         "white"
       ],
       "aspectRatio": 1.3333
@@ -7585,6 +8309,7 @@ export const entities: readonly Entity[] = [
     "flag": {
       "file": "/flags/tg.svg",
       "colours": [
+        "black",
         "yellow",
         "dark-green",
         "red",
@@ -7643,6 +8368,7 @@ export const entities: readonly Entity[] = [
     "flag": {
       "file": "/flags/to.svg",
       "colours": [
+        "black",
         "crimson",
         "white"
       ],
@@ -7708,6 +8434,14 @@ export const entities: readonly Entity[] = [
       ],
       "aspectRatio": 1.3333
     },
+    "colouring": {
+      "templateId": "crescent-star",
+      "regions": {
+        "field": "red",
+        "crescent": "white",
+        "star": "white"
+      }
+    },
     "tier": 1
   },
   {
@@ -7743,6 +8477,14 @@ export const entities: readonly Entity[] = [
       ],
       "aspectRatio": 1.3333
     },
+    "colouring": {
+      "templateId": "crescent-star",
+      "regions": {
+        "field": "red",
+        "crescent": "white",
+        "star": "white"
+      }
+    },
     "tier": 1
   },
   {
@@ -7765,6 +8507,7 @@ export const entities: readonly Entity[] = [
     "flag": {
       "file": "/flags/tm.svg",
       "colours": [
+        "black",
         "green",
         "white",
         "red",
@@ -7796,6 +8539,7 @@ export const entities: readonly Entity[] = [
     "flag": {
       "file": "/flags/tc.svg",
       "colours": [
+        "black",
         "navy",
         "yellow",
         "gold",
@@ -7803,7 +8547,6 @@ export const entities: readonly Entity[] = [
         "brown",
         "green",
         "red",
-        "black",
         "white"
       ],
       "aspectRatio": 1.3333
@@ -7863,8 +8606,8 @@ export const entities: readonly Entity[] = [
     "flag": {
       "file": "/flags/ug.svg",
       "colours": [
-        "yellow",
         "black",
+        "yellow",
         "red",
         "white",
         "grey"
@@ -7900,6 +8643,13 @@ export const entities: readonly Entity[] = [
       ],
       "aspectRatio": 1.3333
     },
+    "colouring": {
+      "templateId": "horizontal-2",
+      "regions": {
+        "top": "blue",
+        "bottom": "yellow"
+      }
+    },
     "tier": 1
   },
   {
@@ -7931,6 +8681,14 @@ export const entities: readonly Entity[] = [
         "red"
       ],
       "aspectRatio": 1.3333
+    },
+    "colouring": {
+      "templateId": "horizontal-3",
+      "regions": {
+        "top": "green",
+        "middle": "white",
+        "bottom": "black"
+      }
     },
     "confusableWith": [
       "jordan",
@@ -7997,6 +8755,7 @@ export const entities: readonly Entity[] = [
     "flag": {
       "file": "/flags/us.svg",
       "colours": [
+        "black",
         "red",
         "navy",
         "white"
@@ -8027,6 +8786,7 @@ export const entities: readonly Entity[] = [
     "flag": {
       "file": "/flags/um.svg",
       "colours": [
+        "black",
         "red",
         "navy",
         "white"
@@ -8061,6 +8821,7 @@ export const entities: readonly Entity[] = [
     "flag": {
       "file": "/flags/vi.svg",
       "colours": [
+        "black",
         "white",
         "green",
         "gold",
@@ -8095,6 +8856,7 @@ export const entities: readonly Entity[] = [
     "flag": {
       "file": "/flags/uy.svg",
       "colours": [
+        "black",
         "white",
         "blue",
         "yellow"
@@ -8125,12 +8887,21 @@ export const entities: readonly Entity[] = [
     "flag": {
       "file": "/flags/uz.svg",
       "colours": [
+        "black",
         "green",
         "cyan",
         "red",
         "white"
       ],
       "aspectRatio": 1.3333
+    },
+    "colouring": {
+      "templateId": "horizontal-3",
+      "regions": {
+        "top": "light-blue",
+        "middle": "white",
+        "bottom": "green"
+      }
     },
     "tier": 1
   },
@@ -8158,6 +8929,7 @@ export const entities: readonly Entity[] = [
     "flag": {
       "file": "/flags/vu.svg",
       "colours": [
+        "black",
         "green",
         "red",
         "yellow"
@@ -8192,6 +8964,7 @@ export const entities: readonly Entity[] = [
     "flag": {
       "file": "/flags/va.svg",
       "colours": [
+        "black",
         "white",
         "yellow",
         "gold",
@@ -8199,6 +8972,13 @@ export const entities: readonly Entity[] = [
         "red"
       ],
       "aspectRatio": 1
+    },
+    "colouring": {
+      "templateId": "vertical-2",
+      "regions": {
+        "left": "yellow",
+        "right": "white"
+      }
     },
     "tier": 1
   },
@@ -8263,6 +9043,7 @@ export const entities: readonly Entity[] = [
     "flag": {
       "file": "/flags/vn.svg",
       "colours": [
+        "black",
         "red",
         "yellow"
       ],
@@ -8380,6 +9161,14 @@ export const entities: readonly Entity[] = [
       ],
       "aspectRatio": 1.3333
     },
+    "colouring": {
+      "templateId": "horizontal-3",
+      "regions": {
+        "top": "red",
+        "middle": "white",
+        "bottom": "black"
+      }
+    },
     "confusableWith": [
       "egypt",
       "syria"
@@ -8408,9 +9197,9 @@ export const entities: readonly Entity[] = [
     "flag": {
       "file": "/flags/zm.svg",
       "colours": [
+        "black",
         "green",
         "orange",
-        "black",
         "red"
       ],
       "aspectRatio": 1.3333
@@ -8439,11 +9228,11 @@ export const entities: readonly Entity[] = [
     "flag": {
       "file": "/flags/zw.svg",
       "colours": [
+        "black",
         "blue",
         "dark-green",
         "yellow",
         "red",
-        "black",
         "white"
       ],
       "aspectRatio": 1.3333

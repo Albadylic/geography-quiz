@@ -7,6 +7,7 @@ import { ResultsScreen } from '@/features/results/ResultsScreen';
 import { RevisionScreen } from '@/features/revision/RevisionScreen';
 import { StatsScreen } from '@/features/stats/StatsScreen';
 import { SettingsScreen } from '@/features/settings/SettingsScreen';
+import { ColourScreen } from '@/features/colour/ColourScreen';
 import { NotFoundScreen } from './NotFoundScreen';
 
 /** Routes per plan §10. */
@@ -16,6 +17,8 @@ export const router = createBrowserRouter([
     errorElement: <NotFoundScreen />,
     children: [
       { path: '/', element: <HomeScreen /> },
+      { path: '/play/colour/setup', element: <ColourScreen /> },
+      { path: '/play/colour', element: <ColourScreen /> },
       { path: '/play/:mode/setup', element: <SetupScreen /> },
       { path: '/play/:mode', element: <PlayScreen /> },
       { path: '/results/:sessionId', element: <ResultsScreen /> },

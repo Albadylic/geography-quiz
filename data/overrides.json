@@ -8,7 +8,6 @@
     "Anything listed here appears in data-report.md, so the manual surface area",
     "of the dataset is auditable in one place."
   ],
-
   "$statuses": "Status where it cannot be derived from unMember/independent. Notably the snapshot marks Vatican City as a UN member, which is wrong — it is a permanent observer, and without this the UN-member count comes out at 194.",
   "statuses": {
     "vatican-city": "un-observer",
@@ -19,7 +18,6 @@
     "hong-kong": "special-administrative-region",
     "macau": "special-administrative-region"
   },
-
   "$sovereigns": "Governing state for dependencies and territories. Entities absent from this map and not UN members are either disputed (Kosovo, Taiwan, Western Sahara, Palestine) or have no sovereign (Antarctica).",
   "sovereigns": {
     "anguilla": "united-kingdom",
@@ -37,14 +35,12 @@
     "saint-helena-ascension-and-tristan-da-cunha": "united-kingdom",
     "south-georgia": "united-kingdom",
     "turks-and-caicos-islands": "united-kingdom",
-
     "american-samoa": "united-states",
     "guam": "united-states",
     "northern-mariana-islands": "united-states",
     "puerto-rico": "united-states",
     "united-states-minor-outlying-islands": "united-states",
     "united-states-virgin-islands": "united-states",
-
     "french-guiana": "france",
     "french-polynesia": "france",
     "french-southern-and-antarctic-lands": "france",
@@ -57,164 +53,460 @@
     "saint-martin": "france",
     "saint-pierre-and-miquelon": "france",
     "wallis-and-futuna": "france",
-
     "aruba": "netherlands",
     "caribbean-netherlands": "netherlands",
     "curacao": "netherlands",
     "sint-maarten": "netherlands",
-
     "faroe-islands": "denmark",
     "greenland": "denmark",
-
     "bouvet-island": "norway",
     "svalbard-and-jan-mayen": "norway",
-
     "christmas-island": "australia",
     "cocos-keeling-islands": "australia",
     "heard-island-and-mcdonald-islands": "australia",
     "norfolk-island": "australia",
-
     "cook-islands": "new-zealand",
     "niue": "new-zealand",
     "tokelau": "new-zealand",
-
     "aland-islands": "finland",
-
     "hong-kong": "china",
     "macau": "china"
   },
-
   "$altContinents": "Transcontinental entities, reachable through more than one continent filter (§3.3). The primary continent stays as derived from the snapshot's region.",
   "altContinents": {
-    "russia": ["Asia"],
-    "turkiye": ["Europe"],
-    "kazakhstan": ["Europe"],
-    "azerbaijan": ["Europe"],
-    "georgia": ["Europe"],
-    "cyprus": ["Asia"],
-    "egypt": ["Asia"],
-    "indonesia": ["Oceania"]
+    "russia": [
+      "Asia"
+    ],
+    "turkiye": [
+      "Europe"
+    ],
+    "kazakhstan": [
+      "Europe"
+    ],
+    "azerbaijan": [
+      "Europe"
+    ],
+    "georgia": [
+      "Europe"
+    ],
+    "cyprus": [
+      "Asia"
+    ],
+    "egypt": [
+      "Asia"
+    ],
+    "indonesia": [
+      "Oceania"
+    ]
   },
-
   "$capitals": "Multi-capital entities and contested cases (§3.3). Replaces the snapshot's capital list wholesale. Exactly one entry carries isPrimary — that is the answer the quiz asks for; the others are accepted in expert mode and shown with their note in review.",
   "capitals": {
     "south-africa": [
-      { "name": "Pretoria", "aliases": ["Tshwane"], "isPrimary": true, "note": "executive capital" },
-      { "name": "Cape Town", "aliases": [], "isPrimary": false, "note": "legislative capital" },
-      { "name": "Bloemfontein", "aliases": [], "isPrimary": false, "note": "judicial capital" }
+      {
+        "name": "Pretoria",
+        "aliases": [
+          "Tshwane"
+        ],
+        "isPrimary": true,
+        "note": "executive capital"
+      },
+      {
+        "name": "Cape Town",
+        "aliases": [],
+        "isPrimary": false,
+        "note": "legislative capital"
+      },
+      {
+        "name": "Bloemfontein",
+        "aliases": [],
+        "isPrimary": false,
+        "note": "judicial capital"
+      }
     ],
     "bolivia": [
-      { "name": "Sucre", "aliases": [], "isPrimary": true, "note": "constitutional capital" },
-      { "name": "La Paz", "aliases": [], "isPrimary": false, "note": "seat of government" }
+      {
+        "name": "Sucre",
+        "aliases": [],
+        "isPrimary": true,
+        "note": "constitutional capital"
+      },
+      {
+        "name": "La Paz",
+        "aliases": [],
+        "isPrimary": false,
+        "note": "seat of government"
+      }
     ],
     "sri-lanka": [
-      { "name": "Sri Jayawardenepura Kotte", "aliases": ["Kotte", "Sri Jayawardanapura Kotte"], "isPrimary": true, "note": "official capital" },
-      { "name": "Colombo", "aliases": [], "isPrimary": false, "note": "commercial capital and seat of government" }
+      {
+        "name": "Sri Jayawardenepura Kotte",
+        "aliases": [
+          "Kotte",
+          "Sri Jayawardanapura Kotte"
+        ],
+        "isPrimary": true,
+        "note": "official capital"
+      },
+      {
+        "name": "Colombo",
+        "aliases": [],
+        "isPrimary": false,
+        "note": "commercial capital and seat of government"
+      }
     ],
     "netherlands": [
-      { "name": "Amsterdam", "aliases": [], "isPrimary": true, "note": "constitutional capital" },
-      { "name": "The Hague", "aliases": ["Den Haag", "'s-Gravenhage"], "isPrimary": false, "note": "seat of government" }
+      {
+        "name": "Amsterdam",
+        "aliases": [],
+        "isPrimary": true,
+        "note": "constitutional capital"
+      },
+      {
+        "name": "The Hague",
+        "aliases": [
+          "Den Haag",
+          "'s-Gravenhage"
+        ],
+        "isPrimary": false,
+        "note": "seat of government"
+      }
     ],
     "eswatini": [
-      { "name": "Mbabane", "aliases": [], "isPrimary": true, "note": "administrative capital" },
-      { "name": "Lobamba", "aliases": [], "isPrimary": false, "note": "legislative and royal capital" }
+      {
+        "name": "Mbabane",
+        "aliases": [],
+        "isPrimary": true,
+        "note": "administrative capital"
+      },
+      {
+        "name": "Lobamba",
+        "aliases": [],
+        "isPrimary": false,
+        "note": "legislative and royal capital"
+      }
     ],
     "benin": [
-      { "name": "Porto-Novo", "aliases": [], "isPrimary": true, "note": "official capital" },
-      { "name": "Cotonou", "aliases": [], "isPrimary": false, "note": "seat of government" }
+      {
+        "name": "Porto-Novo",
+        "aliases": [],
+        "isPrimary": true,
+        "note": "official capital"
+      },
+      {
+        "name": "Cotonou",
+        "aliases": [],
+        "isPrimary": false,
+        "note": "seat of government"
+      }
     ],
     "ivory-coast": [
-      { "name": "Yamoussoukro", "aliases": [], "isPrimary": true, "note": "official capital" },
-      { "name": "Abidjan", "aliases": [], "isPrimary": false, "note": "seat of government" }
+      {
+        "name": "Yamoussoukro",
+        "aliases": [],
+        "isPrimary": true,
+        "note": "official capital"
+      },
+      {
+        "name": "Abidjan",
+        "aliases": [],
+        "isPrimary": false,
+        "note": "seat of government"
+      }
     ],
     "palestine": [
-      { "name": "Ramallah", "aliases": [], "isPrimary": true, "note": "de facto administrative seat" },
-      { "name": "Jerusalem", "aliases": ["Al-Quds"], "isPrimary": false, "note": "declared capital" }
+      {
+        "name": "Ramallah",
+        "aliases": [],
+        "isPrimary": true,
+        "note": "de facto administrative seat"
+      },
+      {
+        "name": "Jerusalem",
+        "aliases": [
+          "Al-Quds"
+        ],
+        "isPrimary": false,
+        "note": "declared capital"
+      }
     ],
     "western-sahara": [
-      { "name": "El Aaiún", "aliases": ["Laayoune", "Laâyoune"], "isPrimary": true, "note": "largest city; the territory is disputed" }
+      {
+        "name": "El Aaiún",
+        "aliases": [
+          "Laayoune",
+          "Laâyoune"
+        ],
+        "isPrimary": true,
+        "note": "largest city; the territory is disputed"
+      }
     ],
     "hong-kong": [],
     "united-states-minor-outlying-islands": []
   },
-
   "$extraAliases": "Accepted alternative names beyond the snapshot's altSpellings, for expert-mode free text.",
   "extraAliases": {
-    "united-states": ["America", "the States"],
-    "united-kingdom": ["Britain", "Great Britain"],
-    "netherlands": ["Holland"],
-    "myanmar": ["Burma"],
-    "czechia": ["Czech Republic"],
-    "eswatini": ["Swaziland"],
-    "turkiye": ["Turkey"],
-    "cape-verde": ["Cabo Verde"],
-    "timor-leste": ["East Timor"],
-    "ivory-coast": ["Cote d'Ivoire", "Côte d'Ivoire"],
-    "dr-congo": ["Democratic Republic of the Congo", "Congo-Kinshasa", "Zaire"],
-    "republic-of-the-congo": ["Congo-Brazzaville", "Congo"],
-    "north-macedonia": ["Macedonia"],
-    "vatican-city": ["Holy See"],
-    "macau": ["Macao"],
-    "united-arab-emirates": ["UAE"],
-    "south-korea": ["Republic of Korea", "Korea"],
-    "north-korea": ["DPRK"],
-    "micronesia": ["Federated States of Micronesia"],
-    "laos": ["Lao PDR"],
-    "russia": ["Russian Federation"]
+    "united-states": [
+      "America",
+      "the States"
+    ],
+    "united-kingdom": [
+      "Britain",
+      "Great Britain"
+    ],
+    "netherlands": [
+      "Holland"
+    ],
+    "myanmar": [
+      "Burma"
+    ],
+    "czechia": [
+      "Czech Republic"
+    ],
+    "eswatini": [
+      "Swaziland"
+    ],
+    "turkiye": [
+      "Turkey"
+    ],
+    "cape-verde": [
+      "Cabo Verde"
+    ],
+    "timor-leste": [
+      "East Timor"
+    ],
+    "ivory-coast": [
+      "Cote d'Ivoire",
+      "Côte d'Ivoire"
+    ],
+    "dr-congo": [
+      "Democratic Republic of the Congo",
+      "Congo-Kinshasa",
+      "Zaire"
+    ],
+    "republic-of-the-congo": [
+      "Congo-Brazzaville",
+      "Congo"
+    ],
+    "north-macedonia": [
+      "Macedonia"
+    ],
+    "vatican-city": [
+      "Holy See"
+    ],
+    "macau": [
+      "Macao"
+    ],
+    "united-arab-emirates": [
+      "UAE"
+    ],
+    "south-korea": [
+      "Republic of Korea",
+      "Korea"
+    ],
+    "north-korea": [
+      "DPRK"
+    ],
+    "micronesia": [
+      "Federated States of Micronesia"
+    ],
+    "laos": [
+      "Lao PDR"
+    ],
+    "russia": [
+      "Russian Federation"
+    ]
   },
-
   "$squareFlags": "Entities whose flag is officially square. These ship the flag-icons 1x1 asset rather than the 4x3 one, so the rendered flag is the correct shape (§3.3).",
-  "squareFlags": ["switzerland", "vatican-city"],
-
+  "squareFlags": [
+    "switzerland",
+    "vatican-city"
+  ],
   "$confusableWith": "Curated visually-confusable pairs, the top rung of the distractor ladder (§5.2). Symmetric — the build adds the reverse of every entry.",
   "confusableWith": {
-    "chad": ["romania", "moldova", "andorra"],
-    "monaco": ["indonesia", "poland"],
-    "indonesia": ["poland"],
-    "ireland": ["ivory-coast", "india", "italy"],
-    "norway": ["iceland"],
-    "iceland": ["faroe-islands"],
-    "denmark": ["switzerland"],
-    "sweden": ["finland", "aland-islands"],
-    "slovenia": ["slovakia", "russia", "serbia"],
-    "slovakia": ["russia"],
-    "australia": ["new-zealand", "cook-islands"],
-    "senegal": ["mali", "guinea", "cameroon"],
-    "mali": ["guinea"],
-    "luxembourg": ["netherlands"],
-    "venezuela": ["colombia", "ecuador"],
-    "colombia": ["ecuador"],
-    "united-states": ["liberia", "malaysia"],
-    "egypt": ["iraq", "syria", "yemen"],
-    "syria": ["yemen"],
-    "united-arab-emirates": ["kuwait", "sudan", "palestine", "jordan"],
-    "sudan": ["palestine", "jordan"],
-    "czechia": ["philippines"],
-    "austria": ["latvia", "poland"],
-    "belgium": ["germany"],
-    "guatemala": ["argentina", "el-salvador", "nicaragua", "honduras"],
-    "el-salvador": ["nicaragua", "honduras"],
-    "qatar": ["bahrain"],
-    "chile": ["cuba"],
-    "hungary": ["bulgaria", "tajikistan"],
-    "vietnam": ["morocco", "china"],
-    "estonia": ["gambia"],
-    "netherlands": ["croatia", "luxembourg"],
-    "new-zealand": ["cook-islands"]
+    "chad": [
+      "romania",
+      "moldova",
+      "andorra"
+    ],
+    "monaco": [
+      "indonesia",
+      "poland"
+    ],
+    "indonesia": [
+      "poland"
+    ],
+    "ireland": [
+      "ivory-coast",
+      "india",
+      "italy"
+    ],
+    "norway": [
+      "iceland"
+    ],
+    "iceland": [
+      "faroe-islands"
+    ],
+    "denmark": [
+      "switzerland"
+    ],
+    "sweden": [
+      "finland",
+      "aland-islands"
+    ],
+    "slovenia": [
+      "slovakia",
+      "russia",
+      "serbia"
+    ],
+    "slovakia": [
+      "russia"
+    ],
+    "australia": [
+      "new-zealand",
+      "cook-islands"
+    ],
+    "senegal": [
+      "mali",
+      "guinea",
+      "cameroon"
+    ],
+    "mali": [
+      "guinea"
+    ],
+    "luxembourg": [
+      "netherlands"
+    ],
+    "venezuela": [
+      "colombia",
+      "ecuador"
+    ],
+    "colombia": [
+      "ecuador"
+    ],
+    "united-states": [
+      "liberia",
+      "malaysia"
+    ],
+    "egypt": [
+      "iraq",
+      "syria",
+      "yemen"
+    ],
+    "syria": [
+      "yemen"
+    ],
+    "united-arab-emirates": [
+      "kuwait",
+      "sudan",
+      "palestine",
+      "jordan"
+    ],
+    "sudan": [
+      "palestine",
+      "jordan"
+    ],
+    "czechia": [
+      "philippines"
+    ],
+    "austria": [
+      "latvia",
+      "poland"
+    ],
+    "belgium": [
+      "germany"
+    ],
+    "guatemala": [
+      "argentina",
+      "el-salvador",
+      "nicaragua",
+      "honduras"
+    ],
+    "el-salvador": [
+      "nicaragua",
+      "honduras"
+    ],
+    "qatar": [
+      "bahrain"
+    ],
+    "chile": [
+      "cuba"
+    ],
+    "hungary": [
+      "bulgaria",
+      "tajikistan"
+    ],
+    "vietnam": [
+      "morocco",
+      "china"
+    ],
+    "estonia": [
+      "gambia"
+    ],
+    "netherlands": [
+      "croatia",
+      "luxembourg"
+    ],
+    "new-zealand": [
+      "cook-islands"
+    ]
   },
-
   "$tierOne": "Familiarity tier 1 (§3.1): entities a casual player is expected to recognise. The build assigns tier 1 to these plus any UN member over 300,000 km²; tier 3 to dependencies, SARs and anything under 1,000 km²; tier 2 to the rest. This is an explicit heuristic, not sourced data.",
   "tierOne": [
-    "united-kingdom", "ireland", "france", "germany", "italy", "spain", "portugal",
-    "netherlands", "belgium", "switzerland", "austria", "greece", "poland", "denmark",
-    "norway", "sweden", "finland", "iceland", "israel", "singapore", "south-korea",
-    "japan", "vietnam", "thailand", "philippines", "nepal", "cuba", "jamaica",
-    "new-zealand", "north-korea", "iraq", "syria", "jordan", "lebanon", "kuwait",
-    "qatar", "united-arab-emirates", "hungary", "czechia", "croatia", "serbia",
-    "ukraine", "morocco", "tunisia", "ghana", "kenya", "uruguay", "ecuador",
-    "panama", "costa-rica", "vatican-city", "monaco", "luxembourg", "malta"
+    "united-kingdom",
+    "ireland",
+    "france",
+    "germany",
+    "italy",
+    "spain",
+    "portugal",
+    "netherlands",
+    "belgium",
+    "switzerland",
+    "austria",
+    "greece",
+    "poland",
+    "denmark",
+    "norway",
+    "sweden",
+    "finland",
+    "iceland",
+    "israel",
+    "singapore",
+    "south-korea",
+    "japan",
+    "vietnam",
+    "thailand",
+    "philippines",
+    "nepal",
+    "cuba",
+    "jamaica",
+    "new-zealand",
+    "north-korea",
+    "iraq",
+    "syria",
+    "jordan",
+    "lebanon",
+    "kuwait",
+    "qatar",
+    "united-arab-emirates",
+    "hungary",
+    "czechia",
+    "croatia",
+    "serbia",
+    "ukraine",
+    "morocco",
+    "tunisia",
+    "ghana",
+    "kenya",
+    "uruguay",
+    "ecuador",
+    "panama",
+    "costa-rica",
+    "vatican-city",
+    "monaco",
+    "luxembourg",
+    "malta"
   ],
-
   "$notes": "Free-text explanations reproduced verbatim in data-report.md, so anyone reading the generated dataset can see why a value differs from the snapshot.",
   "notes": {
     "vatican-city": "The snapshot marks Vatican City as unMember: true. It is a UN permanent observer, not a member; corrected here, which brings the UN member count to the correct 193.",
@@ -225,5 +517,702 @@
     "eswatini": "The snapshot lists only Lobamba. Mbabane is the administrative capital and the primary answer; both are accepted.",
     "sri-lanka": "The snapshot lists only Colombo. Sri Jayawardenepura Kotte is the official capital and the primary answer; both are accepted.",
     "chile": "§5.2 names 'Chile/Texas-alikes' as a confusable pair, but Texas is not an entity in this dataset. Paired with Cuba instead, which is the closest genuine confusable in scope."
+  },
+  "$colouring": "Colour the Flag specs (§7). Each entity names a template and assigns every one of its regions a colour token. The build refuses a spec whose regions do not match its template, and refuses a colour that does not appear in the palette extracted from that entity's real SVG - which catches a mis-remembered flag rather than shipping it. Entities are only listed where the template is a faithful rendering of the flag's field: Chile, Greece, Sri Lanka and Nauru were dropped because no available template shows them without losing a colour or a defining feature.",
+  "colouring": {
+    "france": {
+      "templateId": "vertical-3",
+      "regions": {
+        "left": "blue",
+        "middle": "white",
+        "right": "red"
+      }
+    },
+    "italy": {
+      "templateId": "vertical-3",
+      "regions": {
+        "left": "green",
+        "middle": "white",
+        "right": "red"
+      }
+    },
+    "ireland": {
+      "templateId": "vertical-3",
+      "regions": {
+        "left": "green",
+        "middle": "white",
+        "right": "orange"
+      }
+    },
+    "belgium": {
+      "templateId": "vertical-3",
+      "regions": {
+        "left": "black",
+        "middle": "yellow",
+        "right": "red"
+      }
+    },
+    "romania": {
+      "templateId": "vertical-3",
+      "regions": {
+        "left": "blue",
+        "middle": "yellow",
+        "right": "red"
+      }
+    },
+    "chad": {
+      "templateId": "vertical-3",
+      "regions": {
+        "left": "blue",
+        "middle": "yellow",
+        "right": "red"
+      }
+    },
+    "mali": {
+      "templateId": "vertical-3",
+      "regions": {
+        "left": "green",
+        "middle": "yellow",
+        "right": "red"
+      }
+    },
+    "guinea": {
+      "templateId": "vertical-3",
+      "regions": {
+        "left": "red",
+        "middle": "yellow",
+        "right": "green"
+      }
+    },
+    "ivory-coast": {
+      "templateId": "vertical-3",
+      "regions": {
+        "left": "orange",
+        "middle": "white",
+        "right": "green"
+      }
+    },
+    "nigeria": {
+      "templateId": "vertical-3",
+      "regions": {
+        "left": "green",
+        "middle": "white",
+        "right": "green"
+      }
+    },
+    "peru": {
+      "templateId": "vertical-3",
+      "regions": {
+        "left": "red",
+        "middle": "white",
+        "right": "red"
+      }
+    },
+    "senegal": {
+      "templateId": "vertical-3",
+      "regions": {
+        "left": "green",
+        "middle": "yellow",
+        "right": "red"
+      }
+    },
+    "cameroon": {
+      "templateId": "vertical-3",
+      "regions": {
+        "left": "green",
+        "middle": "red",
+        "right": "yellow"
+      }
+    },
+    "moldova": {
+      "templateId": "vertical-3",
+      "regions": {
+        "left": "blue",
+        "middle": "yellow",
+        "right": "red"
+      }
+    },
+    "andorra": {
+      "templateId": "vertical-3",
+      "regions": {
+        "left": "blue",
+        "middle": "yellow",
+        "right": "red"
+      }
+    },
+    "mexico": {
+      "templateId": "vertical-3",
+      "regions": {
+        "left": "green",
+        "middle": "white",
+        "right": "red"
+      }
+    },
+    "india": {
+      "templateId": "vertical-3",
+      "regions": {
+        "left": "orange",
+        "middle": "white",
+        "right": "green"
+      }
+    },
+    "guinea-bissau": {
+      "templateId": "vertical-3",
+      "regions": {
+        "left": "red",
+        "middle": "yellow",
+        "right": "green"
+      }
+    },
+    "germany": {
+      "templateId": "horizontal-3",
+      "regions": {
+        "top": "black",
+        "middle": "red",
+        "bottom": "gold"
+      }
+    },
+    "russia": {
+      "templateId": "horizontal-3",
+      "regions": {
+        "top": "white",
+        "middle": "blue",
+        "bottom": "red"
+      }
+    },
+    "netherlands": {
+      "templateId": "horizontal-3",
+      "regions": {
+        "top": "red",
+        "middle": "white",
+        "bottom": "blue"
+      }
+    },
+    "luxembourg": {
+      "templateId": "horizontal-3",
+      "regions": {
+        "top": "red",
+        "middle": "white",
+        "bottom": "light-blue"
+      }
+    },
+    "austria": {
+      "templateId": "horizontal-3",
+      "regions": {
+        "top": "red",
+        "middle": "white",
+        "bottom": "red"
+      }
+    },
+    "hungary": {
+      "templateId": "horizontal-3",
+      "regions": {
+        "top": "red",
+        "middle": "white",
+        "bottom": "green"
+      }
+    },
+    "bulgaria": {
+      "templateId": "horizontal-3",
+      "regions": {
+        "top": "white",
+        "middle": "green",
+        "bottom": "red"
+      }
+    },
+    "estonia": {
+      "templateId": "horizontal-3",
+      "regions": {
+        "top": "blue",
+        "middle": "black",
+        "bottom": "white"
+      }
+    },
+    "lithuania": {
+      "templateId": "horizontal-3",
+      "regions": {
+        "top": "yellow",
+        "middle": "green",
+        "bottom": "red"
+      }
+    },
+    "armenia": {
+      "templateId": "horizontal-3",
+      "regions": {
+        "top": "red",
+        "middle": "blue",
+        "bottom": "orange"
+      }
+    },
+    "gabon": {
+      "templateId": "horizontal-3",
+      "regions": {
+        "top": "green",
+        "middle": "yellow",
+        "bottom": "blue"
+      }
+    },
+    "sierra-leone": {
+      "templateId": "horizontal-3",
+      "regions": {
+        "top": "green",
+        "middle": "white",
+        "bottom": "blue"
+      }
+    },
+    "yemen": {
+      "templateId": "horizontal-3",
+      "regions": {
+        "top": "red",
+        "middle": "white",
+        "bottom": "black"
+      }
+    },
+    "syria": {
+      "templateId": "horizontal-3",
+      "regions": {
+        "top": "green",
+        "middle": "white",
+        "bottom": "black"
+      }
+    },
+    "egypt": {
+      "templateId": "horizontal-3",
+      "regions": {
+        "top": "red",
+        "middle": "white",
+        "bottom": "black"
+      }
+    },
+    "iraq": {
+      "templateId": "horizontal-3",
+      "regions": {
+        "top": "red",
+        "middle": "white",
+        "bottom": "black"
+      }
+    },
+    "bolivia": {
+      "templateId": "horizontal-3",
+      "regions": {
+        "top": "red",
+        "middle": "yellow",
+        "bottom": "green"
+      }
+    },
+    "ghana": {
+      "templateId": "horizontal-3",
+      "regions": {
+        "top": "red",
+        "middle": "yellow",
+        "bottom": "green"
+      }
+    },
+    "ethiopia": {
+      "templateId": "horizontal-3",
+      "regions": {
+        "top": "green",
+        "middle": "yellow",
+        "bottom": "red"
+      }
+    },
+    "lebanon": {
+      "templateId": "horizontal-3",
+      "regions": {
+        "top": "red",
+        "middle": "white",
+        "bottom": "red"
+      }
+    },
+    "laos": {
+      "templateId": "horizontal-3",
+      "regions": {
+        "top": "red",
+        "middle": "blue",
+        "bottom": "red"
+      }
+    },
+    "sudan": {
+      "templateId": "horizontal-3",
+      "regions": {
+        "top": "red",
+        "middle": "white",
+        "bottom": "black"
+      }
+    },
+    "paraguay": {
+      "templateId": "horizontal-3",
+      "regions": {
+        "top": "red",
+        "middle": "white",
+        "bottom": "blue"
+      }
+    },
+    "myanmar": {
+      "templateId": "horizontal-3",
+      "regions": {
+        "top": "yellow",
+        "middle": "green",
+        "bottom": "red"
+      }
+    },
+    "afghanistan": {
+      "templateId": "horizontal-3",
+      "regions": {
+        "top": "black",
+        "middle": "red",
+        "bottom": "green"
+      }
+    },
+    "indonesia": {
+      "templateId": "horizontal-2",
+      "regions": {
+        "top": "red",
+        "bottom": "white"
+      }
+    },
+    "monaco": {
+      "templateId": "horizontal-2",
+      "regions": {
+        "top": "red",
+        "bottom": "white"
+      }
+    },
+    "poland": {
+      "templateId": "horizontal-2",
+      "regions": {
+        "top": "white",
+        "bottom": "red"
+      }
+    },
+    "ukraine": {
+      "templateId": "horizontal-2",
+      "regions": {
+        "top": "blue",
+        "bottom": "yellow"
+      }
+    },
+    "singapore": {
+      "templateId": "horizontal-2",
+      "regions": {
+        "top": "red",
+        "bottom": "white"
+      }
+    },
+    "haiti": {
+      "templateId": "horizontal-2",
+      "regions": {
+        "top": "blue",
+        "bottom": "red"
+      }
+    },
+    "san-marino": {
+      "templateId": "horizontal-2",
+      "regions": {
+        "top": "white",
+        "bottom": "light-blue"
+      }
+    },
+    "denmark": {
+      "templateId": "nordic-cross",
+      "regions": {
+        "field": "red",
+        "cross": "white"
+      }
+    },
+    "sweden": {
+      "templateId": "nordic-cross",
+      "regions": {
+        "field": "blue",
+        "cross": "yellow"
+      }
+    },
+    "finland": {
+      "templateId": "nordic-cross",
+      "regions": {
+        "field": "white",
+        "cross": "blue"
+      }
+    },
+    "japan": {
+      "templateId": "disc-centre",
+      "regions": {
+        "field": "white",
+        "disc": "red"
+      }
+    },
+    "bangladesh": {
+      "templateId": "disc-offset",
+      "regions": {
+        "field": "dark-green",
+        "disc": "red"
+      }
+    },
+    "palau": {
+      "templateId": "disc-offset",
+      "regions": {
+        "field": "light-blue",
+        "disc": "yellow"
+      }
+    },
+    "portugal": {
+      "templateId": "vertical-2",
+      "regions": {
+        "left": "green",
+        "right": "red"
+      }
+    },
+    "algeria": {
+      "templateId": "vertical-2",
+      "regions": {
+        "left": "green",
+        "right": "white"
+      }
+    },
+    "malta": {
+      "templateId": "vertical-2",
+      "regions": {
+        "left": "white",
+        "right": "red"
+      }
+    },
+    "vatican-city": {
+      "templateId": "vertical-2",
+      "regions": {
+        "left": "yellow",
+        "right": "white"
+      }
+    },
+    "pakistan": {
+      "templateId": "vertical-2",
+      "regions": {
+        "left": "white",
+        "right": "green"
+      }
+    },
+    "colombia": {
+      "templateId": "horizontal-3-uneven",
+      "regions": {
+        "top": "yellow",
+        "middle": "blue",
+        "bottom": "red"
+      }
+    },
+    "latvia": {
+      "templateId": "horizontal-3-uneven",
+      "regions": {
+        "top": "maroon",
+        "middle": "white",
+        "bottom": "maroon"
+      }
+    },
+    "thailand": {
+      "templateId": "horizontal-5",
+      "regions": {
+        "top": "red",
+        "upper": "white",
+        "middle": "navy",
+        "lower": "white",
+        "bottom": "red"
+      }
+    },
+    "costa-rica": {
+      "templateId": "horizontal-5",
+      "regions": {
+        "top": "blue",
+        "upper": "white",
+        "middle": "red",
+        "lower": "white",
+        "bottom": "blue"
+      }
+    },
+    "czechia": {
+      "templateId": "triangle-hoist",
+      "regions": {
+        "top": "white",
+        "bottom": "red",
+        "triangle": "blue"
+      }
+    },
+    "philippines": {
+      "templateId": "triangle-hoist",
+      "regions": {
+        "top": "blue",
+        "bottom": "red",
+        "triangle": "white"
+      }
+    },
+    "papua-new-guinea": {
+      "templateId": "diagonal-split",
+      "regions": {
+        "upper": "black",
+        "lower": "red"
+      }
+    },
+    "turkiye": {
+      "templateId": "crescent-star",
+      "regions": {
+        "field": "red",
+        "crescent": "white",
+        "star": "white"
+      }
+    },
+    "tunisia": {
+      "templateId": "crescent-star",
+      "regions": {
+        "field": "red",
+        "crescent": "white",
+        "star": "white"
+      }
+    },
+    "mauritania": {
+      "templateId": "crescent-star",
+      "regions": {
+        "field": "green",
+        "crescent": "yellow",
+        "star": "yellow"
+      }
+    },
+    "guatemala": {
+      "templateId": "vertical-3",
+      "regions": {
+        "left": "light-blue",
+        "middle": "white",
+        "right": "light-blue"
+      }
+    },
+    "argentina": {
+      "templateId": "horizontal-3",
+      "regions": {
+        "top": "light-blue",
+        "middle": "white",
+        "bottom": "light-blue"
+      }
+    },
+    "el-salvador": {
+      "templateId": "horizontal-3",
+      "regions": {
+        "top": "blue",
+        "middle": "white",
+        "bottom": "blue"
+      }
+    },
+    "nicaragua": {
+      "templateId": "horizontal-3",
+      "regions": {
+        "top": "blue",
+        "middle": "white",
+        "bottom": "blue"
+      }
+    },
+    "honduras": {
+      "templateId": "horizontal-3",
+      "regions": {
+        "top": "light-blue",
+        "middle": "white",
+        "bottom": "light-blue"
+      }
+    },
+    "botswana": {
+      "templateId": "horizontal-3",
+      "regions": {
+        "top": "light-blue",
+        "middle": "black",
+        "bottom": "light-blue"
+      }
+    },
+    "gambia": {
+      "templateId": "horizontal-3",
+      "regions": {
+        "top": "red",
+        "middle": "blue",
+        "bottom": "green"
+      }
+    },
+    "jamaica": {
+      "templateId": "saltire",
+      "regions": {
+        "field": "green",
+        "saltire": "yellow"
+      }
+    },
+    "burundi": {
+      "templateId": "saltire",
+      "regions": {
+        "field": "green",
+        "saltire": "white"
+      }
+    },
+    "grenada": {
+      "templateId": "saltire",
+      "regions": {
+        "field": "green",
+        "saltire": "yellow"
+      }
+    },
+    "uzbekistan": {
+      "templateId": "horizontal-3",
+      "regions": {
+        "top": "light-blue",
+        "middle": "white",
+        "bottom": "green"
+      }
+    },
+    "tajikistan": {
+      "templateId": "horizontal-3",
+      "regions": {
+        "top": "red",
+        "middle": "white",
+        "bottom": "green"
+      }
+    },
+    "kuwait": {
+      "templateId": "horizontal-3",
+      "regions": {
+        "top": "green",
+        "middle": "white",
+        "bottom": "red"
+      }
+    },
+    "jordan": {
+      "templateId": "horizontal-3",
+      "regions": {
+        "top": "black",
+        "middle": "white",
+        "bottom": "green"
+      }
+    },
+    "palestine": {
+      "templateId": "horizontal-3",
+      "regions": {
+        "top": "black",
+        "middle": "white",
+        "bottom": "green"
+      }
+    },
+    "united-arab-emirates": {
+      "templateId": "horizontal-3",
+      "regions": {
+        "top": "green",
+        "middle": "white",
+        "bottom": "black"
+      }
+    },
+    "mongolia": {
+      "templateId": "vertical-3",
+      "regions": {
+        "left": "red",
+        "middle": "blue",
+        "right": "red"
+      }
+    },
+    "rwanda": {
+      "templateId": "horizontal-3",
+      "regions": {
+        "top": "light-blue",
+        "middle": "yellow",
+        "bottom": "green"
+      }
+    }
   }
 }
