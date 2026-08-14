@@ -1,0 +1,102 @@
+@import 'tailwindcss';
+
+/*
+ * Design tokens — plan §10.
+ *
+ * The subject's own vernacular is flag design: bold flat colour fields, hard
+ * geometric edges, no gradients, no drop shadows. Everything below follows
+ * from that. Radii are 0 by default; elevation is expressed with colour and
+ * hard 2px borders rather than shadow.
+ *
+ * Typefaces are system stacks on purpose — the app is meant to work offline
+ * (Phase 7), so no webfont is fetched at runtime.
+ */
+@theme {
+  /* Canvas */
+  --color-ink: #0b0b10;
+  --color-ink-raised: #15151d;
+  --color-ink-sunken: #07070b;
+  --color-line: #2b2b38;
+  --color-line-bright: #45455a;
+
+  /* Type */
+  --color-paper: #f5f2ea;
+  --color-paper-dim: #b6b3ac;
+  --color-paper-faint: #7d7a75;
+
+  /* Flag-derived accents */
+  --color-signal-red: #e4322b;
+  --color-signal-blue: #1449c4;
+  --color-signal-yellow: #f5c518;
+  --color-signal-green: #0f9d58;
+
+  /* Feedback — always paired with an icon, never colour alone (§10) */
+  --color-correct: #12a35c;
+  --color-correct-ink: #052e1a;
+  --color-wrong: #e0322b;
+  --color-wrong-ink: #360a08;
+
+  --font-display:
+    'Helvetica Neue', Helvetica, Arial, 'Arial Black', system-ui, sans-serif;
+  --font-body:
+    ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue',
+    Arial, sans-serif;
+
+  --radius-none: 0px;
+}
+
+@layer base {
+  html {
+    background-color: var(--color-ink);
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    background-color: var(--color-ink);
+    color: var(--color-paper);
+    font-family: var(--font-body);
+    margin: 0;
+    min-height: 100dvh;
+    text-rendering: optimizeLegibility;
+  }
+
+  /* Visible focus everywhere (§11) */
+  :where(a, button, input, select, textarea, [tabindex]):focus-visible {
+    outline: 3px solid var(--color-signal-yellow);
+    outline-offset: 2px;
+  }
+
+  /* §11 — reduced motion disables flip and slide animations */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.001ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.001ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+@utility display-xl {
+  font-family: var(--font-display);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 0.95;
+  text-transform: uppercase;
+}
+
+@utility display-md {
+  font-family: var(--font-display);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1;
+}
+
+@utility label-caps {
+  font-family: var(--font-display);
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
