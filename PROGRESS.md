@@ -8,7 +8,7 @@ Gate for every ticket: `npm run typecheck && npm run lint && npm run test`.
 ## Phase 0 — Foundations
 
 - [x] **T0.1** — Project scaffold
-- [ ] **T0.2** — Entity schema
+- [x] **T0.2** — Entity schema
 - [ ] **T0.3** — Data pipeline
 - [ ] **T0.4** — Flag assets
 - [ ] **T0.5** — FlagImage component
@@ -94,3 +94,23 @@ Choices made inside the latitude the plan leaves:
   against a neutral body face; a fetched webfont would undercut the offline
   goal in Phase 7, so the display face is a Helvetica/Arial-Black stack set in
   heavy weight with tight tracking, and the body face is the system UI stack.
+
+### T0.2 — Entity schema
+
+Types are **derived from** the Zod schema (`z.infer`) rather than declared
+twice, so a field cannot drift between the runtime check and the type.
+
+Additions beyond the §3.1 listing, all of them things the dataset needs to be
+able to express and the build needs to be able to check:
+
+- `flag.sharedWith` — §3.3 requires that dependencies flying their sovereign's
+  flag are "flagged in data" so two identical flags never land in one option
+  set. There was no field for it, so this is it.
+- `COLOUR_TOKENS` — the closed token set §7 grading depends on, defined here
+  because both the flag palette and the colouring spec draw from it.
+- `EntityListSchema` — the cross-entity invariants a per-entity schema cannot
+  see: duplicate ids, duplicate names, and reference integrity for
+  `sovereignId`, `confusableWith` and `flag.sharedWith`. This is what the §12
+  data tests assert against.
+- `.strict()` on the entity object, so a typo'd key in `overrides.json` fails
+  the build instead of being silently dropped.
