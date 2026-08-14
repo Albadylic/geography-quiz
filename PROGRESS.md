@@ -19,8 +19,8 @@ Gate for every ticket: `npm run typecheck && npm run lint && npm run test`.
 - [x] **T1.2** — Question generation
 - [x] **T1.3** — Session and scoring
 - [x] **T1.4** — Setup screen
-- [ ] **T1.5** — Play screen
-- [ ] **T1.6** — Basic results _(phase gate: Playwright 20-question easy flags quiz)_
+- [x] **T1.5** — Play screen
+- [x] **T1.6** — Basic results _(phase gate: Playwright 20-question easy flags quiz)_
 
 ## Phase 2 — Capitals and Expert
 
@@ -327,3 +327,46 @@ one — the exact scenario the ticket asks about. "Everywhere" is now its own
 choice with the individual continents unchecked, and clicking one from that
 state selects just it. The checkbox state and the visual state also agreed
 wrongly before: `aria-checked` was true while the swatch rendered unselected.
+
+### T1.5 — Play screen
+
+`OptionGrid` renders 4/6/8 options in two columns (§6.1), flags edge-to-edge as
+tappable colour fields rather than thumbnails in cards (§10). Number keys 1–8
+select, and the handler ignores keystrokes aimed at a text field so expert mode
+can share the screen. Feedback carries an icon *and* a colour, and the
+announcement names the right answer when the player got it wrong.
+
+**Two React correctness fixes made before the tests could have caught them.**
+The first version called the store's `answer()` from inside a `setChosenId`
+updater — a side effect in an updater, which React may invoke twice — and set
+the auto-advance timeout to a callback that closed over a stale `chosenId`. The
+pending choice now lives in a ref that `advance` reads, so it cannot double-
+answer and cannot advance with the wrong value. There is a test asserting
+exactly one answer is recorded when Continue and the timer race.
+
+**Fake timers had to be abandoned in the tests.** `vi.useFakeTimers()` with
+userEvent's `advanceTimers` hung; because the hang happened while fake timers
+were installed, the `finally` restoring them never ran and every later test in
+the file timed out too. The auto-advance test now waits 1.2s for real. Slower,
+but it tests the timing that actually ships and cannot poison its neighbours.
+
+### T1.6 — Basic results
+
+Score, accuracy, correct count and best streak, with the config rendered as
+§9's readable line. `describeConfig` lives in `lib/format.ts` rather than
+beside the component so the stats screen shares one implementation.
+
+**Phase gate passed.** Four Playwright specs against the production build:
+a full 20-question easy flags quiz to the results screen, the same run played
+only from the keyboard, the Oceania cap message, and a measurement that the
+prompt flag's painted box matches the SVG's natural ratio — the undistorted-
+rendering check jsdom cannot make, since it has no layout engine.
+
+One E2E selector lesson: `sr-only` inputs cannot be clicked by pointer, because
+the visible label sits over them. A real user clicks the label and the browser
+forwards it, so the component is right and the test targets label text.
+
+**Noted for T7.4:** the production bundle is currently 473 KB raw / 133 KB
+gzipped, over the plan's 400 KB initial-JS target. The 165 KB dataset is most
+of it and is a good candidate for a lazy chunk. Not addressed here — it is
+T7.4's ticket.
