@@ -17,7 +17,7 @@ Gate for every ticket: `npm run typecheck && npm run lint && npm run test`.
 
 - [x] **T1.1** — Seeded RNG
 - [x] **T1.2** — Question generation
-- [ ] **T1.3** — Session and scoring
+- [x] **T1.3** — Session and scoring
 - [ ] **T1.4** — Setup screen
 - [ ] **T1.5** — Play screen
 - [ ] **T1.6** — Basic results _(phase gate: Playwright 20-question easy flags quiz)_
@@ -283,3 +283,28 @@ would be unanswerable. Multi-capital acceptance therefore lives in expert-mode
 grading (T2.4), where the answer is free text and any listed capital counts —
 so `correctIds` is length 1 for multiple choice. Raised here because it is a
 narrower reading than the plan's wording implies.
+
+### T1.3 — Session and scoring
+
+`engine/session.ts` plus `engine/grading.ts` (multiple choice only; free text
+arrives in T2.1). Sessions are immutable values — `answerQuestion` returns a
+new session — so the store can hold one, the results screen can read it after
+navigation, and tests can replay a scripted run.
+
+The scripted 20-answer test computes its expected total by hand rather than
+snapshotting whatever the code produced: 12 correct on easy is 120 base, and
+the streak bonus lands on the 5th, 6th and 7th of a seven-run plus the 5th of a
+five-run, so 124. A perfect 20 is 234. Both hold.
+
+`recordAnswer` is split out from `answerQuestion` so expert mode (T2.4) and
+combo mode (T4.1), which decide correctness differently, reuse the scoring and
+advance logic rather than reimplementing the streak.
+
+Locked decision 5 is covered by an actual test, not just by omission: the
+serialised session is asserted to contain no duration/elapsed/timing key, and
+each recorded answer is asserted to have exactly the three keys §5.1 lists.
+
+`configSignature` deliberately **excludes the seed** — the seed identifies one
+particular quiz, not a category of achievement, so two runs of the same setup
+compete for the same high score. Continents are sorted so a Europe+Asia run
+signs the same as an Asia+Europe one.
