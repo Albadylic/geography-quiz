@@ -24,7 +24,7 @@ Gate for every ticket: `npm run typecheck && npm run lint && npm run test`.
 
 ## Phase 2 — Capitals and Expert
 
-- [ ] **T2.1** — Text matching
+- [x] **T2.1** — Text matching
 - [ ] **T2.2** — Autocomplete component
 - [ ] **T2.3** — Capitals mode
 - [ ] **T2.4** — Expert difficulty
@@ -370,3 +370,47 @@ forwards it, so the component is right and the test targets label text.
 gzipped, over the plan's 400 KB initial-JS target. The 165 KB dataset is most
 of it and is a good candidate for a lazy chunk. Not addressed here — it is
 T7.4's ticket.
+
+### T2.1 — Text matching
+
+`lib/normalise.ts` (normalise, Levenshtein with an early cap, tolerance) and
+the matcher in `engine/grading.ts`.
+
+**⚠️ Deviation from §5.3, because §5.3 as written fails §12.** Worth a
+decision from the product owner, though the resolution below satisfies both
+sections and every named acceptance test.
+
+§5.3 specifies: accept within edit distance 1 for inputs under 8 characters
+and 2 for longer, and states that this rejects "Austria"/"Australia" because
+they are "distance 3". **They are distance 2.** So the rule as written, applied
+to the 9-character input "Australia", forgives up to 2 and grades it as
+Austria — precisely the false positive §12 requires be rejected.
+
+It is not an isolated arithmetic slip. The same rule accepts:
+
+| typed | graded as | distance | tolerance |
+| --- | --- | --- | --- |
+| Australia | Austria | 2 | 2 |
+| Iran | Iraq | 1 | 1 |
+| Zambia | Gambia | 1 | 1 |
+
+All three are real, different countries, and a quiz that marks "Iran" correct
+when the answer is Iraq is not teaching anyone anything.
+
+**Resolution kept the §5.3 tolerances unchanged and added one rule:** an input
+that is *exactly* the name of some other entity is never treated as a
+misspelling of this one. A typo produces a non-word; "Australia" is not a typo,
+it is Australia. Ordering is exact match → reject-if-it-names-another → fuzzy.
+
+That keeps every §12 case working — "Kyrgystan", "Ouagadoudou", "Cote d
+Ivoire", "USA", "the netherlands" all accepted, "Australia" for Austria
+rejected — and it is verified exhaustively rather than by example: a test walks
+all 250×250 ordered pairs and asserts no country's name ever grades as any
+other. Same for capitals.
+
+**Capital names are not unique**, which the exhaustive test surfaced. Kingston
+is the capital of both Jamaica and Norfolk Island; Oranjestad of both Aruba and
+Sint Eustatius; Jerusalem is listed for both Israel and Palestine. Typing a
+name the target genuinely holds is correct for either, so the test excludes
+real shared names and asserts only that no *fuzzy* match crosses between
+countries.
