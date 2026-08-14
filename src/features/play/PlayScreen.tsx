@@ -10,6 +10,7 @@ import { useSessionStore } from '@/store/sessionStore';
 import { FlagImage } from '@/components/FlagImage';
 import { OptionGrid } from '@/components/OptionGrid';
 import { Autocomplete } from '@/components/Autocomplete';
+import { ComboAnswer } from './ComboAnswer';
 
 const byId = new Map(entities.map((entity) => [entity.id, entity]));
 
@@ -107,7 +108,8 @@ export function PlayScreen() {
     .map((id) => byId.get(id))
     .filter((entity): entity is Entity => entity !== undefined);
 
-  const isExpert = question.options === undefined;
+  const isCombo = question.halves !== undefined;
+  const isExpert = !isCombo && question.options === undefined;
   const answerEntity = byId.get(question.entityId);
   const questionNumber = session.currentIndex + 1;
   const total = session.questions.length;
@@ -153,7 +155,9 @@ export function PlayScreen() {
         <Prompt question={question} />
 
         <div className="mt-6">
-          {isExpert ? (
+          {isCombo ? (
+            <ComboAnswer question={question} revealed={revealed} onSubmit={reveal} />
+          ) : isExpert ? (
             <ExpertAnswer
               question={question}
               value={typed}
@@ -179,11 +183,7 @@ export function PlayScreen() {
           player got it wrong, so it does not depend on seeing the colour.
         */}
         <p aria-live="assertive" className="sr-only" data-testid="answer-announcement">
-          {revealed && answerEntity
-            ? revealed.correct
-              ? 'Correct'
-              : `Incorrect, the answer was ${optionLabel(answerEntity, question.answerKind) || answerEntity.name}`
-            : ''}
+          {revealed && answerEntity ? announce(revealed, question, answerEntity) : ''}
         </p>
 
         {revealed && (
@@ -198,6 +198,24 @@ export function PlayScreen() {
       </main>
     </div>
   );
+}
+
+/**
+ * What the live region says once an answer is graded (§11). Combo reports each
+ * half, because "incorrect" alone would not say which one was wrong.
+ */
+function announce(answer: Answer, question: Question, entity: Entity): string {
+  if (question.halves) {
+    const parts = question.halves.map((half) => {
+      const right = answer.halfResults?.[half.statMode] === true;
+      const label = half.statMode === 'flags' ? 'flag' : 'capital';
+      return `${label} ${right ? 'correct' : 'incorrect'}`;
+    });
+    return `${entity.name}: ${parts.join(', ')}`;
+  }
+
+  if (answer.correct) return 'Correct';
+  return `Incorrect, the answer was ${optionLabel(entity, question.answerKind) || entity.name}`;
 }
 
 /** Free-text answering — expert difficulty (T2.4). */
@@ -343,8 +361,9 @@ function Prompt({ question }: { question: Question }) {
     );
   }
 
-  const label =
-    question.prompt.kind === 'capital'
+  const label = question.halves
+    ? 'Pick the flag and the capital for'
+    : question.prompt.kind === 'capital'
       ? 'Which country has this capital?'
       : question.answerKind === 'capital'
         ? 'What is the capital of'

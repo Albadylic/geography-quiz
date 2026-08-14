@@ -35,14 +35,44 @@ export function streakBonus(currentStreak: number): number {
   return Math.min(Math.floor(currentStreak / 5), MAX_STREAK_BONUS);
 }
 
+/**
+ * Points for a partially correct answer, where `credit` runs 0..1.
+ *
+ * Combo is the only mode that produces anything between the two: §6.3 scores
+ * each half separately, so a half-right answer earns half. The streak bonus is
+ * only added for a *fully* correct answer — it rewards an unbroken run, and a
+ * half-right answer has broken it.
+ */
+export function scoreForCredit(
+  credit: number,
+  difficulty: Difficulty,
+  currentStreak: number,
+): number {
+  const clamped = Math.max(0, Math.min(1, credit));
+  if (clamped === 0) return 0;
+  const points = Math.round(BASE_SCORE * DIFFICULTY_MULTIPLIER[difficulty] * clamped);
+  return points + (clamped >= 1 ? streakBonus(currentStreak) : 0);
+}
+
 /** Points for a single answer. Wrong and skipped both score zero. */
 export function questionScore(
   correct: boolean,
   difficulty: Difficulty,
   currentStreak: number,
 ): number {
-  if (!correct) return 0;
-  return Math.round(BASE_SCORE * DIFFICULTY_MULTIPLIER[difficulty]) + streakBonus(currentStreak);
+  return scoreForCredit(correct ? 1 : 0, difficulty, currentStreak);
+}
+
+/**
+ * How much of a question was answered correctly. One for an ordinary right
+ * answer, and the fraction of halves right for a combo question.
+ */
+export function creditFor(answer: Answer): number {
+  if (!answer.halfResults) return answer.correct ? 1 : 0;
+
+  const results = Object.values(answer.halfResults);
+  if (results.length === 0) return answer.correct ? 1 : 0;
+  return results.filter(Boolean).length / results.length;
 }
 
 export interface Session {
@@ -103,8 +133,14 @@ export function isFinished(session: Session): boolean {
 export function recordAnswer(session: Session, answer: Answer): Session {
   if (isFinished(session)) return session;
 
+  // A combo answer counts for the streak only when both halves were right —
+  // `answer.correct` already means "wholly correct" for every mode.
   const currentStreak = answer.correct ? session.currentStreak + 1 : 0;
-  const gained = questionScore(answer.correct, session.config.difficulty, currentStreak);
+  const gained = scoreForCredit(
+    creditFor(answer),
+    session.config.difficulty,
+    currentStreak,
+  );
   const currentIndex = session.currentIndex + 1;
   const finished = currentIndex >= session.questions.length;
 

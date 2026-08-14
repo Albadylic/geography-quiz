@@ -39,8 +39,8 @@ Gate for every ticket: `npm run typecheck && npm run lint && npm run test`.
 
 ## Phase 4 — Combo mode
 
-- [ ] **T4.1** — Dual-answer question type
-- [ ] **T4.2** — Combo UI and its own high score entry
+- [x] **T4.1** — Dual-answer question type
+- [x] **T4.2** — Combo UI and its own high score entry
 
 ## Phase 5 — Adaptive and Revision
 
@@ -556,3 +556,49 @@ newer build, rather than silently pretending the user had no history.
 **Verified end to end in a real browser**, not only in jsdom: play a 20-question
 run, reload the app completely, and the stats screen shows 20 questions, the
 right accuracy, and the high score under its readable signature.
+
+### T4.1 — Dual-answer question type
+
+A combo question carries two `halves`, each with its own options, correct ids
+and `statMode`. Both groups are fixed at four options (§6.3), independent of
+the difficulty multiplier.
+
+**Combo's difficulty is fixed at medium, not easy.** §6.3 says "fixed
+difficulty" without saying which. Easy would have been the obvious pick, but
+the easy ladder deliberately *inverts* — it prefers distractors from other
+continents — and §6.2 is explicit that cross-continent capital distractors make
+the question free. Medium keeps the ladder sensible; the group size is fixed by
+generation rather than by the difficulty.
+
+Scoring needed a new shape. `scoreForCredit(credit, …)` takes a 0..1 fraction,
+so a half-right answer earns half the points. The streak bonus is only added at
+full credit — it rewards an unbroken run, and half right has broken it — and
+`answer.correct` means *both* halves, so a half-right answer breaks the streak
+exactly as a wrong answer does (locked decision 1 still holds: the run
+continues).
+
+`gradeCombo` records `halfResults` and `halfGiven`, which is what lets
+`outcomesFor` emit two distinct per-entity outcomes, one against flags and one
+against capitals (locked decision 3). Verified end to end: a 20-question run
+answered flag-right/capital-wrong throughout produces 40 recorded answers, 20
+correct, and every country carrying exactly one flags-correct and one
+capitals-wrong.
+
+### T4.2 — Combo UI and its own high score entry
+
+Two `OptionGrid`s under one country prompt. Neither half is graded until both
+are chosen, so a player can change their mind about the first while deciding
+the second — Check is disabled until both are picked and says which is missing.
+
+**Number-key shortcuts are turned off in combo.** With two grids on screen a
+digit is ambiguous, so `OptionGrid` gained a `keyboardShortcuts` flag; when it
+is off the numbered badges are hidden too, rather than showing shortcuts that
+do nothing. Each grid also takes a `groupLabel`, so the two lists are
+distinguishable to a screen reader.
+
+The live region reports each half separately — "Peru: flag correct, capital
+incorrect" — because a bare "incorrect" would not say which one was wrong.
+
+Combo's own high score entry falls out of the signature already being keyed on
+mode; a test confirms a finished run writes exactly one `combo|…` entry and
+that combo's streak bucket is separate from the flags and capitals ones.

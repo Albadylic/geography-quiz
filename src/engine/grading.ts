@@ -1,7 +1,7 @@
 import { entities as allEntities } from '@/data/entities.generated';
 import type { Entity } from '@/data/schema';
 import { fuzzyTolerance, levenshtein, normalise } from '@/lib/normalise';
-import type { Answer, AnswerKind, Question } from './types';
+import type { Answer, AnswerKind, Question, StatMode } from './types';
 
 /**
  * Answer checking — plan §5.3.
@@ -16,6 +16,37 @@ export function gradeChoice(question: Question, chosenId: string | null): Answer
     questionId: question.id,
     given: chosenId,
     correct: chosenId !== null && question.correctIds.includes(chosenId),
+  };
+}
+
+/**
+ * Grades a combo answer — §6.3.
+ *
+ * Each half is graded on its own, and `correct` means *both* were right, so a
+ * half-right answer breaks the streak while still earning half the points
+ * (see `scoreForCredit`). The per-half results are what let stats record two
+ * distinct outcomes against the same country (locked decision 3).
+ */
+export function gradeCombo(
+  question: Question,
+  chosen: Partial<Record<StatMode, string | null>>,
+): Answer {
+  const halves = question.halves ?? [];
+  const halfResults: Partial<Record<StatMode, boolean>> = {};
+  const halfGiven: Partial<Record<StatMode, string | null>> = {};
+
+  for (const half of halves) {
+    const given = chosen[half.statMode] ?? null;
+    halfGiven[half.statMode] = given;
+    halfResults[half.statMode] = given !== null && half.correctIds.includes(given);
+  }
+
+  return {
+    questionId: question.id,
+    given: null,
+    correct: halves.length > 0 && halves.every((half) => halfResults[half.statMode] === true),
+    halfResults,
+    halfGiven,
   };
 }
 

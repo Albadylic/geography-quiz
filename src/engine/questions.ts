@@ -168,8 +168,10 @@ export function buildOptions(
   config: Pick<QuizConfig, 'difficulty' | 'mode'>,
   answerKind: AnswerKind,
   promptKind: PromptKind,
+  /** Overrides the difficulty's option count — combo fixes its groups at 4. */
+  countOverride?: number,
 ): string[] {
-  const count = optionCountFor(config.difficulty);
+  const count = countOverride ?? optionCountFor(config.difficulty);
   if (count === null) return [];
 
   const flagsMatter = optionsAreFlags(answerKind) || promptIsFlag(promptKind);
@@ -255,6 +257,11 @@ export function generateQuestions(
 
   const questions: Question[] = [];
   for (const [index, entity] of selected.entries()) {
+    if (config.mode === 'combo') {
+      questions.push(buildComboQuestion(rng, entity, pool, config, index));
+      continue;
+    }
+
     const direction = directionFor(config.direction, config.mode, config.difficulty, rng);
     const spec = promptFor(entity, config.mode, direction);
     if (!spec) continue;
@@ -281,6 +288,67 @@ export function generateQuestions(
   }
 
   return { questions, poolSize: pool.length };
+}
+
+/** Combo shows two fixed groups of four (§6.3). */
+export const COMBO_OPTION_COUNT = 4;
+
+/**
+ * A combo question — §6.3. One country prompt, two independent option groups:
+ * its flag and its capital.
+ *
+ * The two halves each carry their own options and their own `statMode`, which
+ * is what lets grading score them separately and record two distinct
+ * per-entity outcomes (locked decision 3).
+ */
+function buildComboQuestion(
+  rng: Rng,
+  entity: Entity,
+  pool: readonly Entity[],
+  config: QuizConfig,
+  index: number,
+): Question {
+  const flagOptions = buildOptions(
+    rng,
+    entity,
+    pool,
+    config,
+    'flag',
+    'name',
+    COMBO_OPTION_COUNT,
+  );
+  const capitalOptions = buildOptions(
+    rng,
+    entity,
+    pool,
+    config,
+    'capital',
+    'name',
+    COMBO_OPTION_COUNT,
+  );
+
+  return {
+    id: `q${index + 1}-${entity.id}`,
+    entityId: entity.id,
+    prompt: { kind: 'name', value: entity.name },
+    // Nominal: the halves are what actually get answered.
+    answerKind: 'flag',
+    correctIds: [entity.id],
+    halves: [
+      {
+        statMode: 'flags',
+        answerKind: 'flag',
+        options: flagOptions,
+        correctIds: [entity.id],
+      },
+      {
+        statMode: 'capitals',
+        answerKind: 'capital',
+        options: capitalOptions,
+        correctIds: [entity.id],
+      },
+    ],
+  };
 }
 
 /**

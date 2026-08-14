@@ -12,6 +12,13 @@ interface OptionGridProps {
   chosenId: string | null;
   revealed: boolean;
   onSelect: (id: string) => void;
+  /**
+   * Number keys 1-8 select an option. Turned off for combo, where two grids
+   * are on screen at once and a digit would be ambiguous.
+   */
+  keyboardShortcuts?: boolean;
+  /** Accessible name for the list, needed when more than one grid is shown. */
+  groupLabel?: string;
 }
 
 /**
@@ -30,13 +37,15 @@ export function OptionGrid({
   chosenId,
   revealed,
   onSelect,
+  keyboardShortcuts = true,
+  groupLabel,
 }: OptionGridProps) {
   const showsFlags = answerKind === 'flag';
 
   // Number keys 1–8 select an option (§11). Ignored while a text field has
   // focus so expert mode can share this screen.
   useEffect(() => {
-    if (revealed) return;
+    if (revealed || !keyboardShortcuts) return;
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.metaKey || event.ctrlKey || event.altKey) return;
       const target = event.target as HTMLElement | null;
@@ -50,10 +59,11 @@ export function OptionGrid({
 
     document.addEventListener('keydown', onKeyDown);
     return () => document.removeEventListener('keydown', onKeyDown);
-  }, [options, onSelect, revealed]);
+  }, [options, onSelect, revealed, keyboardShortcuts]);
 
   return (
     <ul
+      {...(groupLabel ? { 'aria-label': groupLabel } : {})}
       className={[
         'grid gap-px border-2 border-line bg-line',
         showsFlags ? 'grid-cols-2' : 'grid-cols-1 sm:grid-cols-2',
@@ -85,15 +95,17 @@ export function OptionGrid({
                 stateClasses[state],
               ].join(' ')}
             >
-              <span
-                aria-hidden="true"
-                className={[
-                  'label-caps flex h-7 w-7 shrink-0 items-center justify-center text-xs',
-                  state === 'open' ? 'bg-ink text-paper-faint' : 'bg-black/20 text-current',
-                ].join(' ')}
-              >
-                {index + 1}
-              </span>
+              {keyboardShortcuts && (
+                <span
+                  aria-hidden="true"
+                  className={[
+                    'label-caps flex h-7 w-7 shrink-0 items-center justify-center text-xs',
+                    state === 'open' ? 'bg-ink text-paper-faint' : 'bg-black/20 text-current',
+                  ].join(' ')}
+                >
+                  {index + 1}
+                </span>
+              )}
 
               {showsFlags ? (
                 <FlagImage

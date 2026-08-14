@@ -70,7 +70,10 @@ export function SetupScreen() {
     return {
       mode,
       direction: mode === 'combo' ? 'a-to-b' : direction,
-      difficulty: mode === 'combo' ? 'easy' : difficulty,
+      // §6.3 fixes combo's difficulty. Medium keeps the distractor ladder
+      // sensible (§6.2 rules out cross-continent capitals); the group size is
+      // fixed at four by generation, not by this.
+      difficulty: mode === 'combo' ? 'medium' : difficulty,
       length,
       pool: { continents, source: 'all' },
       seed: 0, // replaced with a fresh seed on start
