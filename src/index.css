@@ -66,7 +66,12 @@
     outline-offset: 2px;
   }
 
-  /* §11 — reduced motion disables flip and slide animations */
+  /*
+   * §11 — reduced motion disables flip and slide animations.
+   *
+   * Two triggers: the system preference, and the app's own Settings toggle for
+   * someone whose system setting is off but who still wants motion gone here.
+   */
   @media (prefers-reduced-motion: reduce) {
     *,
     *::before,
@@ -76,6 +81,15 @@
       transition-duration: 0.001ms !important;
       scroll-behavior: auto !important;
     }
+  }
+
+  :root[data-reduced-motion='true'] *,
+  :root[data-reduced-motion='true'] *::before,
+  :root[data-reduced-motion='true'] *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
   }
 }
 

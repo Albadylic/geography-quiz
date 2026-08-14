@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { COLOUR_TOKENS, CONTINENTS, STATUSES } from './constants';
 
 /**
  * Entity schema — plan §3.1.
@@ -12,26 +13,10 @@ import { z } from 'zod';
  * types from the schema, so a field can never drift between the two.
  */
 
-export const CONTINENTS = [
-  'Africa',
-  'Asia',
-  'Europe',
-  'North America',
-  'South America',
-  'Oceania',
-  'Antarctica',
-] as const;
+export { COLOUR_TOKENS, CONTINENTS, STATUSES } from './constants';
 
 export const ContinentSchema = z.enum(CONTINENTS);
 export type Continent = z.infer<typeof ContinentSchema>;
-
-export const STATUSES = [
-  'un-member',
-  'un-observer',
-  'partially-recognised',
-  'dependency',
-  'special-administrative-region',
-] as const;
 
 export const StatusSchema = z.enum(STATUSES);
 export type Status = z.infer<typeof StatusSchema>;
@@ -41,29 +26,6 @@ export type Status = z.infer<typeof StatusSchema>;
  * Grading compares tokens, never hex values, so the comparison is exact
  * equality and a near-miss blue can never be graded as correct.
  */
-export const COLOUR_TOKENS = [
-  'red',
-  'crimson',
-  'maroon',
-  'orange',
-  'yellow',
-  'gold',
-  'green',
-  'dark-green',
-  'light-green',
-  'blue',
-  'navy',
-  'light-blue',
-  'cyan',
-  'purple',
-  'magenta',
-  'pink',
-  'brown',
-  'black',
-  'white',
-  'grey',
-] as const;
-
 export const ColourTokenSchema = z.enum(COLOUR_TOKENS);
 export type ColourToken = z.infer<typeof ColourTokenSchema>;
 

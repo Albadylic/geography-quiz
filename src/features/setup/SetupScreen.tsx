@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
-import { CONTINENTS, type Continent } from '@/data/schema';
+import { CONTINENTS, type Continent } from '@/data/constants';
 import { buildPool, summarisePool } from '@/engine/pool';
 import { supportsBothDirections } from '@/engine/questions';
 import { randomSeed } from '@/engine/rng';

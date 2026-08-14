@@ -59,11 +59,11 @@ Gate for every ticket: `npm run typecheck && npm run lint && npm run test`.
 
 ## Phase 7 — Polish
 
-- [ ] **T7.1** — Accessibility pass
-- [ ] **T7.2** — Responsive audit
-- [ ] **T7.3** — Empty, loading and error states
-- [ ] **T7.4** — Performance
-- [ ] **T7.5** — PWA groundwork
+- [x] **T7.1** — Accessibility pass
+- [x] **T7.2** — Responsive audit
+- [x] **T7.3** — Empty, loading and error states
+- [x] **T7.4** — Performance
+- [x] **T7.5** — PWA groundwork
 
 ---
 
@@ -716,3 +716,90 @@ the decoy rule has to hold. Both are tested across 50 seeds.
 
 The summary reports every region with its expected colour and what the player
 said, next to the real flag.
+
+### T7.1 — Accessibility pass
+
+Added on top of what earlier tickets already covered (number-key play, live
+regions, icon-plus-colour feedback, the alt-text spoiler rule):
+
+- A skip link as the first tab stop on every page, and `<main id="main">` made
+  focusable so the link moves focus rather than only scrolling.
+- The **Reduce motion setting** now does something. §11's CSS honours
+  `prefers-reduced-motion`; the setting adds a second trigger for someone whose
+  system preference is off but who still wants the motion gone here.
+
+Three of these are checked in a real browser, where they can actually fail: the
+skip link moves focus, a focused control has a non-zero outline, and no image
+on a live question names its country in `alt` or `title`.
+
+### T7.2 — Responsive audit
+
+Playwright at 360x740 asserts the eight-option grid has every option on screen,
+at least 44px tall, and inside the viewport — and that home, stats, settings,
+revision and setup do not scroll sideways.
+
+### T7.3 — Empty, loading and error states
+
+Every screen that can be reached with nothing to show says so: no stats yet, no
+quiz running, no such result, nothing in this deck, unknown mode, off the map.
+Added a route-level error boundary and a Suspense fallback for the lazy screens.
+
+The error screen shows the underlying message rather than "something went
+wrong" — the person reading it is the one who has to report the bug — and says
+that stats are stored locally and unaffected.
+
+### T7.4 — Performance
+
+**288KB initial JS, against the plan's 400KB budget** (92KB gzipped), down from
+530KB. Two changes:
+
+1. **Route-level code splitting.** Home is the entry point and needs none of the
+   quiz machinery, so every other screen is lazy. The 176KB dataset now lives in
+   its own chunk, loaded when a quiz starts.
+2. **Zod was in the app bundle and had no business there.** `CONTINENTS` and
+   `COLOUR_TOKENS` lived in `schema.ts` alongside the Zod schemas, so importing
+   one constant pulled 72KB of validator into a user's download — even though
+   nothing at runtime validates anything; only the build and the data tests do.
+   The constants moved to `data/constants.ts` and the chunk disappeared
+   entirely.
+
+Flags were already static files rather than inlined, and `FlagImage` already
+lazy-loads with the current question eager. The budget is pinned by a test that
+reads the real `dist/` output, so a regression fails CI rather than being
+noticed later.
+
+### T7.5 — PWA groundwork
+
+Manifest, icon and a versioned service worker that precaches the shell and
+caches flag assets and the dataset chunk as they are used. Old cache versions
+are deleted on activate, so a stale worker cannot pin an old build.
+
+**The worker is deliberately not registered.** The plan says groundwork, "not
+shipped as installable in v1", and an active service worker is a support burden
+that should arrive with a deliberate release rather than as a side effect of a
+polish ticket. `src/pwa.ts` documents the single call that turns it on.
+
+---
+
+## Project status
+
+All 40 tickets complete. 487 unit and component tests, 14 Playwright specs,
+`typecheck`, `lint` and `test` all clean.
+
+Against §16's definition of done:
+
+- All five modes playable: flags, capitals, combo, colour, revision. ✅
+- Summaries, incorrect-answer review, per-country tracking, hardest-countries
+  and the stats screen work against stored data across reloads — verified in a
+  real browser, not only in jsdom. ✅
+- §11 holds, including flags never leaking their name during a question. ✅
+- Initial JS 288KB (budget 400KB); dataset covers 250 entities including
+  Palestine, Vatican City and Puerto Rico. ✅
+
+Two things a reader should know:
+
+1. **§5.3's fuzzy-matching rule fails its own §12 criterion as written** — see
+   the T2.1 note. Resolved by adding one rule rather than changing the stated
+   tolerances, but it is a spec correction and deserves a decision.
+2. **Colour the Flag ships 89 entities, not ~120** — see the T6.2/T6.5 note.
+   The gap is entities whose flags no template renders faithfully.

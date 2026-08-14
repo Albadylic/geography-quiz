@@ -1,7 +1,8 @@
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { entities } from '@/data/entities.generated';
-import { CONTINENTS, type Continent, type Entity } from '@/data/schema';
+import { CONTINENTS, type Continent } from '@/data/constants';
+import type { Entity } from '@/data/schema';
 import { isInContinent } from '@/engine/pool';
 import { applyReview, orderByBox } from '@/engine/leitner';
 import { smoothedErrorRate, summariseEntity, HARDEST_UNLOCK_THRESHOLD } from '@/engine/stats';

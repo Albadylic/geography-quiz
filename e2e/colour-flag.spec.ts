@@ -26,10 +26,19 @@ test('completes a Colour the Flag round', async ({ page }) => {
     await expect(swatch).not.toHaveText('');
   }
 
-  // Paint every region, then check.
+  /*
+   * The topmost region is clicked for real, to prove hit-testing works. The
+   * rest are dispatched directly: a background region such as a Nordic flag's
+   * field spans the whole canvas, so its bounding-box centre sits *under* the
+   * cross. Clicking there correctly paints the cross — which is the right
+   * behaviour for a user and the wrong thing for a fill loop to rely on.
+   */
   await swatches.first().click();
+  await regions.last().click();
+  await expect(regions.last()).not.toHaveAttribute('aria-label', /not filled/);
+
   for (let i = 0; i < regionCount; i++) {
-    await regions.nth(i).click();
+    await regions.nth(i).dispatchEvent('click');
   }
 
   await page.getByRole('button', { name: /check my flag/i }).click();
@@ -48,16 +57,19 @@ test('undo, erase and clear all work on a real canvas', async ({ page }) => {
   const regions = flag.locator('[data-region]');
   const palette = page.getByRole('group', { name: /colours/i });
 
+  // The last region is drawn on top, so it is always clickable at its centre.
+  const target = regions.last();
+
   await palette.getByRole('button').first().click();
-  await regions.first().click();
-  await expect(regions.first()).not.toHaveAttribute('aria-label', /not filled/);
+  await target.click();
+  await expect(target).not.toHaveAttribute('aria-label', /not filled/);
 
   await page.getByRole('button', { name: /^undo$/i }).click();
-  await expect(regions.first()).toHaveAttribute('aria-label', /not filled/);
+  await expect(target).toHaveAttribute('aria-label', /not filled/);
 
   await page.getByRole('button', { name: /^redo$/i }).click();
-  await expect(regions.first()).not.toHaveAttribute('aria-label', /not filled/);
+  await expect(target).not.toHaveAttribute('aria-label', /not filled/);
 
   await page.getByRole('button', { name: /clear all/i }).click();
-  await expect(regions.first()).toHaveAttribute('aria-label', /not filled/);
+  await expect(target).toHaveAttribute('aria-label', /not filled/);
 });

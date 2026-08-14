@@ -1,6 +1,7 @@
 import { entities as allEntities } from '@/data/entities.generated';
 import { templateById, type FlagTemplate } from '@/data/flag-templates';
-import { COLOUR_TOKENS, type ColourToken, type Entity } from '@/data/schema';
+import { COLOUR_TOKENS, type ColourToken } from '@/data/constants';
+import type { Entity } from '@/data/schema';
 import { shuffle, type Rng } from './rng';
 
 /**

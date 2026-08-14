@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Geography Quiz">
+  <rect width="512" height="512" fill="#0b0b10"/>
+  <rect x="64" y="128" width="128" height="256" fill="#e4322b"/>
+  <rect x="192" y="128" width="128" height="256" fill="#f5f2ea"/>
+  <rect x="320" y="128" width="128" height="256" fill="#1449c4"/>
+</svg>
