@@ -16,7 +16,7 @@ Gate for every ticket: `npm run typecheck && npm run lint && npm run test`.
 ## Phase 1 — Flag mode
 
 - [x] **T1.1** — Seeded RNG
-- [ ] **T1.2** — Question generation
+- [x] **T1.2** — Question generation
 - [ ] **T1.3** — Session and scoring
 - [ ] **T1.4** — Setup screen
 - [ ] **T1.5** — Play screen
@@ -243,3 +243,43 @@ checked for teeth the same way as T0.5: a deliberately biased shuffle (drawing
 `j` from `[0, length)` instead of `[0, i]` — the standard mistake) was run
 through the same assertion and exceeded the tolerance, confirming the test can
 fail.
+
+### T1.2 — Question generation
+
+`engine/pool.ts` (filtering, capping) and `engine/questions.ts` (selection, the
+distractor ladder). Deterministic in the seed: same seed produces byte-identical
+questions, options and order.
+
+**Two judgement calls in the ladder, both deliberate.**
+
+1. **`confusableWith` is only used when a flag is on screen.** It records
+   *visual* flag similarity. Chad and Romania fly near-identical flags, but
+   N'Djamena and Bucharest are not confusable at all — using that rung on a
+   capitals question would pull a distractor in from another continent for no
+   benefit, which is exactly what §6.2 warns against. Tested both ways: Chad's
+   hard *flags* question offers Romania in 30 of 30 seeds; Chad's hard
+   *capitals* question offers it in 0 of 30.
+
+2. **The last rung is always "anywhere in the pool".** §6.2 says capital
+   distractors *must* be same-continent at medium+, but Oceania and South
+   America cannot always fill eight slots from their own continent. Ordering
+   the tiers means the fallback is only reached when the near tiers are
+   exhausted, so the rule holds wherever it can and a thin continent still gets
+   a full option set instead of a short one. The test pins the off-continent
+   rate below 2% rather than at zero, which is the honest bound.
+
+**The shared-flag guard is not theoretical.** A builder that fills from the
+ladder without checking `flag.sharedWith` produces **36 clashing pairs** across
+a full 250-question hard flags run — Mayotte and Réunion are both Eastern
+Africa *and* both fly the French tricolour, so they collide through the
+same-subregion rung, not some exotic path. With the guard: 0. Measured both
+ways before trusting the test.
+
+**Interpretation of `Question.correctIds`** (§5.1 says "> 1 where multiple
+capitals are acceptable"): options and correctIds both hold *entity* ids, and a
+capital option is labelled with that entity's **primary** capital. That is what
+keeps Cape Town from appearing as a distractor against South Africa, which
+would be unanswerable. Multi-capital acceptance therefore lives in expert-mode
+grading (T2.4), where the answer is free text and any listed capital counts —
+so `correctIds` is length 1 for multiple choice. Raised here because it is a
+narrower reading than the plan's wording implies.
