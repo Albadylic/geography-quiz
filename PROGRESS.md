@@ -11,7 +11,7 @@ Gate for every ticket: `npm run typecheck && npm run lint && npm run test`.
 - [x] **T0.2** — Entity schema
 - [x] **T0.3** — Data pipeline
 - [x] **T0.4** — Flag assets
-- [ ] **T0.5** — FlagImage component
+- [x] **T0.5** — FlagImage component
 
 ## Phase 1 — Flag mode
 
@@ -199,3 +199,29 @@ distortion — it is deliberately not a claim about the official ratio. Fixing
 this properly means hand-sourcing ~250 true-ratio SVGs, which is a data project
 of its own; the manifest layer above is the seam to do it through, one flag at
 a time, without touching any other code.
+
+### T0.5 — FlagImage component
+
+`revealName` is a required prop with no default, so a caller that forgets it
+gets a type error rather than quietly leaking the answer. While it is false the
+component emits generic alt text and **no `title`** — a title would surface the
+country on hover and through some assistive tech.
+
+**A trap worth recording: `toHaveStyle` on `aspect-ratio` is vacuous under
+jsdom.** jsdom does not implement the property and drops it from the CSSOM, so
+`expect(el).toHaveStyle({ aspectRatio: '999' })` passes against an element
+whose ratio is `2`. The first version of these tests was green while asserting
+nothing. The component now mirrors the ratio onto `data-aspect-ratio` and the
+tests assert that instead. Any future test touching a modern CSS property
+should be checked the same way — assert a deliberately wrong value first and
+confirm it fails.
+
+Because jsdom has no layout engine, "renders without distortion" cannot be
+tested there at all. Verified separately in real Chromium by measuring the
+painted image box against the SVG's natural ratio at a fixed 240px container
+width: 1:1, 4:3 and 2:1 all painted at zero distortion. The Playwright suite
+picks this up at the Phase 1 gate.
+
+`playwright.config.ts` now detects a preinstalled Chromium under
+`PLAYWRIGHT_BROWSERS_PATH` whose revision differs from the one this Playwright
+version manages, and falls back cleanly when there isn't one.
