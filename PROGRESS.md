@@ -9,7 +9,7 @@ Gate for every ticket: `npm run typecheck && npm run lint && npm run test`.
 
 - [x] **T0.1** — Project scaffold
 - [x] **T0.2** — Entity schema
-- [ ] **T0.3** — Data pipeline
+- [x] **T0.3** — Data pipeline
 - [ ] **T0.4** — Flag assets
 - [ ] **T0.5** — FlagImage component
 
@@ -114,3 +114,53 @@ able to express and the build needs to be able to check:
   data tests assert against.
 - `.strict()` on the entity object, so a typo'd key in `overrides.json` fails
   the build instead of being silently dropped.
+
+### T0.3 — Data pipeline
+
+250 entities: 193 UN members, 2 observers, 3 partially-recognised, 2 SARs, 50
+dependencies. Build is deterministic — verified by running it three times and
+comparing SHA-256 of both outputs.
+
+**Source deviation, worth knowing about.** The plan says "a snapshot of REST
+Countries". The REST Countries HTTP API now returns a deprecation stub for
+every version, so nothing can be fetched from it. Instead the build reads the
+`world-countries` npm package, which *is* the mledoze/countries dataset that
+REST Countries serves — the same data, committed as a dependency rather than
+fetched. That also satisfies the "runs twice, identical output" criterion
+better than a live fetch would. Natural Earth is not used: nothing in the v1
+entity schema needs geometry.
+
+**Real errors found in the source and corrected in `overrides.json`:**
+
+- The snapshot marks **Vatican City as a UN member**, giving a UN count of 194.
+  It is a permanent observer. Corrected, and the dataset test now pins the
+  count at 193 so this cannot regress.
+- The snapshot gives **Hong Kong**'s capital as "City of Victoria", a historic
+  name. An SAR has no capital, so its `capitals` is emptied — which removes it
+  from capitals and combo pools through the filter, per locked decision 4.
+- **Bolivia, Sri Lanka, Netherlands, Eswatini and Benin** each carry only one
+  capital in the snapshot. All now carry both, with notes.
+
+**Shared flags — the check the obvious implementation misses.** §3.3 asks for
+identical flags to be marked. Grouping by *filename* finds nothing, because
+flag-icons ships a separate file per entity. Grouping by *artwork* (hashing the
+SVG with its generated `id` attributes stripped) finds four groups, one of them
+nine entities wide: France, French Guiana, Guadeloupe, Mayotte, Réunion, Saint
+Barthélemy, Saint Martin, Saint Pierre and Miquelon and Wallis and Futuna all
+fly the same tricolour. Without this, a flag question could offer three of them
+as separate options and be unanswerable. `flag.sharedWith` is populated from
+the artwork grouping and T1.2 will honour it.
+
+**Not populated: `population`.** The snapshot carries no population figures.
+Rather than invent 250 numbers the field is left unset — it is optional in the
+schema and nothing in v1 reads it. Flagged here because §3.1 lists it.
+
+**`tier` is a heuristic, not sourced data.** Rule is stated in `overrides.json`
+under `$tierOne` and repeated in `data-report.md`: curated familiar entities
+plus UN members over 300,000 km² are tier 1; dependencies, SARs and anything
+under 1,000 km² are tier 3; the rest tier 2. Nothing in v1 depends on it yet.
+
+**Deviation from the ticket text:** the flag *copy* happens in this script
+rather than in T0.4, because `flag.aspectRatio` and `flag.colours` are read
+back off the real asset — deriving them requires the files to be in hand. T0.4
+covers licences, the CREDITS file and the on-disk assertions.

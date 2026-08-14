@@ -1,0 +1,232 @@
+import { describe, expect, it } from 'vitest';
+import { entities } from './entities.generated';
+import { EntityListSchema } from './schema';
+
+/**
+ * Data tests — §12. These assert against the real generated dataset rather
+ * than fixtures, because their whole point is to catch the dataset drifting.
+ */
+
+const byId = new Map(entities.map((e) => [e.id, e]));
+
+describe('dataset', () => {
+  it('validates against the schema, including cross-entity invariants', () => {
+    const result = EntityListSchema.safeParse(entities);
+    if (!result.success) {
+      const summary = result.error.issues
+        .slice(0, 10)
+        .map((i) => `${i.path.join('.')}: ${i.message}`)
+        .join('\n');
+      throw new Error(`Dataset failed validation:\n${summary}`);
+    }
+    expect(result.success).toBe(true);
+  });
+
+  it('covers at least 250 entities (§2 boundary)', () => {
+    expect(entities.length).toBeGreaterThanOrEqual(250);
+  });
+
+  it('has exactly 193 UN members', () => {
+    expect(entities.filter((e) => e.status === 'un-member')).toHaveLength(193);
+  });
+
+  it('has no duplicate ids', () => {
+    expect(new Set(entities.map((e) => e.id)).size).toBe(entities.length);
+  });
+
+  it('has no duplicate names', () => {
+    const names = entities.map((e) => e.name.toLowerCase());
+    expect(new Set(names).size).toBe(entities.length);
+  });
+
+  it('resolves every sovereignId', () => {
+    const unresolved = entities
+      .filter((e) => e.sovereignId && !byId.has(e.sovereignId))
+      .map((e) => `${e.id} -> ${e.sovereignId}`);
+    expect(unresolved).toEqual([]);
+  });
+
+  it('resolves every confusableWith reference', () => {
+    const unresolved = entities.flatMap((e) =>
+      (e.confusableWith ?? [])
+        .filter((ref) => !byId.has(ref))
+        .map((ref) => `${e.id} -> ${ref}`),
+    );
+    expect(unresolved).toEqual([]);
+  });
+
+  it('resolves every flag.sharedWith reference', () => {
+    const unresolved = entities.flatMap((e) =>
+      (e.flag.sharedWith ?? [])
+        .filter((ref) => !byId.has(ref))
+        .map((ref) => `${e.id} -> ${ref}`),
+    );
+    expect(unresolved).toEqual([]);
+  });
+
+  it('keeps confusableWith symmetric, so the ladder works from either side', () => {
+    const asymmetric = entities.flatMap((e) =>
+      (e.confusableWith ?? [])
+        .filter((ref) => !(byId.get(ref)?.confusableWith ?? []).includes(e.id))
+        .map((ref) => `${e.id} -> ${ref} is not mirrored`),
+    );
+    expect(asymmetric).toEqual([]);
+  });
+
+  it('keeps flag.sharedWith symmetric', () => {
+    const asymmetric = entities.flatMap((e) =>
+      (e.flag.sharedWith ?? [])
+        .filter((ref) => !(byId.get(ref)?.flag.sharedWith ?? []).includes(e.id))
+        .map((ref) => `${e.id} -> ${ref} is not mirrored`),
+    );
+    expect(asymmetric).toEqual([]);
+  });
+});
+
+describe('entities the plan calls out by name (T0.3)', () => {
+  const expected: Array<[string, { continent: string; capital: string | null }]> = [
+    ['palestine', { continent: 'Asia', capital: 'Ramallah' }],
+    ['vatican-city', { continent: 'Europe', capital: 'Vatican City' }],
+    ['puerto-rico', { continent: 'North America', capital: 'San Juan' }],
+    ['kosovo', { continent: 'Europe', capital: 'Pristina' }],
+    ['taiwan', { continent: 'Asia', capital: 'Taipei' }],
+    ['greenland', { continent: 'North America', capital: 'Nuuk' }],
+    ['hong-kong', { continent: 'Asia', capital: null }],
+  ];
+
+  it.each(expected)('%s is present with the right continent and capital', (id, want) => {
+    const entity = byId.get(id);
+    expect(entity, `${id} is missing from the dataset`).toBeDefined();
+    expect(entity!.continent).toBe(want.continent);
+    const primary = entity!.capitals.find((c) => c.isPrimary);
+    expect(primary?.name ?? null).toBe(want.capital);
+  });
+
+  it('gives the disputed and observer entities a status other than un-member', () => {
+    expect(byId.get('palestine')!.status).toBe('un-observer');
+    expect(byId.get('vatican-city')!.status).toBe('un-observer');
+    expect(byId.get('kosovo')!.status).toBe('partially-recognised');
+    expect(byId.get('taiwan')!.status).toBe('partially-recognised');
+    expect(byId.get('western-sahara')!.status).toBe('partially-recognised');
+    expect(byId.get('hong-kong')!.status).toBe('special-administrative-region');
+  });
+
+  it('points dependencies at their sovereign', () => {
+    expect(byId.get('puerto-rico')!.sovereignId).toBe('united-states');
+    expect(byId.get('greenland')!.sovereignId).toBe('denmark');
+    expect(byId.get('hong-kong')!.sovereignId).toBe('china');
+  });
+});
+
+describe('capitals (§3.3)', () => {
+  it('gives every entity with capitals exactly one primary', () => {
+    const broken = entities
+      .filter((e) => e.capitals.length > 0)
+      .filter((e) => e.capitals.filter((c) => c.isPrimary).length !== 1)
+      .map((e) => e.id);
+    expect(broken).toEqual([]);
+  });
+
+  const multiCapital: Array<[string, string[]]> = [
+    ['south-africa', ['Pretoria', 'Cape Town', 'Bloemfontein']],
+    ['bolivia', ['Sucre', 'La Paz']],
+    ['sri-lanka', ['Sri Jayawardenepura Kotte', 'Colombo']],
+    ['netherlands', ['Amsterdam', 'The Hague']],
+    ['eswatini', ['Mbabane', 'Lobamba']],
+  ];
+
+  it.each(multiCapital)('%s carries all of its capitals', (id, expectedNames) => {
+    const entity = byId.get(id);
+    expect(entity, `${id} is missing`).toBeDefined();
+    const names = entity!.capitals.map((c) => c.name);
+    expect(names.sort()).toEqual([...expectedNames].sort());
+    expect(entity!.capitals.filter((c) => c.isPrimary)).toHaveLength(1);
+  });
+
+  it('leaves entities with no capital genuinely empty, for the pool filter to exclude', () => {
+    // Locked decision 4: exclusion is by data, never by a hard-coded list.
+    expect(byId.get('antarctica')!.capitals).toEqual([]);
+    expect(byId.get('hong-kong')!.capitals).toEqual([]);
+  });
+});
+
+describe('flags', () => {
+  it('gives every entity a flag path and at least one colour', () => {
+    for (const entity of entities) {
+      expect(entity.flag.file, entity.id).toMatch(/^\/flags\/[a-z0-9-]+\.svg$/);
+      expect(entity.flag.colours.length, entity.id).toBeGreaterThan(0);
+    }
+  });
+
+  it('records a plausible aspect ratio for every entity', () => {
+    for (const entity of entities) {
+      expect(entity.flag.aspectRatio, entity.id).toBeGreaterThan(0.5);
+      expect(entity.flag.aspectRatio, entity.id).toBeLessThan(3);
+    }
+  });
+
+  it('ships the square asset for square flags, so FlagImage has both cases', () => {
+    expect(byId.get('switzerland')!.flag.aspectRatio).toBe(1);
+    expect(byId.get('vatican-city')!.flag.aspectRatio).toBe(1);
+    // and the common case is genuinely a different shape
+    expect(byId.get('france')!.flag.aspectRatio).toBeCloseTo(4 / 3, 3);
+  });
+
+  it('marks the entities that fly an identical flag (§3.3)', () => {
+    // Nine entities fly the French tricolour; the question generator relies on
+    // this to keep two identical flags out of one option set.
+    const france = byId.get('france')!;
+    expect(france.flag.sharedWith).toContain('reunion');
+    expect(france.flag.sharedWith).toContain('mayotte');
+    expect(byId.get('reunion')!.flag.sharedWith).toContain('france');
+    expect(byId.get('united-states')!.flag.sharedWith).toContain(
+      'united-states-minor-outlying-islands',
+    );
+  });
+});
+
+describe('continents', () => {
+  it('assigns every entity one of the seven continents', () => {
+    const continents = new Set(entities.map((e) => e.continent));
+    expect([...continents].sort()).toEqual([
+      'Africa',
+      'Antarctica',
+      'Asia',
+      'Europe',
+      'North America',
+      'Oceania',
+      'South America',
+    ]);
+  });
+
+  it('puts transcontinental entities in both filters (§3.3)', () => {
+    expect(byId.get('russia')!.continent).toBe('Europe');
+    expect(byId.get('russia')!.altContinents).toContain('Asia');
+    expect(byId.get('egypt')!.altContinents).toContain('Asia');
+  });
+
+  it('never repeats the primary continent in altContinents', () => {
+    const broken = entities
+      .filter((e) => (e.altContinents ?? []).includes(e.continent))
+      .map((e) => e.id);
+    expect(broken).toEqual([]);
+  });
+});
+
+describe('confusable pairs seeded from §5.2', () => {
+  const pairs: Array<[string, string]> = [
+    ['chad', 'romania'],
+    ['monaco', 'indonesia'],
+    ['ireland', 'ivory-coast'],
+    ['norway', 'iceland'],
+    ['slovenia', 'slovakia'],
+    ['slovenia', 'russia'],
+    ['australia', 'new-zealand'],
+    ['senegal', 'mali'],
+  ];
+
+  it.each(pairs)('%s is marked confusable with %s', (a, b) => {
+    expect(byId.get(a)?.confusableWith).toContain(b);
+    expect(byId.get(b)?.confusableWith).toContain(a);
+  });
+});
