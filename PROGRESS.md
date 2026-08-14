@@ -10,7 +10,7 @@ Gate for every ticket: `npm run typecheck && npm run lint && npm run test`.
 - [x] **T0.1** — Project scaffold
 - [x] **T0.2** — Entity schema
 - [x] **T0.3** — Data pipeline
-- [ ] **T0.4** — Flag assets
+- [x] **T0.4** — Flag assets
 - [ ] **T0.5** — FlagImage component
 
 ## Phase 1 — Flag mode
@@ -164,3 +164,38 @@ under 1,000 km² are tier 3; the rest tier 2. Nothing in v1 depends on it yet.
 rather than in T0.4, because `flag.aspectRatio` and `flag.colours` are read
 back off the real asset — deriving them requires the files to be in hand. T0.4
 covers licences, the CREDITS file and the on-disk assertions.
+
+### T0.4 — Flag assets
+
+**No flag could not be sourced.** The plan budgets half a day for hand-sourcing
+non-ISO entities from Wikimedia, but flag-icons turns out to ship all 250,
+Kosovo included (under the user-assigned code `XK`). So 249 of 250 assets are
+one MIT licence with no per-file provenance to track.
+
+**One asset was wrong rather than missing.** flag-icons ships the plain Union
+Jack under the code `sh`. Saint Helena's flag is a Blue Ensign carrying the
+territory's shield, so that asset was both factually wrong *and* identical to
+the United Kingdom's — the shared-artwork check is what surfaced it. Replaced
+with the Commons file (public domain, Patricia Fidi, xrmap collection),
+verified through the Commons API before use rather than assumed.
+
+That added a small asset layer worth having anyway: `data/hand-sourced/` holds
+the file plus a manifest recording source, licence, author and the reason it
+exists, and the build prefers it over flag-icons and generates
+`public/flags/CREDITS.md` from it. Adding another hand-sourced flag is now a
+file plus a manifest entry, and the build refuses an asset whose manifest entry
+names a different entity.
+
+Side effect: the dataset now has three genuine aspect ratios — 1:1
+(Switzerland, Vatican City), 4:3 (the flag-icons bulk) and 2:1 (Saint Helena)
+— so T0.5 has real cases to render rather than contrived ones.
+
+**Known limitation, not a blocker.** flag-icons normalises its artwork to 4:3,
+so flags whose official ratio is something else (Qatar's 28:11, Nepal's
+non-rectangular pennant, the many 1:2 flags) are drawn to fit a 4:3 box rather
+than reproduced at their true proportions. `flag.aspectRatio` therefore
+describes *the shipped asset*, which is what FlagImage needs to render without
+distortion — it is deliberately not a claim about the official ratio. Fixing
+this properly means hand-sourcing ~250 true-ratio SVGs, which is a data project
+of its own; the manifest layer above is the seam to do it through, one flag at
+a time, without touching any other code.

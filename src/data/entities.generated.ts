@@ -6299,13 +6299,15 @@ export const entities: readonly Entity[] = [
       "file": "/flags/sh.svg",
       "colours": [
         "navy",
+        "grey",
+        "gold",
         "white",
+        "pink",
+        "black",
+        "brown",
         "red"
       ],
-      "aspectRatio": 1.3333,
-      "sharedWith": [
-        "united-kingdom"
-      ]
+      "aspectRatio": 2
     },
     "tier": 3
   },
@@ -7966,10 +7968,7 @@ export const entities: readonly Entity[] = [
         "white",
         "red"
       ],
-      "aspectRatio": 1.3333,
-      "sharedWith": [
-        "saint-helena-ascension-and-tristan-da-cunha"
-      ]
+      "aspectRatio": 1.3333
     },
     "tier": 1
   },

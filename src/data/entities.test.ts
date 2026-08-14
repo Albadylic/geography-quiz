@@ -1,6 +1,10 @@
+import { existsSync, readFileSync, readdirSync } from 'node:fs';
+import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { entities } from './entities.generated';
 import { EntityListSchema } from './schema';
+
+const PUBLIC_DIR = join(process.cwd(), 'public');
 
 /**
  * Data tests — §12. These assert against the real generated dataset rather
@@ -170,6 +174,50 @@ describe('flags', () => {
     expect(byId.get('vatican-city')!.flag.aspectRatio).toBe(1);
     // and the common case is genuinely a different shape
     expect(byId.get('france')!.flag.aspectRatio).toBeCloseTo(4 / 3, 3);
+  });
+
+  it('has an asset on disk for every entity (T0.4)', () => {
+    const missing = entities
+      .filter((e) => !existsSync(join(PUBLIC_DIR, e.flag.file)))
+      .map((e) => `${e.id} -> ${e.flag.file}`);
+    expect(missing).toEqual([]);
+  });
+
+  it('ships no flag asset that no entity references', () => {
+    const referenced = new Set(entities.map((e) => e.flag.file.replace('/flags/', '')));
+    const orphans = readdirSync(join(PUBLIC_DIR, 'flags'))
+      .filter((file) => file.endsWith('.svg'))
+      .filter((file) => !referenced.has(file));
+    expect(orphans).toEqual([]);
+  });
+
+  it('serves every asset as real SVG, never a placeholder', () => {
+    for (const entity of entities) {
+      const svg = readFileSync(join(PUBLIC_DIR, entity.flag.file), 'utf8');
+      expect(svg, entity.id).toMatch(/<svg[\s>]/);
+      expect(svg.length, entity.id).toBeGreaterThan(100);
+    }
+  });
+
+  it('records the licence of every shipped asset in CREDITS.md (T0.4)', () => {
+    const credits = readFileSync(join(PUBLIC_DIR, 'flags', 'CREDITS.md'), 'utf8');
+    expect(credits).toMatch(/flag-icons/);
+    expect(credits).toMatch(/MIT/);
+    // Saint Helena is hand-sourced because flag-icons ships the Union Jack for
+    // it; its provenance has to be recorded individually.
+    expect(credits).toMatch(/sh\.svg/);
+    expect(credits).toMatch(/Public domain/);
+  });
+
+  it('gives Saint Helena its own flag rather than the Union Jack', () => {
+    const saintHelena = byId.get('saint-helena-ascension-and-tristan-da-cunha')!;
+    expect(saintHelena.flag.sharedWith).toBeUndefined();
+    const svg = readFileSync(join(PUBLIC_DIR, saintHelena.flag.file), 'utf8');
+    const unionJack = readFileSync(
+      join(PUBLIC_DIR, byId.get('united-kingdom')!.flag.file),
+      'utf8',
+    );
+    expect(svg).not.toBe(unionJack);
   });
 
   it('marks the entities that fly an identical flag (§3.3)', () => {

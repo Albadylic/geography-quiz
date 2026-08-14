@@ -30,7 +30,7 @@ from `flag-icons` (MIT).
   filter, never by a hard-coded list): **6** — Antarctica, Bouvet Island, Heard Island and McDonald Islands, Hong Kong, Macau, United States Minor Outlying Islands
 - Entities with more than one capital: **9**
 - Entities carrying curated confusable partners: **71**
-- Distinct flag aspect ratios: 1, 1.3333
+- Distinct flag aspect ratios: 1, 1.3333, 2
 
 ## Manual overrides
 
@@ -92,5 +92,4 @@ listed here so nothing looks more authoritative than it is.
 
 - Identical flag artwork shared by australia, heard-island-and-mcdonald-islands
 - Identical flag artwork shared by france, french-guiana, guadeloupe, mayotte, reunion, saint-barthelemy, saint-martin, saint-pierre-and-miquelon, wallis-and-futuna
-- Identical flag artwork shared by saint-helena-ascension-and-tristan-da-cunha, united-kingdom
 - Identical flag artwork shared by united-states, united-states-minor-outlying-islands

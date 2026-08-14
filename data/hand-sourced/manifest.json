@@ -1,0 +1,19 @@
+{
+  "$about": [
+    "Flag assets sourced by hand, keyed by the filename used in public/flags.",
+    "The build prefers these over the flag-icons asset of the same name, and",
+    "generates public/flags/CREDITS.md from the licence fields below (plan §3.2,",
+    "T0.4). Every entry must record where the file came from and under what",
+    "licence — an asset without provenance does not ship."
+  ],
+  "assets": {
+    "sh": {
+      "entityId": "saint-helena-ascension-and-tristan-da-cunha",
+      "source": "https://commons.wikimedia.org/wiki/File:Flag_of_Saint_Helena.svg",
+      "licence": "Public domain",
+      "author": "Patricia Fidi",
+      "credit": "From the xrmap flag collection 2.9 (gb-sh.svg).",
+      "reason": "flag-icons ships the plain Union Jack under the code `sh`. Saint Helena's flag is a Blue Ensign carrying the territory's shield, so the flag-icons asset would have shown the wrong flag and made it indistinguishable from the United Kingdom."
+    }
+  }
+}
