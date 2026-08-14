@@ -6,6 +6,7 @@ import { supportsBothDirections } from '@/engine/questions';
 import { randomSeed } from '@/engine/rng';
 import type { Difficulty, Direction, QuizConfig, QuizLength, QuizMode } from '@/engine/types';
 import { useSessionStore } from '@/store/sessionStore';
+import { useStatsStore } from '@/store/statsStore';
 import { ChoiceGroup, type Choice } from '@/components/ChoiceGroup';
 import { ScreenStub } from '@/components/ScreenStub';
 
@@ -55,6 +56,9 @@ export function SetupScreen() {
   const { mode } = useParams();
   const navigate = useNavigate();
   const startSession = useSessionStore((state) => state.start);
+  // §3.3: the toggle is a filter on `status`, applied to the pool — the
+  // dataset itself never changes.
+  const unMembersOnly = useStatsStore((state) => state.data.settings.unMembersOnly);
 
   const [direction, setDirection] = useState<Direction>('a-to-b');
   const [difficulty, setDifficulty] = useState<Difficulty>('easy');
@@ -77,8 +81,8 @@ export function SetupScreen() {
 
   const summary = useMemo(() => {
     if (!config) return null;
-    return summarisePool(buildPool(config), config.length);
-  }, [config]);
+    return summarisePool(buildPool(config, { unMembersOnly }), config.length);
+  }, [config, unMembersOnly]);
 
   if (mode === 'colour') {
     return <ScreenStub title="Colour the flag" ticket="T6.1" />;
@@ -114,7 +118,7 @@ export function SetupScreen() {
   };
 
   const start = () => {
-    startSession({ ...config, seed: randomSeed() });
+    startSession({ ...config, seed: randomSeed() }, { unMembersOnly });
     navigate(`/play/${mode}`);
   };
 

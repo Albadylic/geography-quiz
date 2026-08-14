@@ -8,6 +8,7 @@ import {
 } from '@/engine/session';
 import type { Answer, QuizConfig } from '@/engine/types';
 import { recordAnswer } from '@/engine/session';
+import { useStatsStore } from './statsStore';
 
 /**
  * The live session lives here rather than in a route or in context, so it
@@ -59,13 +60,21 @@ export const useSessionStore = create<SessionState>((set, get) => ({
   abandon: () => set({ session: null }),
 }));
 
-/** Stores the advanced session, and its summary once the run is over. */
+/**
+ * Stores the advanced session, and once the run is over, its summary — and
+ * commits the run to the persisted stats.
+ *
+ * Recording happens here rather than on the results screen so that stats are
+ * written exactly once, whether the player looks at their results or closes
+ * the tab straight away.
+ */
 function finish(
   set: (partial: Partial<SessionState> | ((state: SessionState) => Partial<SessionState>)) => void,
   next: Session,
 ): void {
   if (next.currentIndex >= next.questions.length) {
     const result = summariseSession(next);
+    useStatsStore.getState().recordFinishedSession(result, next.questions);
     set((state) => ({
       session: next,
       results: { ...state.results, [result.sessionId]: result },

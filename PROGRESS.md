@@ -31,11 +31,11 @@ Gate for every ticket: `npm run typecheck && npm run lint && npm run test`.
 
 ## Phase 3 — Persistence and summaries
 
-- [ ] **T3.1** — Storage
-- [ ] **T3.2** — Stats recording
-- [ ] **T3.3** — Results screen
-- [ ] **T3.4** — Stats screen
-- [ ] **T3.5** — Settings
+- [x] **T3.1** — Storage
+- [x] **T3.2** — Stats recording
+- [x] **T3.3** — Results screen
+- [x] **T3.4** — Stats screen
+- [x] **T3.5** — Settings
 
 ## Phase 4 — Combo mode
 
@@ -477,3 +477,82 @@ rather than offering a choice that silently does nothing.
 Multi-capital feedback shows every accepted capital with its note after
 answering, so a player who answered "Cape Town" learns why it was accepted and
 what the other two are.
+
+### T3.1 — Storage
+
+`StorageAdapter` with a localStorage implementation and an in-memory one,
+a versioned schema, and a migration runner that applies steps in order so a
+payload arrives at the current version however far behind it is.
+
+**v1 is not a hypothetical.** It is the shape Phase 1 of this build would have
+written: flags only, so per-entity counts were a flat correct/wrong pair with
+no mode split, and a high score was a bare number. The migration moves those
+counts into `byMode.flags` — they can only have come from flags questions —
+leaves capitals empty, and does **not** invent the accuracy, streak or
+timestamp v1 never recorded.
+
+Beyond the ticket, four failure modes are handled because the contract is
+"nothing on disk may crash the app":
+
+- Unparseable JSON, and valid JSON of the wrong shape.
+- A payload from a **newer** build: not guessed at, and deliberately **not
+  overwritten**, so going back to that build does not lose the user's data.
+- A partially-written payload: missing fields are defaulted rather than the
+  whole history being dropped.
+- An adapter that throws. A test asserted this and found a real gap — the
+  guards were inside `LocalStorageAdapter` only, so a throwing adapter
+  propagated out of `load`. Now guarded at both levels.
+
+Anything unreadable is moved to a quarantine key rather than deleted.
+
+### T3.2 — Stats recording
+
+Per-entity stats, high scores keyed by config signature, and streaks that carry
+across sessions. All of it is pure functions in `engine/stats.ts`.
+
+**A boundary problem worth recording.** The stat *shapes* were first written in
+`storage/schema.ts`, which made `engine/stats.ts` import from `storage/` — and
+the §4 lint rule correctly rejected it. The shapes are domain concepts §8
+defines, so they moved into the engine and storage now imports them, adding
+only a version number and settings. The stats functions are generic over
+`StatsState`, so they take and return the persisted type unchanged.
+
+Recording happens when the session finishes, in the store, not on the results
+screen — so a run counts exactly once whether or not the player looks at their
+results.
+
+`statModeFor` records a question against **what it tested**, not the mode
+selected: "which country has this capital" is a capitals question either way
+round. Combo has no bucket of its own, and `outcomesFor` already splits its two
+halves for T4.1.
+
+### T3.3 — Results screen
+
+Incorrect-answer review with the correct answer, what the player said, and the
+flag with `revealName` — the one place alt text is supposed to name the country.
+
+The first version showed the country name twice on flag → country questions
+(as the heading and again as "Answer:"), which reads as a bug. The answer line
+now appears only when it says something the heading does not.
+
+### T3.4 — Stats screen
+
+Per §9. The weakest-20 list is ordered by §8's smoothed error rate — the first
+term of the adaptive weight — so a single wrong answer cannot outrank a country
+missed five times. T5.1 replaces that ordering with the full weight including
+recency. The Hardest link shows the plan's locked copy below 20 answered
+questions.
+
+### T3.5 — Settings
+
+UN-members-only, reduced motion, sound, the neutral About copy from §3.3, and a
+two-step reset. The UN toggle is wired through to `buildPool` as a filter on
+`status`, verified by a test that watches the setup screen's pool count drop
+from 250 to 193 — the dataset is untouched.
+
+Settings also reports honestly when storage could not be read or came from a
+newer build, rather than silently pretending the user had no history.
+
+**Verified end to end in a real browser**, not only in jsdom: play a 20-question
+run, reload the app completely, and the stats screen shows 20 questions, the
+right accuracy, and the high score under its readable signature.

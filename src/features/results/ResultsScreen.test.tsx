@@ -1,9 +1,11 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import { act, render, screen } from '@testing-library/react';
+import { act, render, screen, within } from '@testing-library/react';
 import { createMemoryRouter, RouterProvider } from 'react-router-dom';
 import { ResultsScreen } from './ResultsScreen';
 import { useSessionStore } from '@/store/sessionStore';
+import { useStatsStore } from '@/store/statsStore';
 import { currentQuestion, type Session } from '@/engine/session';
+import { entities } from '@/data/entities.generated';
 import type { QuizConfig } from '@/engine/types';
 
 function config(overrides: Partial<QuizConfig> = {}): QuizConfig {
@@ -55,6 +57,7 @@ const stat = (label: string) =>
 
 beforeEach(() => {
   useSessionStore.setState({ session: null, results: {} });
+  useStatsStore.getState().resetAll();
 });
 
 describe('ResultsScreen', () => {
@@ -118,5 +121,77 @@ describe('ResultsScreen', () => {
     const id = playThrough(() => true);
     const { container } = renderResults(id);
     expect(container.textContent).not.toMatch(/time|seconds|minute|fast|speed|per second/i);
+  });
+});
+
+describe('incorrect-answer review (T3.3)', () => {
+  it('lists every wrong answer with the country, the answer and what was said', () => {
+    // Answer everything wrong so every question appears in the review.
+    const id = playThrough(() => false);
+    renderResults(id);
+
+    const session = useSessionStore.getState().session!;
+    const review = screen.getByRole('list');
+    const rows = within(review).getAllByRole('listitem');
+    expect(rows).toHaveLength(20);
+
+    const firstEntity = entities.find((e) => e.id === session.questions[0]!.entityId)!;
+    expect(within(rows[0]!).getByText(firstEntity.name)).toBeInTheDocument();
+    expect(within(rows[0]!).getByText(/you said/i)).toBeInTheDocument();
+  });
+
+  it('shows nothing to review after a perfect run', () => {
+    const id = playThrough(() => true);
+    renderResults(id);
+    expect(screen.getByText(/nothing to review/i)).toBeInTheDocument();
+    expect(screen.queryByRole('listitem')).toBeNull();
+  });
+
+  it('lists only the wrong answers, not the right ones', () => {
+    const id = playThrough((index) => index < 15); // 15 right, 5 wrong
+    renderResults(id);
+    expect(within(screen.getByRole('list')).getAllByRole('listitem')).toHaveLength(5);
+  });
+
+  it('reveals the real flag name in review, unlike during the question (§11)', () => {
+    const id = playThrough(() => false);
+    renderResults(id);
+
+    const session = useSessionStore.getState().session!;
+    const firstEntity = entities.find((e) => e.id === session.questions[0]!.entityId)!;
+    expect(
+      screen.getByRole('img', { name: `Flag of ${firstEntity.name}` }),
+    ).toBeInTheDocument();
+    // No anonymous "Flag option N" alt text survives into review.
+    expect(screen.queryByRole('img', { name: /^Flag option/ })).toBeNull();
+  });
+
+  it('says "Skipped" when no answer was given', () => {
+    let session!: Session;
+    act(() => {
+      session = useSessionStore.getState().start(config());
+    });
+    for (let i = 0; i < session.questions.length; i++) {
+      act(() => {
+        useSessionStore.getState().answer(null);
+      });
+    }
+    renderResults(session.id);
+    expect(screen.getAllByText('Skipped').length).toBe(20);
+  });
+
+  it('flags a new personal best for this setup', () => {
+    const id = playThrough(() => true);
+    renderResults(id);
+    expect(screen.getByText(/new best for this setup/i)).toBeInTheDocument();
+  });
+
+  it('links onward to the stats screen', () => {
+    const id = playThrough(() => true);
+    renderResults(id);
+    expect(screen.getByRole('link', { name: /see your stats/i })).toHaveAttribute(
+      'href',
+      '/stats',
+    );
   });
 });

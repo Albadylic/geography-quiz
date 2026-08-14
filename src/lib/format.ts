@@ -25,3 +25,24 @@ export function describeConfig(config: QuizConfig): string {
 
   return parts.join(' · ');
 }
+
+/**
+ * Turns a stored config signature back into §9's readable line — "Flags · hard
+ * · 50 · Europe". Signatures are produced by `configSignature` in the engine
+ * and are pipe-separated, in the order mode, direction, difficulty, length,
+ * continents, source.
+ *
+ * Old signatures from an earlier build may have fewer parts, so anything
+ * missing is simply left out rather than rendered as "undefined".
+ */
+export function describeSignature(signature: string): string {
+  const [mode, direction, difficulty, length, continents, source] = signature.split('|');
+
+  const parts = [mode, difficulty, length].filter(Boolean) as string[];
+  if (continents) parts.push(continents === 'all' ? 'World' : continents.split('+').join(' + '));
+  if (source === 'hardest') parts.push('hardest');
+  if (direction === 'b-to-a') parts.push('reversed');
+  if (direction === 'mixed') parts.push('mixed');
+
+  return parts.join(' · ');
+}

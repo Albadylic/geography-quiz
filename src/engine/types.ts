@@ -30,6 +30,22 @@ export interface QuizConfig {
 export type PromptKind = 'flag' | 'name' | 'capital';
 export type AnswerKind = 'flag' | 'name' | 'capital';
 
+/**
+ * The buckets per-entity stats are kept in (§8). Combo has no bucket of its
+ * own: its two halves are recorded against flags and capitals separately,
+ * which is what keeps the adaptive data clean (locked decision 3).
+ */
+export type StatMode = 'flags' | 'capitals';
+
+/** One half of a combo question — §6.3. Each half is graded and scored alone. */
+export interface QuestionHalf {
+  statMode: StatMode;
+  answerKind: AnswerKind;
+  /** Entity ids, in display order. */
+  options: string[];
+  correctIds: string[];
+}
+
 export interface Question {
   id: string;
   entityId: string;
@@ -54,6 +70,8 @@ export interface Question {
    * combo mode grades two halves.
    */
   correctIds: string[];
+  /** Present only on combo questions: the two independent option groups. */
+  halves?: QuestionHalf[];
 }
 
 export interface Answer {
@@ -61,6 +79,13 @@ export interface Answer {
   /** null = skipped. */
   given: string | null;
   correct: boolean;
+  /**
+   * Combo only: the outcome of each half, so a half-right answer earns half
+   * the score and records two distinct per-entity outcomes (§6.3).
+   */
+  halfResults?: Partial<Record<StatMode, boolean>>;
+  /** Combo only: what was chosen in each half, for the review list. */
+  halfGiven?: Partial<Record<StatMode, string | null>>;
 }
 
 /** How many options each difficulty shows. Expert is free text (§6.1). */
