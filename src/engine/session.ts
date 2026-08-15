@@ -182,6 +182,12 @@ export interface SessionResult {
  * Europe run and a 100-question expert world run are not the same achievement.
  * The seed is deliberately excluded — it identifies a particular quiz, not a
  * category of achievement.
+ *
+ * `countrySet` is part of it for the same reason everything else is: 195
+ * countries and 250 countries are not the same test. The narrower set drops the
+ * territories nobody recognises *and* easy mode then biases what is left
+ * towards familiar countries, so a `un` score would otherwise displace an `all`
+ * score on merit it did not earn.
  */
 export function configSignature(config: QuizConfig): string {
   const continents =
@@ -195,6 +201,7 @@ export function configSignature(config: QuizConfig): string {
     String(config.length),
     continents,
     config.pool.source,
+    config.pool.countrySet,
   ].join('|');
 }
 

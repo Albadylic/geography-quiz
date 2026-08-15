@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { MemoryStorageAdapter } from './adapter';
-import { migrate, migrateV1ToV2, migrateV2ToV3 } from './migrations';
+import { migrate, migrateV1ToV2, migrateV2ToV3, migrateV3ToV4 } from './migrations';
 import { QUARANTINE_KEY, clear, load, save } from './persist';
 import {
   CURRENT_VERSION,
@@ -10,6 +10,7 @@ import {
   type LegacySettings,
   type PersistedStateV1,
   type PersistedStateV2,
+  type PersistedStateV3,
 } from './schema';
 
 let adapter: MemoryStorageAdapter;
@@ -324,5 +325,81 @@ describe('a storage adapter that refuses to work', () => {
     expect(() => save(emptyState(), hostile)).not.toThrow();
     expect(() => clear(hostile)).not.toThrow();
     expect(load(hostile).state).toEqual(emptyState());
+  });
+});
+
+describe('migration v3 -> v4 (country set in the signature)', () => {
+  /** A v3 payload with real history and a high score to lose. */
+  function v3Fixture(): PersistedStateV3 {
+    const france = emptyEntityStat('france');
+    france.byMode.flags = { correct: 9, wrong: 3, lastSeen: 1_700_000_000_000 };
+    france.leitnerBox = 4;
+
+    return {
+      version: 3,
+      entityStats: { france },
+      highScores: {
+        // Six parts: the old signature, with no record of which pool it was.
+        'flags|a-to-b|hard|20|all|all': {
+          signature: 'flags|a-to-b|hard|20|all|all',
+          score: 420,
+          accuracy: 0.85,
+          longestStreak: 11,
+          timestamp: 1_700_000_500_000,
+        },
+      },
+      streaks: { flags: { current: 3, longest: 11 } },
+      settings: { countrySet: 'un', reducedMotion: true, sound: false },
+      totals: { questionsAnswered: 12, correctAnswers: 9 },
+    };
+  }
+
+  /**
+   * The deliberate loss. An old key records no country set, so there is no
+   * honest pool to file it under — see the note on `migrateV3ToV4`.
+   */
+  it('drops high scores, which can no longer be placed', () => {
+    const migrated = migrateV3ToV4(v3Fixture());
+    expect(migrated.version).toBe(4);
+    expect(migrated.highScores).toEqual({});
+  });
+
+  it('keeps everything that is not a high score', () => {
+    const before = v3Fixture();
+    const migrated = migrateV3ToV4(before);
+
+    expect(migrated.entityStats).toEqual(before.entityStats);
+    expect(migrated.streaks).toEqual(before.streaks);
+    expect(migrated.totals).toEqual({ questionsAnswered: 12, correctAnswers: 9 });
+    // The country set the player chose is a setting, not a score: it survives.
+    expect(migrated.settings).toEqual({
+      countrySet: 'un',
+      reducedMotion: true,
+      sound: false,
+    });
+  });
+
+  it('carries a v1 payload all the way through every step', () => {
+    adapter.write(STORAGE_KEY, JSON.stringify(v1Fixture()));
+    const result = load(adapter);
+
+    expect(result.status).toBe('migrated');
+    expect(result.state.version).toBe(CURRENT_VERSION);
+    // v1's stats survive three migrations; its high scores do not survive v4.
+    expect(result.state.entityStats.france!.byMode.flags.correct).toBe(7);
+    expect(result.state.highScores).toEqual({});
+    expect(result.state.settings.countrySet).toBe('un');
+  });
+
+  it('leaves a payload already at v4 alone', () => {
+    const state = emptyState();
+    state.highScores.x = {
+      signature: 'x',
+      score: 1,
+      accuracy: 1,
+      longestStreak: 1,
+      timestamp: 1,
+    };
+    expect(migrate(state)).toEqual({ state, migrated: false });
   });
 });

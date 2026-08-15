@@ -6,7 +6,7 @@ import { clear, load, save } from '@/storage/persist';
 import {
   DEFAULT_SETTINGS,
   emptyState,
-  type PersistedStateV3,
+  type PersistedStateV4,
   type Settings,
 } from '@/storage/schema';
 
@@ -18,7 +18,7 @@ import {
  * to storage, so a reload never disagrees with what is on screen.
  */
 interface StatsState {
-  data: PersistedStateV3;
+  data: PersistedStateV4;
   /** How the last load went, for the Settings screen to report honestly. */
   loadStatus: 'empty' | 'loaded' | 'migrated' | 'corrupt' | 'future-version';
 

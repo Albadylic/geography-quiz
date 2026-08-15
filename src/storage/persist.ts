@@ -6,7 +6,7 @@ import {
   emptyModeStat,
   emptyState,
   type AnyPersistedState,
-  type PersistedStateV3,
+  type PersistedStateV4,
 } from './schema';
 
 /**
@@ -19,7 +19,7 @@ import {
  */
 
 export interface LoadResult {
-  state: PersistedStateV3;
+  state: PersistedStateV4;
   /** What happened, so the caller can decide whether to write back. */
   status: 'empty' | 'loaded' | 'migrated' | 'corrupt' | 'future-version';
 }
@@ -94,7 +94,7 @@ export function load(adapter: StorageAdapter = defaultAdapter()): LoadResult {
   }
 }
 
-export function save(state: PersistedStateV3, adapter: StorageAdapter = defaultAdapter()): void {
+export function save(state: PersistedStateV4, adapter: StorageAdapter = defaultAdapter()): void {
   tryWrite(adapter, STORAGE_KEY, JSON.stringify(state));
 }
 
@@ -112,9 +112,9 @@ function quarantine(adapter: StorageAdapter, raw: string): void {
  * Validation is deliberately forgiving here: dropping a user's whole history
  * because one field is absent is worse than defaulting it.
  */
-function repair(state: PersistedStateV3): PersistedStateV3 {
+function repair(state: PersistedStateV4): PersistedStateV4 {
   const base = emptyState();
-  const repaired: PersistedStateV3 = {
+  const repaired: PersistedStateV4 = {
     version: CURRENT_VERSION,
     entityStats: state.entityStats ?? base.entityStats,
     highScores: state.highScores ?? base.highScores,

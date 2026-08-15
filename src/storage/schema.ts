@@ -17,7 +17,7 @@ export type { CountrySet, StatMode } from '@/engine/types';
 export { emptyEntityStat, emptyModeStat } from '@/engine/stats';
 
 export const STORAGE_KEY = 'geography-quiz';
-export const CURRENT_VERSION = 3;
+export const CURRENT_VERSION = 4;
 
 export interface Settings {
   /**
@@ -36,6 +36,25 @@ export const DEFAULT_SETTINGS: Settings = {
 };
 
 /** The current persisted shape. */
+export interface PersistedStateV4 extends StatsState {
+  version: 4;
+  entityStats: Record<string, EntityStat>;
+  highScores: Record<string, HighScore>;
+  streaks: Partial<Record<StreakKey, StreakRecord>>;
+  settings: Settings;
+  totals: {
+    questionsAnswered: number;
+    correctAnswers: number;
+  };
+}
+
+/**
+ * The shape before the country set entered the high-score signature.
+ *
+ * Structurally identical to v4 — what changed is the *meaning* of the keys in
+ * `highScores`, which is exactly the kind of change a version bump exists for
+ * and a type cannot express.
+ */
 export interface PersistedStateV3 extends StatsState {
   version: 3;
   entityStats: Record<string, EntityStat>;
@@ -79,10 +98,14 @@ export interface PersistedStateV2 extends StatsState {
   settings: Partial<LegacySettings>;
 }
 
-export type PersistedState = PersistedStateV3;
-export type AnyPersistedState = PersistedStateV1 | PersistedStateV2 | PersistedStateV3;
+export type PersistedState = PersistedStateV4;
+export type AnyPersistedState =
+  | PersistedStateV1
+  | PersistedStateV2
+  | PersistedStateV3
+  | PersistedStateV4;
 
-export function emptyState(): PersistedStateV3 {
+export function emptyState(): PersistedStateV4 {
   return {
     version: CURRENT_VERSION,
     entityStats: {},

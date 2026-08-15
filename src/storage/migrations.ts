@@ -6,6 +6,7 @@ import {
   type PersistedStateV1,
   type PersistedStateV2,
   type PersistedStateV3,
+  type PersistedStateV4,
 } from './schema';
 
 /**
@@ -97,14 +98,33 @@ export function migrateV1ToV2(state: PersistedStateV1): PersistedStateV2 {
   return next;
 }
 
+/**
+ * v3 → v4.
+ *
+ * The country set now forms part of the high-score signature, because a
+ * 195-country run and a 250-country run are not the same achievement and the
+ * narrower set is measurably easier.
+ *
+ * **Stored high scores are dropped.** They were keyed without any record of
+ * which pool they were played on, so there is no honest way to place them:
+ * mapping them all to one set would invent a fact, and leaving them under their
+ * old keys would strand them as scores nobody can ever match. Everything else —
+ * per-entity stats, streaks, totals and settings — is untouched, so the only
+ * thing a player loses is the leaderboard, not their history.
+ */
+export function migrateV3ToV4(state: PersistedStateV3): PersistedStateV4 {
+  return { ...state, version: 4, highScores: {} };
+}
+
 /** Ordered migration steps, keyed by the version they upgrade *from*. */
 const STEPS: Record<number, (state: never) => AnyPersistedState> = {
   1: migrateV1ToV2 as (state: never) => AnyPersistedState,
   2: migrateV2ToV3 as (state: never) => AnyPersistedState,
+  3: migrateV3ToV4 as (state: never) => AnyPersistedState,
 };
 
 export interface MigrationResult {
-  state: PersistedStateV3;
+  state: PersistedStateV4;
   /** True when the payload was upgraded and should be written back. */
   migrated: boolean;
 }
@@ -129,5 +149,5 @@ export function migrate(input: AnyPersistedState): MigrationResult {
     migrated = true;
   }
 
-  return { state: state as PersistedStateV3, migrated };
+  return { state: state as PersistedStateV4, migrated };
 }

@@ -234,8 +234,23 @@ describe('config signature (§2)', () => {
       configSignature(config({ direction: 'b-to-a' })),
       configSignature(config({ pool: { continents: ['Europe'], source: 'all', countrySet: 'all' } })),
       configSignature(config({ pool: { continents: 'all', source: 'hardest', countrySet: 'all' } })),
+      configSignature(config({ pool: { continents: 'all', source: 'all', countrySet: 'un' } })),
     ]);
-    expect(signatures.size).toBe(7);
+    expect(signatures.size).toBe(8);
+  });
+
+  /**
+   * The three sets are three different tests: `un` drops the territories most
+   * people have never heard of, and easy mode then biases what remains towards
+   * familiar countries. A score on one must not displace a score on another.
+   */
+  it('separates the three country sets', () => {
+    const signatures = new Set(
+      (['un', 'un-plus-disputed', 'all'] as const).map((countrySet) =>
+        configSignature(config({ pool: { continents: 'all', source: 'all', countrySet } })),
+      ),
+    );
+    expect(signatures.size).toBe(3);
   });
 
   it('ignores the seed, so two runs of the same quiz compete for one high score', () => {

@@ -948,6 +948,50 @@ change — but it means anyone colouring India today is shown the wrong flag.
 
 ---
 
+## Review round (R1–R13)
+
+A full review of the finished app found a broken promise in the high-score
+system, a class of flag-data error the build could not detect, and operational
+gaps that would break a first deploy. Out of scope by agreement: recording
+Colour the Flag results, feeding quiz outcomes into the Leitner schedule,
+shareable seeded quizzes, and scoring skips separately from wrong answers.
+
+- [x] **R1** — Country set in the high-score signature
+- [ ] **R2** — "New best" fires on a tie
+- [ ] **R3** — Quitting mid-quiz discards every answer
+- [ ] **R4** — Expert mode's Skip is the Answer button
+- [ ] **R5** — Combo announcement withholds the answer
+- [ ] **R6** — Colouring fidelity audit
+- [ ] **R7** — Fix the worst flag templates
+- [ ] **R8** — SPA deep links on static hosts
+- [ ] **R9** — Service worker cache never rotates
+- [ ] **R10** — CI, stale-dist budget test, more browsers
+- [ ] **R11** — README
+- [ ] **R12** — Autocomplete scoped to the pool
+- [ ] **R13** — Dead code and small inaccuracies
+
+### R1 — Country set in the high-score signature
+
+**This was a bug I introduced in F2 and then wrongly reported as fixed.** The
+F2 plan specified that `countrySet` belonged in `configSignature`; it never got
+there. The F2 commit message and the F2 section above both claimed high scores
+separate by country set. They did not: a 195-country run and a 250-country run
+shared one high score, and the narrow set is the easier of the two — F3's
+familiarity bias made it easier still. So a `un` score would displace an `all`
+score on merit it had not earned.
+
+`countrySet` is now the seventh part of the signature, and both
+`describeConfig` and `describeSignature` name a widened pool ("+ disputed",
+"+ territories"). The default set is left unlabelled: naming it on every result
+would be noise on the setting almost every game uses.
+
+**Stored high scores are reset by the v3 → v4 migration.** An old key carries
+no record of which pool it was played on, so there is no honest place to file
+it — mapping them all to one set would invent a fact, and leaving them under
+their old keys would strand them as scores nobody could ever match again.
+Per-entity stats, streaks, totals and settings all survive, so what a player
+loses is the leaderboard, not their history.
+
 ## Project status
 
 All 40 tickets complete. 487 unit and component tests, 14 Playwright specs,
