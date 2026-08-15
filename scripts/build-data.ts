@@ -21,6 +21,7 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import worldCountries from 'world-countries';
 import { templateById } from '../src/data/flag-templates/index.ts';
+import { extractDecorations } from './lib/decorations.ts';
 import {
   COLOUR_TOKENS,
   ColourTokenSchema,
@@ -54,6 +55,13 @@ interface ColouringOverride {
 
 interface Overrides {
   colouring: Record<string, ColouringOverride>;
+  /**
+   * Entities whose extracted emblem has been rendered and looked at. Nothing
+   * ships off the extractor's say-so alone — see `scripts/lib/decorations.ts`.
+   */
+  decorations: string[];
+  /** Candidates looked at and turned down, with the reason. */
+  decorationsRejected: Record<string, string>;
   statuses: Record<string, Status>;
   sovereigns: Record<string, string>;
   altContinents: Record<string, Continent[]>;
@@ -311,6 +319,9 @@ function buildFlagAsset(iso2: string, id: string): FlagAsset {
   }
 
   writeFileSync(join(FLAG_OUT, `${code}.svg`), svg);
+  // Kept for the decoration pass, which needs the artwork itself rather than
+  // the palette derived from it.
+  flagSources.set(id, svg);
 
   return {
     file: `/flags/${code}.svg`,
@@ -322,6 +333,9 @@ function buildFlagAsset(iso2: string, id: string): FlagAsset {
 
 /** id -> artwork fingerprint, populated as entities are assembled. */
 const artworkHashes = new Map<string, string>();
+
+/** id -> the flag's own SVG source, for extracting emblems from. */
+const flagSources = new Map<string, string>();
 
 // ---------------------------------------------------------------------------
 // Entity assembly
@@ -530,6 +544,7 @@ function auditEntities(entities: Entity[]): void {
     }
   }
 
+  attachDecorations(entities);
   auditColouring(entities);
 
   const unMembers = entities.filter((e) => e.status === 'un-member');
@@ -583,6 +598,93 @@ const COLOUR_FAMILIES: Record<string, string> = {
 
 function familyOf(token: string): string {
   return COLOUR_FAMILIES[token] ?? token;
+}
+
+/**
+ * The colour family of a literal SVG fill, or null if it paints nothing.
+ * Shared by the palette extraction and the decoration pass so a fill can never
+ * be read as one colour by one and another by the other.
+ */
+function familyOfFill(fill: string): string | null {
+  if (fill.trim().toLowerCase() === 'none') return null;
+  const rgb = parseColour(fill);
+  if (!rgb) return null;
+  return familyOf(nearestToken(rgb));
+}
+
+/** What the decoration pass did, for the report. */
+interface DecorationOutcome {
+  shipped: Array<[string, number]>;
+  /** Never extracted: too complex, or artwork this pass will not touch. */
+  skipped: Array<[string, string]>;
+  /** Extracted, rendered, looked at, and turned down. */
+  rejected: Array<[string, string]>;
+}
+
+const decorationOutcome: DecorationOutcome = { shipped: [], skipped: [], rejected: [] };
+
+/**
+ * Attaches emblems to the colouring specs — follow-up F4.
+ *
+ * Runs after the specs are assembled because it needs to know which colours a
+ * spec paints: an emblem is precisely a shape whose colour is *not* one of
+ * them. Only allowlisted entities ship; everything else is reported, so the
+ * gap between "extracted" and "shipped" is visible rather than implied.
+ */
+function attachDecorations(entities: Entity[]): void {
+  const allowed = new Set(overrides.decorations);
+
+  for (const entity of entities) {
+    const spec = entity.colouring;
+    if (!spec) continue;
+
+    const svg = flagSources.get(entity.id);
+    if (!svg) continue;
+
+    const families = new Set(Object.values(spec.regions).map(familyOf));
+    const result = extractDecorations(svg, families, familyOfFill);
+
+    if (result.skipped) {
+      decorationOutcome.skipped.push([entity.id, result.skipped]);
+      continue;
+    }
+    if (result.decorations.length === 0) continue;
+
+    const rejection = overrides.decorationsRejected[entity.id];
+    if (rejection !== undefined) {
+      decorationOutcome.rejected.push([entity.id, rejection]);
+      continue;
+    }
+
+    /*
+      Neither shipped nor turned down. That means the extractor found something
+      nobody has looked at, which is exactly the case this whole allowlist
+      exists to prevent — so it stops the build rather than quietly shipping or
+      quietly dropping it.
+    */
+    if (!allowed.has(entity.id)) {
+      throw new Error(
+        `an emblem was extracted for "${entity.id}" but it is in neither "decorations" nor ` +
+          `"decorationsRejected" in overrides.json. Render it, look at it, and put it in one of them.`,
+      );
+    }
+
+    spec.decorations = result.decorations;
+    decorationOutcome.shipped.push([entity.id, result.decorations.length]);
+  }
+
+  // An allowlist entry that extracts nothing is a stale review, not a no-op.
+  for (const id of [...allowed, ...Object.keys(overrides.decorationsRejected)]) {
+    const seen =
+      decorationOutcome.shipped.some(([shippedId]) => shippedId === id) ||
+      decorationOutcome.rejected.some(([rejectedId]) => rejectedId === id);
+    if (!seen) {
+      throw new Error(
+        `decoration review names "${id}", but nothing was extracted for it — ` +
+          `the artwork or its colouring spec has changed since it was reviewed`,
+      );
+    }
+  }
 }
 
 function auditColouring(entities: Entity[]): void {
@@ -808,6 +910,26 @@ ${multiCapital}
 ### Notes
 
 ${notes}
+
+### Flag decorations (Colour the Flag)
+
+Emblems lifted from the real flag SVGs so a painted flag is not three plain
+bands: Ghana's star, Lebanon's cedar. A shape counts as an emblem when its
+colour is not one the player is asked to paint. Extraction only proposes;
+**nothing ships unless it is listed in \`decorations\` in \`overrides.json\`,
+which means it has been rendered and looked at.**
+
+- Shipped: **${decorationOutcome.shipped.length}** — ${
+    decorationOutcome.shipped.map(([id, n]) => `${id} (${n})`).join(', ') || '_none_'
+  }
+- Rendered, looked at and turned down: **${decorationOutcome.rejected.length}**
+${
+  decorationOutcome.rejected.map(([id, why]) => `  - **${id}** — ${why}`).join('\n') ||
+  '  - _none_'
+}
+- Not extracted at all: **${decorationOutcome.skipped.length}** — ${
+    decorationOutcome.skipped.map(([id, why]) => `${id} (${why})`).join(', ') || '_none_'
+  }
 
 ## Derived, not sourced
 

@@ -27,7 +27,13 @@ async function answerCurrentQuestion(page: Page, pickCorrect: boolean) {
 test('completes a 20-question easy flags quiz and shows the results', async ({ page }) => {
   await page.goto('/play/flags/setup');
 
-  await expect(page.getByTestId('pool-summary')).toContainText('20 questions from 250 countries');
+  // A game starts on the default country set (F2): the 193 UN members plus
+  // Palestine and Vatican City, not all 250 entities.
+  await expect(page.getByTestId('pool-summary')).toContainText('20 questions from 195 countries');
+  await expect(
+    page.getByRole('group', { name: /^countries$/i }).getByRole('radio', { name: /UN countries/i }),
+  ).toBeChecked();
+
   await page.getByRole('button', { name: /start quiz/i }).click();
   await expect(page).toHaveURL(/\/play\/flags$/);
 

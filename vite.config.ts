@@ -14,7 +14,9 @@ export default defineConfig({
     environment: 'jsdom',
     globals: true,
     setupFiles: ['./src/test/setup.ts'],
-    include: ['src/**/*.{test,spec}.{ts,tsx}'],
+    // `scripts/` is in scope: the data pipeline decides what ships, so its
+    // rules deserve tests as much as the app's do.
+    include: ['src/**/*.{test,spec}.{ts,tsx}', 'scripts/**/*.{test,spec}.ts'],
     exclude: ['e2e/**', 'node_modules/**'],
   },
 });

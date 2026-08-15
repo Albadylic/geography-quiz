@@ -73,3 +73,54 @@ test('undo, erase and clear all work on a real canvas', async ({ page }) => {
   await page.getByRole('button', { name: /clear all/i }).click();
   await expect(target).toHaveAttribute('aria-label', /not filled/);
 });
+
+/**
+ * F4: an emblem is drawn over the painting, and a click meant for the band
+ * underneath must reach it.
+ *
+ * This can only be proved in a real browser. jsdom has no layout and no
+ * hit-testing, so a unit test can assert `pointer-events: none` is *set* but
+ * never that it works — and getting this wrong makes the band under Ghana's
+ * star unpaintable, which is the sort of thing you only find by playing.
+ */
+test('an emblem never swallows a click meant for the flag', async ({ page }) => {
+  /*
+    The round is seeded from Math.random, and only 16 of the 89 colourable
+    flags carry an emblem — left to chance this test would quietly skip about
+    one run in seven. Pinning the seed makes it either run or fail, never
+    evaporate.
+  */
+  await page.addInitScript(() => {
+    Math.random = () => 0.5;
+  });
+
+  await page.goto('/play/colour/setup');
+  await page.getByRole('button', { name: /easy/i }).click();
+
+  const flag = page.getByRole('img', { name: /blank flag of/i });
+  const palette = page.getByRole('group', { name: /colours/i });
+  const swatches = palette.getByRole('button').filter({ hasNotText: /eraser/i });
+
+  // Walk the round to the first flag that has an emblem.
+  let emblem = flag.locator('[data-decorations] path');
+  for (let i = 0; i < 9 && (await emblem.count()) === 0; i++) {
+    await swatches.first().click();
+    const regions = flag.locator('[data-region]');
+    for (let r = 0; r < (await regions.count()); r++) {
+      await regions.nth(r).dispatchEvent('click');
+    }
+    await page.getByRole('button', { name: /check my flag/i }).click();
+    await page.getByRole('button', { name: /next flag|finish/i }).click();
+    emblem = flag.locator('[data-decorations] path');
+  }
+  await expect(emblem.first()).toBeVisible();
+
+  const box = (await emblem.first().boundingBox())!;
+  await swatches.first().click();
+  // A real mouse click at the emblem's centre, so the browser hit-tests it.
+  await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
+
+  // Something underneath got painted: the click was not eaten by the emblem.
+  const filled = flag.locator('[data-region]:not([aria-label*="not filled"])');
+  await expect(filled).not.toHaveCount(0);
+});

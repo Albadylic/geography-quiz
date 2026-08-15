@@ -69,6 +69,23 @@ from `flag-icons` (MIT).
 - **Sri Lanka** — The snapshot lists only Colombo. Sri Jayawardenepura Kotte is the official capital and the primary answer; both are accepted.
 - **Chile** — §5.2 names 'Chile/Texas-alikes' as a confusable pair, but Texas is not an entity in this dataset. Paired with Cuba instead, which is the closest genuine confusable in scope.
 
+### Flag decorations (Colour the Flag)
+
+Emblems lifted from the real flag SVGs so a painted flag is not three plain
+bands: Ghana's star, Lebanon's cedar. A shape counts as an emblem when its
+colour is not one the player is asked to paint. Extraction only proposes;
+**nothing ships unless it is listed in `decorations` in `overrides.json`,
+which means it has been rendered and looked at.**
+
+- Shipped: **16** — algeria (1), gambia (2), ghana (1), iraq (3), jamaica (1), jordan (1), kuwait (1), laos (1), lebanon (1), mongolia (4), palestine (1), papua-new-guinea (2), philippines (1), sudan (1), syria (1), united-arab-emirates (1)
+- Rendered, looked at and turned down: **5**
+  - **botswana** — the white fimbriations are one full-width shape that covers the black bar entirely, leaving a flag with no black in it
+  - **burundi** — only the red of the three stars extracts; the white disc they sit in is white, which is a painted colour, so the emblem renders as two red notches
+  - **ethiopia** — the blue disc extracts but its yellow star does not, because yellow is one of the painted bands. A plain blue disc is not Ethiopia's emblem
+  - **mauritania** — the red bands are drawn as a full-canvas rectangle, which paints over the whole flag
+  - **moldova** — the eagle extracts without its shield, which is drawn in the painted colours. It renders as a brown blob
+- Not extracted at all: **21** — afghanistan (artwork uses <use> references), andorra (artwork uses <use> references), argentina (artwork uses <use> references), bolivia (127 shapes (coat of arms?)), egypt (artwork uses <use> references), el-salvador (artwork uses <use> references), grenada (artwork uses <use> references), guatemala (artwork uses <use> references), guinea-bissau (artwork uses <use> references), haiti (artwork uses <use> references), india (artwork uses <use> references), malta (artwork uses <use> references), mexico (293 shapes (coat of arms?)), myanmar (artwork uses <use> references), nicaragua (artwork uses <use> references), paraguay (145 shapes (coat of arms?)), portugal (artwork uses <use> references), san-marino (34 shapes (coat of arms?)), tajikistan (artwork uses <use> references), uzbekistan (artwork uses <use> references), vatican-city (viewBox is "0 0 512 512", not the template's)
+
 ## Derived, not sourced
 
 These fields are computed by the build rather than taken from a source, and are

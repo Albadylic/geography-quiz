@@ -3,6 +3,8 @@ import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { entities } from './entities.generated';
 import { EntityListSchema } from './schema';
+import { templateById } from './flag-templates';
+import { COLOUR_HEX } from '@/engine/colour';
 
 const PUBLIC_DIR = join(process.cwd(), 'public');
 
@@ -276,5 +278,82 @@ describe('confusable pairs seeded from §5.2', () => {
   it.each(pairs)('%s is marked confusable with %s', (a, b) => {
     expect(byId.get(a)?.confusableWith).toContain(b);
     expect(byId.get(b)?.confusableWith).toContain(a);
+  });
+});
+
+/** Follow-up F4 — emblems lifted from the real SVGs for Colour the Flag. */
+describe('flag decorations', () => {
+  const decorated = entities.filter(
+    (entity) => (entity.colouring?.decorations ?? []).length > 0,
+  );
+
+  it('ships emblems for the flags that have one', () => {
+    expect(decorated.length).toBeGreaterThanOrEqual(16);
+    for (const id of ['ghana', 'lebanon', 'syria', 'philippines']) {
+      expect(byId.get(id)!.colouring!.decorations!.length, id).toBeGreaterThan(0);
+    }
+  });
+
+  it('is path data and a literal colour, nothing else', () => {
+    for (const entity of decorated) {
+      for (const decoration of entity.colouring!.decorations!) {
+        // Starts with a moveto and contains only path syntax: no stray markup,
+        // no `url(#...)` reference to a gradient the template does not carry.
+        expect(decoration.d, entity.id).toMatch(/^[Mm]/);
+        expect(decoration.d, entity.id).toMatch(/^[\sA-Za-z0-9.,+-]+$/);
+        expect(decoration.fill, entity.id).toMatch(/^(#[0-9a-fA-F]{3,8}|[a-z]+)$/);
+      }
+    }
+  });
+
+  /**
+   * The emblem is never the same colour as a region of its own flag — which
+   * is the rule that produced it, checked here against the exact hexes the app
+   * paints with. (The rule itself is tested on its own inputs in
+   * `scripts/lib/decorations.test.ts`; this is the shipped data obeying it.)
+   */
+  it('never paints in the exact colour of a region of its own flag', () => {
+    for (const entity of decorated) {
+      const spec = entity.colouring!;
+      const painted = new Set(
+        Object.values(spec.regions).map((token) => COLOUR_HEX[token].toLowerCase()),
+      );
+      for (const decoration of spec.decorations!) {
+        expect(painted, `${entity.id}: ${decoration.fill}`).not.toContain(
+          decoration.fill.toLowerCase(),
+        );
+      }
+    }
+  });
+
+  it('does not add a region, so nothing about it can be graded', () => {
+    for (const entity of decorated) {
+      const spec = entity.colouring!;
+      const template = templateById(spec.templateId)!;
+      // Grading walks the template's regions; the emblem is not among them.
+      expect(Object.keys(spec.regions).sort(), entity.id).toEqual(
+        template.regions.map((region) => region.id).sort(),
+      );
+    }
+  });
+
+  it('stays small enough that no flag is a coat of arms', () => {
+    for (const entity of decorated) {
+      const bytes = entity
+        .colouring!.decorations!.reduce((total, one) => total + one.d.length, 0);
+      expect(bytes, entity.id).toBeLessThanOrEqual(4_000);
+      expect(entity.colouring!.decorations!.length, entity.id).toBeLessThanOrEqual(12);
+    }
+  });
+
+  it('costs the dataset little enough to be worth it', () => {
+    const bytes = decorated.reduce(
+      (total, entity) =>
+        total +
+        entity.colouring!.decorations!.reduce((sum, one) => sum + one.d.length, 0),
+      0,
+    );
+    // The whole feature, across every flag that has one.
+    expect(bytes).toBeLessThan(20_000);
   });
 });

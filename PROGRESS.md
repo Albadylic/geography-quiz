@@ -791,23 +791,44 @@ original plan, so they are numbered F1–F4 rather than given ticket IDs.
 - [x] **F1** — Loading
 - [x] **F2** — Country sets
 - [x] **F3** — Easy mode favours familiar countries
-- [ ] **F4** — Flag decorations in Colour the Flag
+- [x] **F4** — Flag decorations in Colour the Flag
 
 ### F1 — Loading
-
-Measured on a throttled 1.5Mbps/40ms link before changing anything, so the
-numbers below are the same measurement run twice, not an estimate:
-
-|                    | before | after |
-| ------------------ | -----: | ----: |
-| repeat visit ready | 1292ms | 589ms |
-| setup screen ready |  846ms | 634ms |
-| first hard question |  237ms |  84ms |
 
 Three changes: the service worker is now registered in production; `HomeScreen`
 warms the setup chunk and the dataset on idle; and the next question's flags are
 fetched during the 1.2s reveal — the half of T7.4 that had not shipped, which
 left an eight-option question pulling up to 696KB of SVG at render time.
+
+**Correction to the numbers first reported.** The figures in the F1 commit
+message (1292→589, 846→634, 237→84) were wrong, and are superseded by the table
+below. Two mistakes: they were taken through Playwright's `waitFor`, which adds
+roughly 500ms of polling and actionability overhead per step, and the "before"
+side was not a rebuild of the pre-change commit, so the two halves were not
+comparable. `npm run measure:loading <port>` now times from inside the page and
+was run against a rebuild of 9d0e5ab (the commit before F1) on the same
+throttled 1.5Mbps/40ms link, five runs each, medians:
+
+|                                | before | after |
+| ------------------------------ | -----: | ----: |
+| home ready, first visit        |  680ms | 689ms |
+| home ready, repeat visit       |  142ms |  64ms |
+| setup screen ready             |  321ms | 318ms |
+| first hard question, flags shown | 170ms |  34ms |
+
+What that says, honestly:
+
+- **The flag preload is the real win** — 5× on the question that actually
+  stalled, which is the one the complaint was about.
+- **The service worker halves a repeat visit**, though from 142ms rather than
+  from the 1292ms first claimed; ordinary HTTP caching was already doing most
+  of that job.
+- **The idle prefetch does not move the clock at all.** It does exactly what it
+  says — the setup navigation goes from six requests (~110KB) to none, verified
+  by logging them — but the ~320ms is React rendering and module evaluation,
+  not download, so removing the download changes nothing measurable. It is kept
+  because it makes the navigation independent of the network rather than faster,
+  but it should not be described as a speed-up.
 
 **SVG minification was considered and rejected.** The flags have no
 path-precision bloat, and gzip already takes the worst one (Serbia) from 177KB
@@ -876,6 +897,54 @@ about:
 an explicit request, and it outranks easy's preference for familiar ones —
 otherwise the mode would quietly stop showing you what you actually keep getting
 wrong.
+
+### F4 — Flag decorations
+
+Lebanon painted as three plain stripes with no cedar. Emblems are now lifted
+from the real flag SVGs at build time (`scripts/lib/decorations.ts`), drawn over
+the painting already coloured, and never paintable or graded.
+
+**The rule:** a shape is an emblem when its colour is *not* one of the colours
+the player is being asked to paint. Ghana's star is black and no Ghanaian region
+is black, so it is an emblem; Sweden's yellow cross is yellow and the `cross`
+region *is* yellow, so it stays paintable. Anything keying off shape or size
+instead gets Sweden wrong.
+
+**16 of 89 colouring specs ship an emblem.** That number is the outcome of
+looking at them, not of trusting the extractor: every candidate was rendered
+beside its real flag and reviewed, and 5 were turned down —
+
+| Turned down | Why |
+| --- | --- |
+| Botswana | the white fimbriations are one full-width shape that covers the black bar entirely |
+| Burundi | only the stars' red extracts; their white disc is a painted colour, so it renders as two red notches |
+| Ethiopia | the disc extracts but its yellow star does not, because yellow is a painted band |
+| Mauritania | the red bands are a full-canvas rectangle, which paints over the whole flag |
+| Moldova | the eagle extracts without its shield, and renders as a brown blob |
+
+A further 21 are never extracted: 16 are drawn with `<use>` references
+(India's chakra is one spoke and twenty-three re-uses), 4 are coats of arms past
+the size cap (Mexico's is 293 shapes), and Vatican City is on a different
+canvas. All of this is listed in `data-report.md` with reasons.
+
+Three things worth recording:
+
+1. **The allowlist is enforced in both directions.** A candidate in neither
+   `decorations` nor `decorationsRejected` *fails the build*, so new artwork
+   cannot ship an unreviewed emblem or silently lose a reviewed one.
+2. **Fill inheritance was a real bug, found by looking.** Mongolia's soyombo
+   takes its yellow from the root `<svg fill>`; read literally each shape is
+   black. The first review rendered it as a black blob, which is what prompted
+   the fix.
+3. **`pointer-events: none` is load-bearing.** Without it the emblem swallows
+   clicks meant for the band underneath, and Ghana's star sits in the middle of
+   one. jsdom has no hit-testing, so this is pinned by an e2e test that clicks
+   the emblem's centre with a real mouse and asserts the band gets painted.
+
+**Not fixed here, but found:** India's colouring spec uses `vertical-3`
+(left/middle/right) for a flag whose bands are horizontal. It is a pre-existing
+§7 data bug, unrelated to emblems, and left alone rather than folded into this
+change — but it means anyone colouring India today is shown the wrong flag.
 
 ---
 

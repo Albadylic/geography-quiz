@@ -126,6 +126,7 @@ function ColourRound({
 
   const entity = byId.get(question.entityId)!;
   const grade = graded ? gradeColouring(question, filled) : null;
+  const decorations = entity.colouring?.decorations ?? [];
 
   /** Pushes a new fill state onto the history stack. */
   const commit = (next: Partial<Record<string, ColourToken>>) => {
@@ -197,7 +198,11 @@ function ColourRound({
         viewBox={question.template.viewBox}
         className="mt-6 w-full border-2 border-line"
         role="img"
-        aria-label={`Blank flag of ${entity.name}, ${question.template.name}`}
+        aria-label={
+          decorations.length > 0
+            ? `Blank flag of ${entity.name}, ${question.template.name}. Its emblem is already drawn and is not yours to colour.`
+            : `Blank flag of ${entity.name}, ${question.template.name}`
+        }
       >
         {question.template.regions.map((region) => {
           const token = filled[region.id];
@@ -223,6 +228,26 @@ function ColourRound({
             />
           );
         })}
+
+        {/*
+          The emblem, drawn over the painting and out of the way of it: Ghana's
+          star, Lebanon's cedar. It comes pre-coloured from the real artwork
+          (§F4), is never clickable, and `gradeColouring` cannot see it at all
+          because grading walks `template.regions` — so it is scenery, not a
+          question. `pointer-events: none` matters as much as the styling:
+          without it the emblem would swallow clicks meant for the region
+          underneath, and Ghana's star sits right in the middle of a band.
+        */}
+        <g aria-hidden="true" style={{ pointerEvents: 'none' }} data-decorations={decorations.length}>
+          {decorations.map((decoration, index) => (
+            <path
+              key={index}
+              d={decoration.d}
+              fill={decoration.fill}
+              {...(decoration.transform ? { transform: decoration.transform } : {})}
+            />
+          ))}
+        </g>
       </svg>
 
       {!graded && (

@@ -12,7 +12,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:e2e": "playwright test",
-    "build:data": "tsx scripts/build-data.ts"
+    "build:data": "tsx scripts/build-data.ts",
+    "measure:loading": "node scripts/measure-loading.mjs"
   },
   "dependencies": {
     "react": "^19.2.0",

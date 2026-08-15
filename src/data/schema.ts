@@ -46,10 +46,25 @@ export const CapitalSchema = z.object({
 });
 export type Capital = z.infer<typeof CapitalSchema>;
 
+/**
+ * An emblem lifted from the real flag SVG at build time: Ghana's star,
+ * Lebanon's cedar. Drawn over the painting, already coloured, never paintable
+ * and never graded — it is scenery, not an answer.
+ */
+export const DecorationSchema = z.object({
+  d: z.string().min(1),
+  /** A literal SVG fill from the source artwork, not one of our tokens. */
+  fill: z.string().min(1),
+  /** Any transform inherited from the enclosing groups of the source SVG. */
+  transform: z.string().min(1).optional(),
+});
+export type Decoration = z.infer<typeof DecorationSchema>;
+
 export const ColouringSpecSchema = z.object({
   templateId: z.string().min(1),
   /** region name -> colour token. Validated against the template in §7. */
   regions: z.record(z.string().min(1), ColourTokenSchema),
+  decorations: z.array(DecorationSchema).optional(),
 });
 export type ColouringSpec = z.infer<typeof ColouringSpecSchema>;
 

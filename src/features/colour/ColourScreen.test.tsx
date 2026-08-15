@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { createMemoryRouter, RouterProvider } from 'react-router-dom';
@@ -6,6 +6,7 @@ import { ColourScreen } from './ColourScreen';
 import { entities } from '@/data/entities.generated';
 import { templateById } from '@/data/flag-templates';
 import { COLOUR_NAMES } from '@/engine/colour';
+import * as rng from '@/engine/rng';
 import type { ColourToken } from '@/data/schema';
 
 function renderColour() {
@@ -219,5 +220,63 @@ describe('grading and the summary (T6.4)', () => {
     for (const region of regions()) {
       expect(region.getAttribute('aria-label')).toContain('not filled');
     }
+  });
+});
+
+/**
+ * Emblems — follow-up F4. Seeded so the first flag is Jamaica, whose black
+ * quarters are a decoration rather than a paintable region.
+ */
+describe('flag decorations', () => {
+  async function startDecoratedRound() {
+    vi.spyOn(rng, 'randomSeed').mockReturnValue(7);
+    return startEasyRound();
+  }
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it('draws the emblem without adding a region to paint', async () => {
+    await startDecoratedRound();
+    const emblems = flag().querySelector('[data-decorations]')!;
+
+    expect(emblems).not.toBeNull();
+    expect(emblems.querySelectorAll('path').length).toBeGreaterThan(0);
+    // The saltire template has two regions; the emblem adds neither a third
+    // nor a clickable anything.
+    expect(regions()).toHaveLength(templateById('saltire')!.regions.length);
+    expect(within(emblems as HTMLElement).queryAllByRole('button')).toHaveLength(0);
+  });
+
+  it('is scenery: hidden from screen readers and deaf to clicks', async () => {
+    await startDecoratedRound();
+    const emblems = flag().querySelector('[data-decorations]') as HTMLElement;
+
+    expect(emblems).toHaveAttribute('aria-hidden', 'true');
+    // Without this the emblem swallows clicks meant for the band underneath.
+    expect(emblems.style.pointerEvents).toBe('none');
+  });
+
+  it('says the emblem is not the player’s to colour', async () => {
+    await startDecoratedRound();
+    expect(flag()).toHaveAccessibleName(/not yours to colour/i);
+  });
+
+  it('cannot change a grade', async () => {
+    const user = await startDecoratedRound();
+    // Fill every region correctly and check: a decorated flag still grades as
+    // exactly right, so the emblem is not being counted as an unfilled region.
+    const entity = entities.find((candidate) => candidate.id === 'jamaica')!;
+    const spec = entity.colouring!;
+    const template = templateById(spec.templateId)!;
+
+    for (const region of template.regions) {
+      await user.click(swatch(new RegExp(`^${COLOUR_NAMES[spec.regions[region.id]!]}$`, 'i')));
+      await user.click(within(flag()).getByRole('button', { name: new RegExp(region.label, 'i') }));
+    }
+
+    await user.click(screen.getByRole('button', { name: /check my flag/i }));
+    expect(screen.getByRole('heading', { name: /exactly right/i })).toBeInTheDocument();
   });
 });

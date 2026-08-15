@@ -518,6 +518,33 @@
     "sri-lanka": "The snapshot lists only Colombo. Sri Jayawardenepura Kotte is the official capital and the primary answer; both are accepted.",
     "chile": "§5.2 names 'Chile/Texas-alikes' as a confusable pair, but Texas is not an entity in this dataset. Paired with Cuba instead, which is the closest genuine confusable in scope."
   },
+  "$decorationsRejected": "Candidates the extractor produced that were rendered, looked at, and rejected, with the reason. Kept rather than deleted so the next person does not re-derive the same verdict - and so the build can insist that every candidate is in exactly one of these two lists.",
+  "decorationsRejected": {
+    "botswana": "the white fimbriations are one full-width shape that covers the black bar entirely, leaving a flag with no black in it",
+    "burundi": "only the red of the three stars extracts; the white disc they sit in is white, which is a painted colour, so the emblem renders as two red notches",
+    "ethiopia": "the blue disc extracts but its yellow star does not, because yellow is one of the painted bands. A plain blue disc is not Ethiopia's emblem",
+    "mauritania": "the red bands are drawn as a full-canvas rectangle, which paints over the whole flag",
+    "moldova": "the eagle extracts without its shield, which is drawn in the painted colours. It renders as a brown blob"
+  },
+  "$decorations": "Entities whose flag emblem, extracted from the real SVG by the build, has been rendered and visually reviewed (follow-up F4). The extractor proposes candidates for every colouring spec - a shape whose colour is not one the player paints - but only ids listed here ship, because auto-detection can pull in fimbriations and shadows that look wrong. An id here that stops extracting anything fails the build rather than silently dropping its emblem.",
+  "decorations": [
+    "algeria",
+    "gambia",
+    "ghana",
+    "iraq",
+    "jamaica",
+    "jordan",
+    "kuwait",
+    "laos",
+    "lebanon",
+    "mongolia",
+    "palestine",
+    "papua-new-guinea",
+    "philippines",
+    "sudan",
+    "syria",
+    "united-arab-emirates"
+  ],
   "$colouring": "Colour the Flag specs (§7). Each entity names a template and assigns every one of its regions a colour token. The build refuses a spec whose regions do not match its template, and refuses a colour that does not appear in the palette extracted from that entity's real SVG - which catches a mis-remembered flag rather than shipping it. Entities are only listed where the template is a faithful rendering of the flag's field: Chile, Greece, Sri Lanka and Nauru were dropped because no available template shows them without losing a colour or a defining feature.",
   "colouring": {
     "france": {
