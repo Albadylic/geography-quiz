@@ -30,6 +30,11 @@ interface SessionState {
   answer: (chosenId: string | null) => void;
   /** Records an answer graded elsewhere (expert and combo modes). */
   submit: (answer: Answer) => void;
+  /**
+   * Ends a run early: keeps what was answered, scores nothing, clears the
+   * session. Distinct from `abandon`, which throws the answers away too.
+   */
+  quit: () => void;
   abandon: () => void;
 }
 
@@ -66,6 +71,22 @@ export const useSessionStore = create<SessionState>((set, get) => ({
     const { session } = get();
     if (!session) return;
     finish(set, recordAnswer(session, answer));
+  },
+
+  /**
+   * Quitting used to discard everything: nineteen answers given, nothing
+   * recorded. What the player answered is what they learned, so it is kept —
+   * per-entity stats, streaks and totals all update. What they did *not* do is
+   * finish, so no high score is written and no result is stored: a partial run
+   * is not an achievement and has no summary to look at.
+   */
+  quit: () => {
+    const { session } = get();
+    if (!session) return;
+    useStatsStore
+      .getState()
+      .recordPartialAnswers(session.answers, session.questions, session.config.mode);
+    set({ session: null });
   },
 
   abandon: () => set({ session: null }),

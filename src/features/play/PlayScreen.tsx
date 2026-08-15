@@ -45,10 +45,12 @@ export function PlayScreen() {
   const navigate = useNavigate();
   const session = useSessionStore((state) => state.session);
   const submit = useSessionStore((state) => state.submit);
+  const quit = useSessionStore((state) => state.quit);
 
   /** The graded answer awaiting commit, or null while the question is open. */
   const [revealed, setRevealed] = useState<Answer | null>(null);
   const [typed, setTyped] = useState('');
+  const [confirmingQuit, setConfirmingQuit] = useState(false);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   /**
    * Mirrors `revealed`. State drives the render; the ref is what `advance`
@@ -155,13 +157,14 @@ export function PlayScreen() {
     <div className="flex min-h-dvh flex-col">
       <header className="border-b-2 border-line px-4 py-3">
         <div className="mx-auto flex w-full max-w-3xl items-center gap-4">
-          <Link
-            to="/"
+          <button
+            type="button"
+            onClick={() => setConfirmingQuit(true)}
             className="label-caps text-xs text-paper-faint hover:text-paper"
             aria-label="Quit this quiz"
           >
             Quit
-          </Link>
+          </button>
           <p className="label-caps ml-auto text-xs text-paper-dim">
             <span className="text-paper">{questionNumber}</span> / {total}
           </p>
@@ -188,6 +191,40 @@ export function PlayScreen() {
         <h1 className="sr-only">
           Question {questionNumber} of {total}
         </h1>
+
+        {confirmingQuit && (
+          <div className="mb-6 border-2 border-signal-yellow bg-ink-raised p-4">
+            <p className="text-paper">
+              Quit after {session.currentIndex} of {total} questions?
+            </p>
+            {/* Says exactly what is kept and what is lost, before it happens. */}
+            <p className="mt-2 text-sm text-paper-dim">
+              {session.currentIndex === 0
+                ? 'You haven’t answered anything yet, so there’s nothing to keep.'
+                : `Your ${session.currentIndex} answer${session.currentIndex === 1 ? '' : 's'} will be kept towards your per-country stats, but an unfinished quiz doesn’t score, so it won’t count towards a high score.`}
+            </p>
+            <div className="mt-4 flex flex-col gap-px sm:flex-row">
+              <button
+                type="button"
+                onClick={() => {
+                  clearTimer();
+                  quit();
+                  navigate('/', { replace: true });
+                }}
+                className="label-caps bg-signal-red px-5 py-3 text-sm text-paper"
+              >
+                Quit the quiz
+              </button>
+              <button
+                type="button"
+                onClick={() => setConfirmingQuit(false)}
+                className="label-caps bg-ink px-5 py-3 text-sm text-paper"
+              >
+                Keep playing
+              </button>
+            </div>
+          </div>
+        )}
 
         <Prompt question={question} />
 

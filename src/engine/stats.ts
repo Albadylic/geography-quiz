@@ -173,12 +173,42 @@ export interface Outcome {
 }
 
 /**
- * Everything a finished session changes: per-entity stats, streaks, totals and
- * possibly a high score.
+ * What a set of answers changes: per-entity stats, streaks and totals.
+ *
+ * Separate from `recordSession` because a run that was quit part-way still
+ * taught the player something — those answers are recorded — but is not an
+ * achievement, so it must not reach `recordHighScore`.
  *
  * Answers are matched to their questions by id rather than by position, so a
  * session that skipped or reordered anything still records against the right
  * country.
+ */
+export function recordAnswers<S extends StatsState>(
+  state: S,
+  answers: readonly Answer[],
+  questions: readonly Question[],
+  mode: QuizMode,
+  now: number = Date.now(),
+): S {
+  const byQuestionId = new Map(questions.map((question) => [question.id, question]));
+  let next = state;
+
+  for (const answer of answers) {
+    const question = byQuestionId.get(answer.questionId);
+    if (!question) continue;
+
+    for (const outcome of outcomesFor(question, answer)) {
+      next = recordOutcome(next, outcome.entityId, outcome.mode, outcome.correct, now);
+    }
+    next = recordStreak(next, mode, answer.correct);
+  }
+
+  return next;
+}
+
+/**
+ * Everything a *finished* session changes: the answers, plus possibly a high
+ * score. Only a completed run can set one.
  */
 export function recordSession<S extends StatsState>(
   state: S,
@@ -186,19 +216,7 @@ export function recordSession<S extends StatsState>(
   questions: readonly Question[],
   now: number = Date.now(),
 ): S {
-  const byQuestionId = new Map(questions.map((question) => [question.id, question]));
-  let next = state;
-
-  for (const answer of result.answers) {
-    const question = byQuestionId.get(answer.questionId);
-    if (!question) continue;
-
-    for (const outcome of outcomesFor(question, answer)) {
-      next = recordOutcome(next, outcome.entityId, outcome.mode, outcome.correct, now);
-    }
-    next = recordStreak(next, result.config.mode, answer.correct);
-  }
-
+  const next = recordAnswers(state, result.answers, questions, result.config.mode, now);
   return recordHighScore(next, result);
 }
 

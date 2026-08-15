@@ -1,7 +1,7 @@
 import { create } from 'zustand';
-import { recordSession } from '@/engine/stats';
+import { recordAnswers, recordSession } from '@/engine/stats';
 import type { SessionResult } from '@/engine/session';
-import type { Question } from '@/engine/types';
+import type { Answer, Question, QuizMode } from '@/engine/types';
 import { clear, load, save } from '@/storage/persist';
 import {
   DEFAULT_SETTINGS,
@@ -23,6 +23,12 @@ interface StatsState {
   loadStatus: 'empty' | 'loaded' | 'migrated' | 'corrupt' | 'future-version';
 
   recordFinishedSession: (result: SessionResult, questions: readonly Question[]) => void;
+  /** Answers from a run that was quit part-way. Never sets a high score. */
+  recordPartialAnswers: (
+    answers: readonly Answer[],
+    questions: readonly Question[],
+    mode: QuizMode,
+  ) => void;
   updateSettings: (patch: Partial<Settings>) => void;
   resetAll: () => void;
   reload: () => void;
@@ -36,6 +42,13 @@ export const useStatsStore = create<StatsState>((set, get) => ({
 
   recordFinishedSession: (result, questions) => {
     const data = recordSession(get().data, result, questions);
+    save(data);
+    set({ data });
+  },
+
+  recordPartialAnswers: (answers, questions, mode) => {
+    if (answers.length === 0) return;
+    const data = recordAnswers(get().data, answers, questions, mode);
     save(data);
     set({ data });
   },

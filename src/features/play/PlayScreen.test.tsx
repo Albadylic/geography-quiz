@@ -4,6 +4,7 @@ import userEvent from '@testing-library/user-event';
 import { createMemoryRouter, RouterProvider } from 'react-router-dom';
 import { PlayScreen } from './PlayScreen';
 import { useSessionStore } from '@/store/sessionStore';
+import { useStatsStore } from '@/store/statsStore';
 import { entities } from '@/data/entities.generated';
 import { currentQuestion } from '@/engine/session';
 import type { Difficulty, Direction, QuizConfig } from '@/engine/types';
@@ -355,5 +356,88 @@ describe('preloading the next question (T7.4)', () => {
     } finally {
       restore();
     }
+  });
+});
+
+/**
+ * R3. Quitting used to discard every answer given: nineteen questions of a
+ * twenty-question run, gone. It now keeps what was answered without scoring it.
+ */
+describe('quitting mid-quiz', () => {
+  /** Answers `count` questions correctly, then opens the quit confirmation. */
+  async function playThenQuit(count: number) {
+    const user = userEvent.setup();
+    const { router } = startAndRender();
+
+    for (let i = 0; i < count; i++) {
+      const question = liveQuestion();
+      const index = question.options!.indexOf(question.correctIds[0]!);
+      // Re-find the grid each time — it is rebuilt for every question.
+      const options = within(screen.getByRole('list')).getAllByRole('button');
+      await user.click(options[index]!);
+      await user.click(screen.getByRole('button', { name: /^continue$/i }));
+    }
+
+    await user.click(screen.getByRole('button', { name: /quit this quiz/i }));
+    return { user, router };
+  }
+
+  it('asks before throwing anything away', async () => {
+    const user = userEvent.setup();
+    startAndRender();
+    await user.click(screen.getByRole('button', { name: /quit this quiz/i }));
+
+    expect(screen.getByRole('button', { name: /quit the quiz/i })).toBeInTheDocument();
+    // Nothing has happened yet.
+    expect(useSessionStore.getState().session).not.toBeNull();
+  });
+
+  it('carries on when the player changes their mind', async () => {
+    const user = userEvent.setup();
+    startAndRender();
+    await user.click(screen.getByRole('button', { name: /quit this quiz/i }));
+    await user.click(screen.getByRole('button', { name: /keep playing/i }));
+
+    expect(screen.queryByRole('button', { name: /quit the quiz/i })).toBeNull();
+    expect(useSessionStore.getState().session).not.toBeNull();
+  });
+
+  it('keeps the answers already given', async () => {
+    act(() => {
+      useStatsStore.getState().resetAll();
+    });
+    const { user } = await playThenQuit(3);
+    await user.click(screen.getByRole('button', { name: /quit the quiz/i }));
+
+    const data = useStatsStore.getState().data;
+    expect(data.totals.questionsAnswered).toBe(3);
+    expect(data.totals.correctAnswers).toBe(3);
+    expect(Object.keys(data.entityStats)).toHaveLength(3);
+  });
+
+  it('does not record a high score for a run that was not finished', async () => {
+    act(() => {
+      useStatsStore.getState().resetAll();
+    });
+    const { user } = await playThenQuit(3);
+    await user.click(screen.getByRole('button', { name: /quit the quiz/i }));
+
+    expect(useStatsStore.getState().data.highScores).toEqual({});
+  });
+
+  it('clears the session, so the dead quiz cannot be resumed', async () => {
+    const { user, router } = await playThenQuit(2);
+    await user.click(screen.getByRole('button', { name: /quit the quiz/i }));
+
+    expect(useSessionStore.getState().session).toBeNull();
+    expect(router.state.location.pathname).toBe('/');
+  });
+
+  it('says plainly that nothing is kept when nothing was answered', async () => {
+    const user = userEvent.setup();
+    startAndRender();
+    await user.click(screen.getByRole('button', { name: /quit this quiz/i }));
+
+    expect(screen.getByText(/nothing to keep/i)).toBeInTheDocument();
   });
 });

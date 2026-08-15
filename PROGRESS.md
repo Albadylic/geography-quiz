@@ -958,7 +958,7 @@ shareable seeded quizzes, and scoring skips separately from wrong answers.
 
 - [x] **R1** — Country set in the high-score signature
 - [x] **R2** — "New best" fires on a tie
-- [ ] **R3** — Quitting mid-quiz discards every answer
+- [x] **R3** — Quitting mid-quiz discards every answer
 - [ ] **R4** — Expert mode's Skip is the Answer button
 - [ ] **R5** — Combo announcement withholds the answer
 - [ ] **R6** — Colouring fidelity audit
@@ -1001,6 +1001,26 @@ also requires the stored timestamp to be this run's, which is only true when
 `recordHighScore` actually wrote.
 
 Verified by reverting the fix and watching the tie test fail on its own.
+
+### R3 — Quitting mid-quiz discards every answer
+
+Three defects in one control. Quit was a plain link: no confirmation, nothing
+recorded, and the store's own `abandon()` never called — so nineteen answers of
+a twenty-question run vanished, and the dead session stayed in memory where
+navigating back to `/play/flags` would silently resume it.
+
+The split that makes this work: `recordSession` is now `recordAnswers` plus
+`recordHighScore`. Quitting calls only the first. **What the player answered is
+what they learned, so it is kept** — per-entity stats, streaks and totals all
+update. What they did not do is finish, so no high score is written and no
+result is stored: an unfinished run is not an achievement and has no summary
+worth looking at.
+
+The confirmation says exactly what is kept and what is lost before it happens,
+and reads differently when nothing has been answered yet.
+
+Verified by removing the `recordPartialAnswers` call and watching only the
+"keeps the answers already given" test fail.
 
 ## Project status
 
