@@ -966,7 +966,7 @@ shareable seeded quizzes, and scoring skips separately from wrong answers.
 - [x] **R8** — SPA deep links on static hosts
 - [x] **R9** — Service worker cache never rotates
 - [x] **R10** — CI, stale-dist budget test, more browsers
-- [ ] **R11** — README
+- [x] **R11** — README
 - [x] **R12** — Autocomplete scoped to the pool
 - [x] **R13** — Dead code and small inaccuracies
 
@@ -1213,6 +1213,14 @@ free.
 a set, not toggles — but correct radio semantics mean owning tabindex and
 arrow-key handling, which is a real rewrite of a well-tested component for a
 small gain. Recorded here rather than half-done.
+
+### R11 — README
+
+348 tracked files and no entry point for a reader. Covers what the app is, the
+modes and country sets, every npm script, the engine boundary and why it is
+lint-enforced, why `build:data` is deliberate and separate, the deploy
+requirements from R8, and data provenance. `PROGRESS.md` stays the build log;
+the README is the front door.
 
 ## Project status
 
