@@ -961,7 +961,7 @@ shareable seeded quizzes, and scoring skips separately from wrong answers.
 - [x] **R3** — Quitting mid-quiz discards every answer
 - [x] **R4** — Expert mode's Skip is the Answer button
 - [x] **R5** — Combo announcement withholds the answer
-- [ ] **R6** — Colouring fidelity audit
+- [x] **R6** — Colouring fidelity audit
 - [ ] **R7** — Fix the worst flag templates
 - [ ] **R8** — SPA deep links on static hosts
 - [ ] **R9** — Service worker cache never rotates
@@ -1043,6 +1043,41 @@ capital half now names the capital.
 A missed *flag* half deliberately does not name the country: the flag half's
 answer is the country, which the prompt already said, so repeating it would be
 noise rather than information.
+
+### R6 — Colouring fidelity audit
+
+`auditColouring` checks a spec's region *names* and its *colours*. It has no
+idea about geometry, which is how India shipped as three vertical bands and
+Afghanistan as three horizontal ones — both pass every check the build can make
+and both show the player the wrong flag.
+
+**Why it is not a plain image diff.** Comparing painted to real pixel for pixel
+mostly measures the palette: Colour mode paints in twenty tokens, so Germany's
+`gold` renders `#d4af37` against a real `#ffce00` and two thirds of a
+geometrically perfect flag "differs". The first version of this test ranked
+Portugal at 99.7% and Germany at 66.7%, neither of which has a shape problem.
+That number cannot tell a wrong template from an approximate shade.
+
+So it measures the **partition** instead. Each region is rendered in an
+identifying colour to give a map of which region owns which pixel; for each
+region we take the modal colour the real flag actually has there, and count the
+pixels that disagree. A template whose regions line up with the flag's own flat
+areas scores near zero in any palette — Armenia, Austria, Belgium and Bulgaria
+all score exactly 0 — while one whose bands run the wrong way scores terribly.
+Anti-aliased boundary pixels are excluded rather than counted as error, because
+the identifying colours blend to values no region owns.
+
+It is a baseline test, not a threshold test: some difference is irreducible
+(Moldova's coat of arms is 19.9% of Moldova). `data/colouring-fidelity.json`
+records all 89, and the test fails when one gets **worse** or when a new spec
+appears with no baseline — the same "nothing ships unlooked-at" rule the
+decoration allowlist uses. Both failure paths were verified by provoking them.
+
+**It immediately found five problems the review had missed**: Grenada (58.4% —
+the saltire template is nothing like its flag), Papua New Guinea (47.5% — the
+two halves of the diagonal are coloured the wrong way round), Guinea-Bissau
+(36.3% — not three vertical bands at all), Pakistan (27.6% — 1:3, not 1:1) and
+Latvia (20.0% — 2:1:2, not 2:1:1). Fixed in R7.
 
 ## Project status
 
