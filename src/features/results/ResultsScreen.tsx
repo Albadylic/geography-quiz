@@ -44,7 +44,16 @@ export function ResultsScreen() {
   const questions = session?.id === result.sessionId ? session.questions : [];
   const questionsById = new Map(questions.map((question) => [question.id, question]));
   const wrong = result.answers.filter((answer) => !answer.correct);
-  const isNewBest = highScore !== undefined && highScore.score === result.score;
+  /*
+    Identity, not value. `recordHighScore` keeps the *existing* entry when the
+    scores are equal, so matching on score alone congratulates a player who
+    exactly tied their old best and beat nothing. The stored entry belongs to
+    this run only if its timestamp came from this run too.
+  */
+  const isNewBest =
+    highScore !== undefined &&
+    highScore.score === result.score &&
+    highScore.timestamp === result.timestamp;
 
   return (
     <div className="mx-auto w-full max-w-3xl px-4 py-10">

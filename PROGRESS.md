@@ -957,7 +957,7 @@ Colour the Flag results, feeding quiz outcomes into the Leitner schedule,
 shareable seeded quizzes, and scoring skips separately from wrong answers.
 
 - [x] **R1** — Country set in the high-score signature
-- [ ] **R2** — "New best" fires on a tie
+- [x] **R2** — "New best" fires on a tie
 - [ ] **R3** — Quitting mid-quiz discards every answer
 - [ ] **R4** — Expert mode's Skip is the Answer button
 - [ ] **R5** — Combo announcement withholds the answer
@@ -991,6 +991,16 @@ it — mapping them all to one set would invent a fact, and leaving them under
 their old keys would strand them as scores nobody could ever match again.
 Per-entity stats, streaks, totals and settings all survive, so what a player
 loses is the leaderboard, not their history.
+
+### R2 — "New best" fires on a tie
+
+`recordHighScore` keeps the *existing* entry when scores are equal, so the
+banner's `highScore.score === result.score` was true for a run that had beaten
+nothing: tie your own best and the app congratulated you on a new one. It now
+also requires the stored timestamp to be this run's, which is only true when
+`recordHighScore` actually wrote.
+
+Verified by reverting the fix and watching the tie test fail on its own.
 
 ## Project status
 

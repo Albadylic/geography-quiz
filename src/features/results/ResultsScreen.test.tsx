@@ -195,3 +195,35 @@ describe('incorrect-answer review (T3.3)', () => {
     );
   });
 });
+
+/**
+ * R2. `recordHighScore` keeps the existing entry when scores are equal, so a
+ * banner keyed on the score alone fires for a run that beat nothing.
+ */
+describe('the new-best banner', () => {
+  const banner = () => screen.queryByText(/new best for this setup/i);
+
+  it('appears the first time a setup is played', () => {
+    renderResults(playThrough(() => true));
+    expect(banner()).toBeInTheDocument();
+  });
+
+  it('appears when the score is genuinely beaten', () => {
+    playThrough((index) => index > 0); // one wrong: a lower score
+    renderResults(playThrough(() => true));
+    expect(banner()).toBeInTheDocument();
+  });
+
+  it('does not appear when the previous best is exactly tied', () => {
+    // The same seed and the same answers produce the same score twice over.
+    playThrough(() => true);
+    renderResults(playThrough(() => true));
+    expect(banner()).toBeNull();
+  });
+
+  it('does not appear for a score below the best', () => {
+    playThrough(() => true);
+    renderResults(playThrough((index) => index > 0));
+    expect(banner()).toBeNull();
+  });
+});
