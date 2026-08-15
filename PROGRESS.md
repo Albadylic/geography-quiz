@@ -963,8 +963,8 @@ shareable seeded quizzes, and scoring skips separately from wrong answers.
 - [x] **R5** — Combo announcement withholds the answer
 - [x] **R6** — Colouring fidelity audit
 - [x] **R7** — Fix the worst flag templates
-- [ ] **R8** — SPA deep links on static hosts
-- [ ] **R9** — Service worker cache never rotates
+- [x] **R8** — SPA deep links on static hosts
+- [x] **R9** — Service worker cache never rotates
 - [ ] **R10** — CI, stale-dist budget test, more browsers
 - [ ] **R11** — README
 - [ ] **R12** — Autocomplete scoped to the pool
@@ -1123,6 +1123,40 @@ also fits Benin, which has no spec yet.
 What is left at the top of the table is all irreducible: Burundi's white disc,
 Mauritania's red bands, Moldova's coat of arms. Those need artwork the
 templates cannot express, not a different template.
+
+### R8 — Deep links on a static host
+
+The app uses history routing, so `/stats` and a shared `/results/:id` are URLs
+no file exists for. Nothing handled that: they would have 404'd on Netlify,
+Vercel, S3, GitHub Pages and every nginx default. It worked locally only
+because `vite preview` rewrites for you — exactly the class of difference that
+gets discovered in production.
+
+`public/_redirects` covers Netlify and Cloudflare Pages; a build step copies
+`index.html` to `404.html` for GitHub Pages, which ignores `_redirects` and
+serves that instead. nginx and Apache need a rule of their own, which the
+README now gives. Both artefacts are pinned by a test, plus one that actually
+loads a deep link.
+
+### R9 — The service worker cache never rotated
+
+`VERSION` was the literal `'v1'`. The `activate` handler deletes caches whose
+name does not end in `VERSION` — so with the version frozen it **never matched
+anything and never deleted anything**. The `index.html` precached on a user's
+first ever visit outlived every subsequent deploy. Online this is masked by the
+network-first navigation; offline it serves an old shell requesting hashed
+chunks that no longer exist, and the user has no way to clear it.
+
+The version is now stamped at build time from a hash of the built asset
+filenames. That gives the right behaviour in both directions, which was checked
+rather than assumed: a build that changed the bundle rotates the cache, and a
+build that changed nothing keeps it instead of pointlessly refetching.
+
+Two smaller things in the same file: `caches.match('/index.html')` resolves
+`undefined` on a miss and `respondWith(undefined)` throws, so being offline
+*and* missing the shell would have broken the worker rather than shown a
+message; and the header comment still claimed the worker was not registered,
+which F1 made untrue.
 
 ## Project status
 

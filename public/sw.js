@@ -1,15 +1,17 @@
 /**
- * Service worker — plan T7.5.
+ * Service worker — plan T7.5, registered in production since F1.
  *
  * Precaches the app shell and caches flag assets and the dataset chunk as they
- * are used, so a second visit works offline. Deliberately conservative: the
- * cache is versioned and old versions are deleted on activate, so a stale
- * worker cannot pin an old build forever.
+ * are used, so a second visit works offline.
  *
- * Not registered by default — see src/pwa.ts for the one line that turns it on
- * and why it is off in v1.
+ * `VERSION` is stamped at build time from the built asset hashes — see
+ * `serviceWorkerVersion` in vite.config.ts. It used to be the literal 'v1',
+ * which meant the activate handler below could never match anything to delete
+ * and the very first `index.html` a user cached outlived every deploy. Online
+ * that is masked by the network-first navigation; offline it serves an old
+ * shell asking for chunks that no longer exist.
  */
-const VERSION = 'v1';
+const VERSION = '__SW_VERSION__';
 const SHELL_CACHE = `geo-quiz-shell-${VERSION}`;
 const ASSET_CACHE = `geo-quiz-assets-${VERSION}`;
 
@@ -62,6 +64,19 @@ self.addEventListener('fetch', (event) => {
 
   // Navigations: network first, falling back to the cached shell offline.
   if (request.mode === 'navigate') {
-    event.respondWith(fetch(request).catch(() => caches.match('/index.html')));
+    event.respondWith(
+      fetch(request).catch(async () => {
+        // `caches.match` resolves undefined on a miss, and respondWith throws
+        // on undefined — which would turn "offline" into a broken worker.
+        const shell = await caches.match('/index.html');
+        return (
+          shell ??
+          new Response('<!doctype html><title>Offline</title><p>You are offline.', {
+            status: 503,
+            headers: { 'Content-Type': 'text/html; charset=utf-8' },
+          })
+        );
+      }),
+    );
   }
 });

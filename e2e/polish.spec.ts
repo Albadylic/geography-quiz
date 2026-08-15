@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto';
 import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import { expect, test } from '@playwright/test';
@@ -37,6 +38,59 @@ test.describe('performance budget (T7.4)', () => {
   test('flags are served as separate files, not inlined', () => {
     const flags = readdirSync(join(DIST, 'flags')).filter((f) => f.endsWith('.svg'));
     expect(flags.length).toBe(250);
+  });
+});
+
+/**
+ * R8 — the app uses history routing, so /stats and a shared /results/:id are
+ * URLs no file exists for. Without a fallback they 404 on every static host;
+ * it works in `vite preview` only because preview rewrites for you, which is
+ * exactly the kind of difference that is found in production.
+ */
+test.describe('deep links survive a static host (R8)', () => {
+  test('ships an SPA rewrite and a 404.html copy of the shell', () => {
+    const shell = readFileSync(join(DIST, 'index.html'), 'utf8');
+
+    // Netlify and Cloudflare Pages.
+    expect(readFileSync(join(DIST, '_redirects'), 'utf8')).toMatch(
+      /^\/\*\s+\/index\.html\s+200$/m,
+    );
+    // GitHub Pages, which ignores _redirects and serves 404.html instead.
+    expect(readFileSync(join(DIST, '404.html'), 'utf8')).toBe(shell);
+  });
+
+  test('a deep link loads the app rather than an error page', async ({ page }) => {
+    await page.goto('/stats');
+    await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
+  });
+});
+
+/**
+ * R9 — the worker's cache version must move with the build.
+ *
+ * It shipped as the literal 'v1', so the activate handler's "delete caches
+ * that are not this version" could never match anything and the first
+ * index.html a user ever cached outlived every deploy.
+ */
+test.describe('service worker cache version (R9)', () => {
+  const swVersion = () => /const VERSION = '([^']+)'/.exec(readFileSync(join(DIST, 'sw.js'), 'utf8'))?.[1];
+
+  test('is stamped from the build, not left as a placeholder', () => {
+    const version = swVersion();
+    expect(version, 'no VERSION found in the built sw.js').toBeTruthy();
+    expect(version).not.toBe('__SW_VERSION__');
+    expect(version).not.toBe('v1');
+    expect(version).toMatch(/^[0-9a-f]{12}$/);
+  });
+
+  test('tracks the asset hashes, so a changed build rotates the cache', () => {
+    const version = swVersion()!;
+    const assets = readdirSync(join(DIST, 'assets')).sort().join(',');
+    const expected = createHash('sha256').update(assets).digest('hex').slice(0, 12);
+
+    // Same derivation the build uses: identical assets keep the cache, and any
+    // new hashed filename produces a different version.
+    expect(version).toBe(expected);
   });
 });
 

@@ -1,0 +1,8 @@
+# Single-page app: every path is handled by the client router, so anything the
+# server has no file for must return index.html with a 200 rather than a 404.
+# Without this, /stats and a shared /results/:id link are dead on arrival.
+#
+# Read by Netlify and Cloudflare Pages. GitHub Pages ignores it and uses the
+# 404.html the build writes instead; nginx and Apache need their own rule — see
+# the README.
+/*  /index.html  200
