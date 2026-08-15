@@ -1,6 +1,6 @@
 import { entities as allEntities } from '@/data/entities.generated';
 import type { Continent, Entity, Status } from '@/data/schema';
-import type { QuizConfig, QuizLength, QuizMode } from './types';
+import type { CountrySet, QuizConfig, QuizLength, QuizMode } from './types';
 
 /**
  * Pool building — plan §5.2 step 1.
@@ -11,10 +11,42 @@ import type { QuizConfig, QuizLength, QuizMode } from './types';
  */
 
 export interface PoolOptions {
-  /** Restricts to UN members only — the Settings toggle in §3.3. */
-  unMembersOnly?: boolean;
   /** Overrides the dataset, for tests. */
   source?: readonly Entity[];
+}
+
+/**
+ * Which statuses each country set admits.
+ *
+ * The sets nest: every set is a superset of the one above it, so widening the
+ * choice only ever adds countries. A test asserts that property rather than
+ * trusting the table below to stay consistent.
+ *
+ * `un` includes the two permanent observers, Palestine and Vatican City —
+ * "UN countries" as most people mean it, rather than the strict member list.
+ */
+const STATUSES_IN_SET: Record<CountrySet, readonly Status[]> = {
+  un: ['un-member', 'un-observer'],
+  'un-plus-disputed': ['un-member', 'un-observer', 'partially-recognised'],
+  all: [
+    'un-member',
+    'un-observer',
+    'partially-recognised',
+    'dependency',
+    'special-administrative-region',
+  ],
+};
+
+export function isInCountrySet(entity: Entity, set: CountrySet): boolean {
+  return STATUSES_IN_SET[set].includes(entity.status);
+}
+
+/** Every entity in a set, ignoring mode and continent — for counts and copy. */
+export function countrySetSize(
+  set: CountrySet,
+  source: readonly Entity[] = allEntities,
+): number {
+  return source.filter((entity) => isInCountrySet(entity, set)).length;
 }
 
 /** An entity belongs to a continent through its primary or its alt continents. */
@@ -30,8 +62,6 @@ export function isViableFor(entity: Entity, mode: QuizMode): boolean {
   return true;
 }
 
-const UN_ONLY: readonly Status[] = ['un-member'];
-
 export function buildPool(
   config: Pick<QuizConfig, 'mode' | 'pool'>,
   options: PoolOptions = {},
@@ -41,7 +71,7 @@ export function buildPool(
 
   return source.filter((entity) => {
     if (!isViableFor(entity, config.mode)) return false;
-    if (options.unMembersOnly && !UN_ONLY.includes(entity.status)) return false;
+    if (!isInCountrySet(entity, config.pool.countrySet)) return false;
     if (continents === 'all') return true;
     return continents.some((continent) => isInContinent(entity, continent));
   });

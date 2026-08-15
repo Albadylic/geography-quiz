@@ -154,7 +154,7 @@ describe('hardest-countries selection (§8)', () => {
       direction: 'a-to-b',
       difficulty: 'easy',
       length: 20,
-      pool: { continents: 'all', source: 'hardest' },
+      pool: { continents: 'all', source: 'hardest', countrySet: 'all' },
       seed: 1,
       ...overrides,
     };
@@ -199,7 +199,7 @@ describe('hardest-countries selection (§8)', () => {
   it('prefers the heavier countries over the lighter ones', () => {
     // Give twenty real countries an overwhelming weight and check they
     // dominate the drawn session.
-    const pool = generateQuestions(config({ pool: { continents: 'all', source: 'all' } }), {})
+    const pool = generateQuestions(config({ pool: { continents: 'all', source: 'all', countrySet: 'all' } }), {})
       .questions.map((q) => q.entityId);
     const heavy = new Set(pool.slice(0, 10));
 

@@ -8,9 +8,22 @@ export type Difficulty = 'easy' | 'medium' | 'hard' | 'expert';
 export type QuizLength = 20 | 50 | 100 | 'all';
 export type PoolSource = 'all' | 'hardest';
 
+/**
+ * Which countries are in play.
+ *
+ * A quiz over 250 entities is mostly territories nobody set out to learn, so
+ * this is chosen per game and defaults to `un`. It sits in `QuizConfig.pool`
+ * rather than only in Settings because it changes *which pool you played* —
+ * which means it belongs in the high-score signature (§2).
+ */
+export type CountrySet = 'un' | 'un-plus-disputed' | 'all';
+
+export const DEFAULT_COUNTRY_SET: CountrySet = 'un';
+
 export interface PoolConfig {
   continents: Continent[] | 'all';
   source: PoolSource;
+  countrySet: CountrySet;
 }
 
 export interface QuizConfig {

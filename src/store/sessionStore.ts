@@ -25,7 +25,7 @@ interface SessionState {
   /** Finished runs, keyed by session id, for /results/:sessionId. */
   results: Record<string, SessionResult>;
 
-  start: (config: QuizConfig, options?: { unMembersOnly?: boolean }) => Session;
+  start: (config: QuizConfig) => Session;
   /** Answers the current question by option id; `null` skips. */
   answer: (chosenId: string | null) => void;
   /** Records an answer graded elsewhere (expert and combo modes). */
@@ -37,30 +37,21 @@ export const useSessionStore = create<SessionState>((set, get) => ({
   session: null,
   results: {},
 
-  start: (config, options = {}) => {
+  start: (config) => {
     // Hardest mode weights the pool by the player's own record (§8). The
     // weights are built here rather than in the engine, which may not reach
-    // into storage.
-    const stats = useStatsStore.getState().data;
+    // into storage. The country set travels inside `config.pool`, so nothing
+    // else has to be threaded through.
     const weights =
       config.pool.source === 'hardest'
         ? buildWeights(
-            stats,
-            buildPool(config, {
-              ...(options.unMembersOnly === undefined
-                ? {}
-                : { unMembersOnly: options.unMembersOnly }),
-            }).map((entity) => entity.id),
+            useStatsStore.getState().data,
+            buildPool(config).map((entity) => entity.id),
             statModeForQuiz(config.mode),
           )
         : undefined;
 
-    const session = createSession(config, {
-      ...(options.unMembersOnly === undefined
-        ? {}
-        : { unMembersOnly: options.unMembersOnly }),
-      ...(weights ? { weights } : {}),
-    });
+    const session = createSession(config, { ...(weights ? { weights } : {}) });
     set({ session });
     return session;
   },

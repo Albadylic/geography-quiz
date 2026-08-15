@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { entities } from '@/data/entities.generated';
 import { CONTINENTS, type Continent } from '@/data/constants';
 import type { Entity } from '@/data/schema';
-import { isInContinent } from '@/engine/pool';
+import { isInContinent, isInCountrySet } from '@/engine/pool';
 import { applyReview, orderByBox } from '@/engine/leitner';
 import { smoothedErrorRate, summariseEntity, HARDEST_UNLOCK_THRESHOLD } from '@/engine/stats';
 import { mulberry32, randomSeed, shuffle } from '@/engine/rng';
@@ -23,7 +23,24 @@ export function RevisionScreen() {
 
 function DeckPicker({ onPick }: { onPick: (deck: DeckKind) => void }) {
   const answered = useStatsStore((state) => state.data.totals.questionsAnswered);
+  const countrySet = useStatsStore((state) => state.data.settings.countrySet);
   const hardestUnlocked = answered >= HARDEST_UNLOCK_THRESHOLD;
+
+  /*
+    Only decks that have something in them. Antarctica is entirely
+    dependencies, so on the default country set it would otherwise be a button
+    that leads to "nothing in this deck" every single time.
+  */
+  const continentDecks = useMemo(
+    () =>
+      CONTINENTS.map((continent) => ({
+        continent,
+        count: entities.filter(
+          (entity) => isInCountrySet(entity, countrySet) && isInContinent(entity, continent),
+        ).length,
+      })).filter((deck) => deck.count > 0),
+    [countrySet],
+  );
 
   return (
     <div className="mx-auto w-full max-w-3xl px-4 py-10">
@@ -35,14 +52,15 @@ function DeckPicker({ onPick }: { onPick: (deck: DeckKind) => void }) {
 
       <h2 className="label-caps mt-8 text-xs text-paper-faint">By continent</h2>
       <ul className="mt-2 grid grid-cols-1 gap-px border-2 border-line bg-line sm:grid-cols-2">
-        {CONTINENTS.map((continent) => (
+        {continentDecks.map(({ continent, count }) => (
           <li key={continent}>
             <button
               type="button"
               onClick={() => onPick({ kind: 'continent', continent })}
-              className="display-md w-full bg-ink-raised px-4 py-4 text-left text-base text-paper transition-colors hover:bg-ink-sunken"
+              className="w-full bg-ink-raised px-4 py-4 text-left transition-colors hover:bg-ink-sunken"
             >
-              {continent}
+              <span className="display-md text-base text-paper">{continent}</span>{' '}
+              <span className="text-sm text-paper-dim">{count} cards</span>
             </button>
           </li>
         ))}
@@ -93,14 +111,18 @@ function DeckPicker({ onPick }: { onPick: (deck: DeckKind) => void }) {
 /** Cards for a deck, ordered so the least-known come first (except shuffle). */
 function useDeck(deck: DeckKind, seed: number): Entity[] {
   const data = useStatsStore((state) => state.data);
+  const countrySet = data.settings.countrySet;
 
   return useMemo(() => {
     const rng = mulberry32(seed);
+    // One choice governs the whole app: a deck never contains a country the
+    // player has excluded from their quizzes.
+    const inSet = entities.filter((entity) => isInCountrySet(entity, countrySet));
 
-    if (deck.kind === 'shuffle') return shuffle(rng, entities);
+    if (deck.kind === 'shuffle') return shuffle(rng, inSet);
 
     if (deck.kind === 'continent') {
-      const pool = entities.filter((entity) => isInContinent(entity, deck.continent));
+      const pool = inSet.filter((entity) => isInContinent(entity, deck.continent));
       const shuffled = shuffle(rng, pool);
       const ordered = orderByBox(data, shuffled.map((entity) => entity.id));
       const byId = new Map(pool.map((entity) => [entity.id, entity]));
@@ -115,11 +137,11 @@ function useDeck(deck: DeckKind, seed: number): Entity[] {
       .slice(0, 30)
       .map((summary) => summary.entityId);
 
-    const byId = new Map(entities.map((entity) => [entity.id, entity]));
+    const byId = new Map(inSet.map((entity) => [entity.id, entity]));
     return orderByBox(data, shuffle(rng, weakest))
       .map((id) => byId.get(id))
       .filter((entity): entity is Entity => entity !== undefined);
-  }, [deck, seed, data]);
+  }, [deck, seed, data, countrySet]);
 }
 
 function Flashcards({

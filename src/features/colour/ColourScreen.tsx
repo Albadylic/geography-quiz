@@ -13,6 +13,7 @@ import {
 } from '@/engine/colour';
 import { mulberry32, randomSeed, shuffle } from '@/engine/rng';
 import { FlagImage } from '@/components/FlagImage';
+import { useStatsStore } from '@/store/statsStore';
 
 const byId = new Map(entities.map((entity) => [entity.id, entity]));
 
@@ -28,7 +29,8 @@ export function ColourScreen() {
 }
 
 function ColourSetup({ onStart }: { onStart: (difficulty: ColourDifficulty) => void }) {
-  const available = colourablePool().length;
+  const countrySet = useStatsStore((state) => state.data.settings.countrySet);
+  const available = colourablePool(countrySet).length;
 
   return (
     <div className="mx-auto w-full max-w-3xl px-4 py-10">
@@ -86,13 +88,14 @@ function ColourRound({
   seed: number;
   onExit: () => void;
 }) {
+  const countrySet = useStatsStore((state) => state.data.settings.countrySet);
   const questions = useMemo(() => {
     const rng = mulberry32(seed);
-    return shuffle(rng, colourablePool())
+    return shuffle(rng, colourablePool(countrySet))
       .slice(0, ROUND_LENGTH)
       .map((entity, index) => buildColourQuestion(rng, entity, difficulty, index))
       .filter((question): question is ColourQuestion => question !== null);
-  }, [seed, difficulty]);
+  }, [seed, difficulty, countrySet]);
 
   const [index, setIndex] = useState(0);
   const [selected, setSelected] = useState<ColourToken | 'eraser' | null>(null);

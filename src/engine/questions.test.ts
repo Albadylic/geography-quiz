@@ -19,7 +19,7 @@ function config(overrides: Partial<QuizConfig> = {}): QuizConfig {
     direction: 'a-to-b',
     difficulty: 'medium',
     length: 20,
-    pool: { continents: 'all', source: 'all' },
+    pool: { continents: 'all', source: 'all', countrySet: 'all' },
     seed: 1234,
     ...overrides,
   };
@@ -40,28 +40,28 @@ describe('pool building (§5.2 step 1)', () => {
   });
 
   it('filters by continent', () => {
-    const pool = buildPool(config({ pool: { continents: ['Oceania'], source: 'all' } }));
+    const pool = buildPool(config({ pool: { continents: ['Oceania'], source: 'all', countrySet: 'all' } }));
     expect(pool.length).toBeGreaterThan(0);
     expect(pool.every((e) => isInContinent(e, 'Oceania'))).toBe(true);
   });
 
   it('includes transcontinental entities in both continent filters', () => {
-    const europe = buildPool(config({ pool: { continents: ['Europe'], source: 'all' } }));
-    const asia = buildPool(config({ pool: { continents: ['Asia'], source: 'all' } }));
+    const europe = buildPool(config({ pool: { continents: ['Europe'], source: 'all', countrySet: 'all' } }));
+    const asia = buildPool(config({ pool: { continents: ['Asia'], source: 'all', countrySet: 'all' } }));
     expect(europe.map((e) => e.id)).toContain('russia');
     expect(asia.map((e) => e.id)).toContain('russia');
   });
 
-  it('applies the UN-members-only setting as a filter on status (§3.3)', () => {
-    const pool = buildPool(config(), { unMembersOnly: true });
-    expect(pool).toHaveLength(193);
-    expect(pool.every((e) => e.status === 'un-member')).toBe(true);
+  it('applies the country set as a filter on status (§3.3)', () => {
+    const pool = buildPool(config({ pool: { continents: 'all', source: 'all', countrySet: 'un' } }));
+    expect(pool).toHaveLength(195);
+    expect(pool.every((e) => e.status === 'un-member' || e.status === 'un-observer')).toBe(true);
   });
 });
 
 describe('length capping (§5.2 step 2)', () => {
   it('caps a 100-question request to the size of a small pool', () => {
-    const oceania = buildPool(config({ pool: { continents: ['Oceania'], source: 'all' } }));
+    const oceania = buildPool(config({ pool: { continents: ['Oceania'], source: 'all', countrySet: 'all' } }));
     const summary = summarisePool(oceania, 100);
     expect(summary.capped).toBe(true);
     expect(summary.questionCount).toBe(oceania.length);
@@ -91,9 +91,9 @@ describe('question selection', () => {
 
   it("shuffles the whole pool for length 'all'", () => {
     const { questions } = generateQuestions(
-      config({ length: 'all', pool: { continents: ['South America'], source: 'all' } }),
+      config({ length: 'all', pool: { continents: ['South America'], source: 'all', countrySet: 'all' } }),
     );
-    const pool = buildPool(config({ pool: { continents: ['South America'], source: 'all' } }));
+    const pool = buildPool(config({ pool: { continents: ['South America'], source: 'all', countrySet: 'all' } }));
     expect(questions).toHaveLength(pool.length);
     expect(new Set(questions.map((q) => q.entityId))).toEqual(new Set(pool.map((e) => e.id)));
   });
@@ -193,7 +193,7 @@ describe('option sets (§5.2 step 5)', () => {
     const continents: Continent[] = ['Europe', 'Oceania', 'Africa'];
     for (const continent of continents) {
       const { questions } = generateQuestions(
-        config({ pool: { continents: [continent], source: 'all' }, length: 'all' }),
+        config({ pool: { continents: [continent], source: 'all', countrySet: 'all' }, length: 'all' }),
       );
       for (const question of questions) {
         for (const id of question.options!) {
@@ -354,5 +354,65 @@ describe('prompts and directions (§6.1)', () => {
     // so Cape Town can never appear as a distractor against South Africa.
     const southAfrica = entity('south-africa');
     expect(optionLabel(southAfrica, 'capital')).toBe('Pretoria');
+  });
+});
+
+/**
+ * Country sets — the pool a game draws from. The default exists because a quiz
+ * over all 250 entities is mostly territories nobody set out to learn.
+ */
+describe('country sets (§3.3)', () => {
+  const poolFor = (countrySet: 'un' | 'un-plus-disputed' | 'all') =>
+    buildPool(config({ pool: { continents: 'all', source: 'all', countrySet } }));
+
+  it('has the sizes the setup screen promises', () => {
+    expect(poolFor('un')).toHaveLength(195);
+    expect(poolFor('un-plus-disputed')).toHaveLength(198);
+    expect(poolFor('all')).toHaveLength(250);
+  });
+
+  it('nests, so widening the choice only ever adds countries', () => {
+    const un = new Set(poolFor('un').map((e) => e.id));
+    const disputed = new Set(poolFor('un-plus-disputed').map((e) => e.id));
+    const all = new Set(poolFor('all').map((e) => e.id));
+
+    for (const id of un) expect(disputed.has(id), `${id} vanished`).toBe(true);
+    for (const id of disputed) expect(all.has(id), `${id} vanished`).toBe(true);
+  });
+
+  it('includes the observers in the default set, but no territories', () => {
+    const ids = new Set(poolFor('un').map((e) => e.id));
+    expect(ids.has('palestine')).toBe(true);
+    expect(ids.has('vatican-city')).toBe(true);
+    expect(ids.has('puerto-rico')).toBe(false);
+    expect(ids.has('greenland')).toBe(false);
+    expect(ids.has('hong-kong')).toBe(false);
+  });
+
+  it('admits the disputed three only from the middle set up', () => {
+    for (const id of ['kosovo', 'taiwan', 'western-sahara']) {
+      expect(poolFor('un').some((e) => e.id === id), id).toBe(false);
+      expect(poolFor('un-plus-disputed').some((e) => e.id === id), id).toBe(true);
+      expect(poolFor('all').some((e) => e.id === id), id).toBe(true);
+    }
+  });
+
+  it('keeps distractors inside the chosen set, not just the answers', () => {
+    const { questions } = generateQuestions(
+      config({ pool: { continents: 'all', source: 'all', countrySet: 'un' }, length: 100 }),
+    );
+    for (const question of questions) {
+      for (const id of question.options!) {
+        const status = entity(id).status;
+        expect(['un-member', 'un-observer'], `${id} leaked in`).toContain(status);
+      }
+    }
+  });
+
+  it('still excludes entities with no capital, on top of the set filter', () => {
+    const pool = buildPool(
+      config({ mode: 'capitals', pool: { continents: 'all', source: 'all', countrySet: 'all' } }),
+    );
+    expect(pool.every((e) => e.capitals.length > 0)).toBe(true);
   });
 });

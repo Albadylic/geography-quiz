@@ -1,13 +1,15 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { MemoryStorageAdapter } from './adapter';
-import { migrate, migrateV1ToV2 } from './migrations';
+import { migrate, migrateV1ToV2, migrateV2ToV3 } from './migrations';
 import { QUARANTINE_KEY, clear, load, save } from './persist';
 import {
   CURRENT_VERSION,
   STORAGE_KEY,
   emptyEntityStat,
   emptyState,
+  type LegacySettings,
   type PersistedStateV1,
+  type PersistedStateV2,
 } from './schema';
 
 let adapter: MemoryStorageAdapter;
@@ -118,10 +120,11 @@ describe('migration v1 -> v2', () => {
     expect(migrated.totals).toEqual({ questionsAnswered: 14, correctAnswers: 7 });
   });
 
-  it('keeps settings the user had chosen, defaulting the rest', () => {
+  it('carries over the settings v1 actually stored', () => {
+    // Only what was stored: v2's settings are partial, and the defaults for
+    // everything else are filled in by the v3 step below, not invented here.
     const migrated = migrateV1ToV2(v1Fixture());
-    expect(migrated.settings.unMembersOnly).toBe(true);
-    expect(migrated.settings.sound).toBe(true);
+    expect(migrated.settings).toEqual({ unMembersOnly: true });
   });
 
   it('migrates on load and reports that it did', () => {
@@ -142,6 +145,96 @@ describe('migration v1 -> v2', () => {
     const migrated = migrateV1ToV2({ version: 1, entityStats: {}, highScores: {} });
     expect(migrated.entityStats).toEqual({});
     expect(migrated.totals).toEqual({ questionsAnswered: 0, correctAnswers: 0 });
+  });
+});
+
+describe('migration v2 -> v3 (country sets)', () => {
+  /** A v2 payload with real history, so the stats have something to lose. */
+  function v2Fixture(settings: Partial<LegacySettings>): PersistedStateV2 {
+    const france = emptyEntityStat('france');
+    france.byMode.flags = { correct: 9, wrong: 3, lastSeen: 1_700_000_000_000 };
+    france.leitnerBox = 4;
+
+    return {
+      version: 2,
+      entityStats: { france },
+      highScores: {
+        'flags|a-to-b|hard|20|all|all': {
+          signature: 'flags|a-to-b|hard|20|all|all',
+          score: 420,
+          accuracy: 0.85,
+          longestStreak: 11,
+          timestamp: 1_700_000_500_000,
+        },
+      },
+      streaks: { flags: { current: 3, longest: 11 }, global: { current: 3, longest: 14 } },
+      settings,
+      totals: { questionsAnswered: 12, correctAnswers: 9 },
+    };
+  }
+
+  it('maps an explicit "UN members only" to the UN set', () => {
+    const migrated = migrateV2ToV3(v2Fixture({ unMembersOnly: true }));
+    expect(migrated.version).toBe(3);
+    expect(migrated.settings.countrySet).toBe('un');
+  });
+
+  /**
+   * Deliberately *not* `all`. The old default was every entity, so a `false`
+   * here is far more likely to be "never touched the toggle" than "chose 250
+   * countries" — and the whole point of this change is that nobody chose that.
+   */
+  it('does not pin an untouched toggle to everything', () => {
+    expect(migrateV2ToV3(v2Fixture({ unMembersOnly: false })).settings.countrySet).toBe('un');
+    expect(migrateV2ToV3(v2Fixture({})).settings.countrySet).toBe('un');
+  });
+
+  it('drops the old boolean rather than leaving it alongside the new field', () => {
+    const migrated = migrateV2ToV3(v2Fixture({ unMembersOnly: true }));
+    expect(migrated.settings).not.toHaveProperty('unMembersOnly');
+  });
+
+  it('keeps the other settings the user had chosen', () => {
+    const migrated = migrateV2ToV3(
+      v2Fixture({ unMembersOnly: true, reducedMotion: true, sound: false }),
+    );
+    expect(migrated.settings.reducedMotion).toBe(true);
+    expect(migrated.settings.sound).toBe(false);
+  });
+
+  it('fills in settings v2 never stored', () => {
+    const migrated = migrateV2ToV3(v2Fixture({}));
+    expect(migrated.settings.reducedMotion).toBe(false);
+    expect(migrated.settings.sound).toBe(true);
+  });
+
+  it('leaves every stat, score and streak intact', () => {
+    const before = v2Fixture({ unMembersOnly: true });
+    const migrated = migrateV2ToV3(before);
+
+    expect(migrated.entityStats).toEqual(before.entityStats);
+    expect(migrated.highScores).toEqual(before.highScores);
+    expect(migrated.streaks).toEqual(before.streaks);
+    expect(migrated.totals).toEqual({ questionsAnswered: 12, correctAnswers: 9 });
+  });
+
+  it('migrates on load, from v2 and all the way from v1', () => {
+    adapter.write(STORAGE_KEY, JSON.stringify(v2Fixture({ unMembersOnly: true })));
+    const fromV2 = load(adapter);
+    expect(fromV2.status).toBe('migrated');
+    expect(fromV2.state.version).toBe(CURRENT_VERSION);
+    expect(fromV2.state.settings.countrySet).toBe('un');
+    expect(fromV2.state.entityStats.france!.byMode.flags.correct).toBe(9);
+
+    // v1 has no v3 step of its own; it gets there by being run through both.
+    adapter.write(STORAGE_KEY, JSON.stringify(v1Fixture()));
+    const fromV1 = load(adapter);
+    expect(fromV1.state.version).toBe(CURRENT_VERSION);
+    expect(fromV1.state.settings).toEqual({
+      countrySet: 'un',
+      reducedMotion: false,
+      sound: true,
+    });
   });
 });
 
@@ -189,7 +282,7 @@ describe('corrupt storage never crashes the app (T3.1)', () => {
     adapter.write(
       STORAGE_KEY,
       JSON.stringify({
-        version: 2,
+        version: CURRENT_VERSION,
         entityStats: { france: { entityId: 'france', byMode: { flags: { correct: 2 } } } },
       }),
     );

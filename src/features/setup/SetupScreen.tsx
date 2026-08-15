@@ -1,10 +1,11 @@
 import { useMemo, useState } from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { CONTINENTS, type Continent } from '@/data/constants';
-import { buildPool, summarisePool } from '@/engine/pool';
+import { buildPool, countrySetSize, summarisePool } from '@/engine/pool';
 import { supportsBothDirections } from '@/engine/questions';
 import { randomSeed } from '@/engine/rng';
 import type {
+  CountrySet,
   Difficulty,
   Direction,
   PoolSource,
@@ -45,6 +46,33 @@ const DIFFICULTY_CHOICES: ReadonlyArray<Choice<Difficulty>> = [
   { value: 'expert', label: 'Expert', hint: 'Type the answer' },
 ];
 
+/**
+ * §3.3 — the sets nest, so moving down the list only ever adds countries.
+ * The default is the middle ground most people mean by "countries of the
+ * world": UN members plus the two permanent observers.
+ */
+const COUNTRY_SET_CHOICES: ReadonlyArray<{
+  value: CountrySet;
+  label: string;
+  hint: string;
+}> = [
+  {
+    value: 'un',
+    label: 'UN countries',
+    hint: 'Members plus Palestine and Vatican City',
+  },
+  {
+    value: 'un-plus-disputed',
+    label: 'Plus disputed',
+    hint: 'Adds Kosovo, Taiwan and Western Sahara',
+  },
+  {
+    value: 'all',
+    label: 'Everything',
+    hint: 'Adds territories like Puerto Rico and Greenland',
+  },
+];
+
 const LENGTH_CHOICES: ReadonlyArray<Choice<`${QuizLength}`>> = [
   { value: '20', label: '20' },
   { value: '50', label: '50' },
@@ -64,15 +92,17 @@ export function SetupScreen() {
   const { mode } = useParams();
   const navigate = useNavigate();
   const startSession = useSessionStore((state) => state.start);
-  // §3.3: the toggle is a filter on `status`, applied to the pool — the
-  // dataset itself never changes.
-  const unMembersOnly = useStatsStore((state) => state.data.settings.unMembersOnly);
+  // §3.3: the country set is a filter on `status`, applied to the pool — the
+  // dataset itself never changes. Settings supplies the starting choice; the
+  // player can change it for this game without changing their default.
+  const defaultCountrySet = useStatsStore((state) => state.data.settings.countrySet);
   const answered = useStatsStore((state) => state.data.totals.questionsAnswered);
 
   const [direction, setDirection] = useState<Direction>('a-to-b');
   const [difficulty, setDifficulty] = useState<Difficulty>('easy');
   const [length, setLength] = useState<QuizLength>(20);
   const [continents, setContinents] = useState<Continent[] | 'all'>('all');
+  const [countrySet, setCountrySet] = useState<CountrySet>(defaultCountrySet);
   const [searchParams] = useSearchParams();
 
   // §8: Hardest needs the player's own history, so it stays locked until there
@@ -94,17 +124,17 @@ export function SetupScreen() {
       // fixed at four by generation, not by this.
       difficulty: mode === 'combo' ? 'medium' : difficulty,
       length,
-      pool: { continents, source: effectiveSource },
+      pool: { continents, source: effectiveSource, countrySet },
       seed: 0, // replaced with a fresh seed on start
     };
-  }, [mode, direction, difficulty, length, continents, effectiveSource]);
+  }, [mode, direction, difficulty, length, continents, effectiveSource, countrySet]);
 
   const bothDirections = !isQuizMode(mode) || supportsBothDirections(mode, difficulty);
 
   const summary = useMemo(() => {
     if (!config) return null;
-    return summarisePool(buildPool(config, { unMembersOnly }), config.length);
-  }, [config, unMembersOnly]);
+    return summarisePool(buildPool(config), config.length);
+  }, [config]);
 
   if (mode === 'colour') {
     return <ScreenStub title="Colour the flag" ticket="T6.1" />;
@@ -140,7 +170,7 @@ export function SetupScreen() {
   };
 
   const start = () => {
-    startSession({ ...config, seed: randomSeed() }, { unMembersOnly });
+    startSession({ ...config, seed: randomSeed() });
     navigate(`/play/${mode}`);
   };
 
@@ -190,7 +220,45 @@ export function SetupScreen() {
         />
 
         <fieldset>
-          <legend className="label-caps mb-2 text-xs text-paper-faint">Which countries</legend>
+          <legend className="label-caps mb-2 text-xs text-paper-faint">Countries</legend>
+          <div className="grid grid-cols-1 gap-px border-2 border-line bg-line sm:grid-cols-3">
+            {COUNTRY_SET_CHOICES.map((choice) => {
+              const selected = countrySet === choice.value;
+              return (
+                <label
+                  key={choice.value}
+                  className={[
+                    'flex min-h-11 cursor-pointer flex-col justify-center px-4 py-3 transition-colors',
+                    'has-[:focus-visible]:outline-3 has-[:focus-visible]:outline-signal-yellow has-[:focus-visible]:-outline-offset-3',
+                    selected
+                      ? 'bg-paper text-ink'
+                      : 'bg-ink-raised text-paper hover:bg-ink-sunken',
+                  ].join(' ')}
+                >
+                  <input
+                    type="radio"
+                    name="country-set"
+                    checked={selected}
+                    onChange={() => setCountrySet(choice.value)}
+                    className="sr-only"
+                  />
+                  <span className="display-md text-sm">
+                    {choice.label}{' '}
+                    <span className="text-xs opacity-60">{countrySetSize(choice.value)}</span>
+                  </span>
+                  <span
+                    className={`text-xs ${selected ? 'text-ink/70' : 'text-paper-faint'}`}
+                  >
+                    {choice.hint}
+                  </span>
+                </label>
+              );
+            })}
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend className="label-caps mb-2 text-xs text-paper-faint">Question pool</legend>
           <div className="grid grid-cols-1 gap-px border-2 border-line bg-line sm:grid-cols-2">
             {(['all', 'hardest'] as const).map((option) => {
               const selected = effectiveSource === option;

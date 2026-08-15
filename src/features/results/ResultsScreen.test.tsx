@@ -14,7 +14,7 @@ function config(overrides: Partial<QuizConfig> = {}): QuizConfig {
     direction: 'a-to-b',
     difficulty: 'easy',
     length: 20,
-    pool: { continents: 'all', source: 'all' },
+    pool: { continents: 'all', source: 'all', countrySet: 'all' },
     seed: 77,
     ...overrides,
   };
@@ -95,7 +95,7 @@ describe('ResultsScreen', () => {
     const id = playThrough(() => true, {
       difficulty: 'hard',
       length: 20,
-      pool: { continents: ['Europe'], source: 'all' },
+      pool: { continents: ['Europe'], source: 'all', countrySet: 'all' },
     });
     renderResults(id);
     expect(screen.getByText(/flags · hard · 20 · Europe/i)).toBeInTheDocument();

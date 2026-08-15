@@ -778,6 +778,75 @@ are deleted on activate, so a stale worker cannot pin an old build.
 shipped as installable in v1", and an active service worker is a support burden
 that should arrive with a deliberate release rather than as a side effect of a
 polish ticket. `src/pwa.ts` documents the single call that turns it on.
+*(Superseded in the follow-up round — see F1 below, where it was turned on
+deliberately.)*
+
+---
+
+## Follow-up round (after playing it)
+
+Four items, agreed after the 40 tickets were done. They are outside the
+original plan, so they are numbered F1–F4 rather than given ticket IDs.
+
+- [x] **F1** — Loading
+- [x] **F2** — Country sets
+- [ ] **F3** — Easy mode favours familiar countries
+- [ ] **F4** — Flag decorations in Colour the Flag
+
+### F1 — Loading
+
+Measured on a throttled 1.5Mbps/40ms link before changing anything, so the
+numbers below are the same measurement run twice, not an estimate:
+
+|                    | before | after |
+| ------------------ | -----: | ----: |
+| repeat visit ready | 1292ms | 589ms |
+| setup screen ready |  846ms | 634ms |
+| first hard question |  237ms |  84ms |
+
+Three changes: the service worker is now registered in production; `HomeScreen`
+warms the setup chunk and the dataset on idle; and the next question's flags are
+fetched during the 1.2s reveal — the half of T7.4 that had not shipped, which
+left an eight-option question pulling up to 696KB of SVG at render time.
+
+**SVG minification was considered and rejected.** The flags have no
+path-precision bloat, and gzip already takes the worst one (Serbia) from 177KB
+to 49KB, so the win did not justify the risk of mangling artwork.
+
+### F2 — Country sets
+
+`unMembersOnly` was a boolean that could only say "193 countries" or "all 250",
+defaulted to the latter, and lived only in Settings. It becomes a three-way
+`countrySet` chosen per game:
+
+| Set | Count | Contents |
+| --- | ----: | --- |
+| `un` (default) | 195 | 193 members + Palestine + Vatican City |
+| `un-plus-disputed` | 198 | adds Kosovo, Taiwan, Western Sahara |
+| `all` | 250 | adds territories, dependencies and SARs |
+
+Decisions worth recording:
+
+1. **It lives in `QuizConfig.pool`, not only in Settings.** It changes *which
+   pool you played*, so it belongs in the high-score signature (§2) — a 195-country
+   score and a 250-country score are not comparable. Settings holds the default
+   a new game starts from.
+2. **The v2→v3 migration does not map `false` to `all`.** The old default was
+   everything, so a stored `false` is far more likely to mean "never opened
+   Settings" than "chose 250 countries". Only an explicit `true` is treated as a
+   choice, and it maps to `un`. Stats, scores and streaks are untouched.
+3. **One choice governs the whole app** — quizzes, revision decks and Colour
+   the Flag all read it, rather than each screen having its own idea of the pool.
+
+Two things the change surfaced, both fixed here:
+
+- The revision deck picker offered **Antarctica**, which is entirely
+  dependencies, so on the default set it was a button that always led to
+  "nothing in this deck". Empty continents are now hidden, and every deck shows
+  its card count.
+- The setup screen had two fieldsets that both amounted to "which countries".
+  The existing one is renamed **Question pool** (Everything / My hardest), and
+  the new one is **Countries**.
 
 ---
 

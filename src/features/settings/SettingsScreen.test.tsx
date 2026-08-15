@@ -7,6 +7,7 @@ import { SetupScreen } from '@/features/setup/SetupScreen';
 import { useStatsStore } from '@/store/statsStore';
 import { useSessionStore } from '@/store/sessionStore';
 import { recordOutcome } from '@/engine/stats';
+import { entities } from '@/data/entities.generated';
 
 function renderSettings() {
   const router = createMemoryRouter([{ path: '/settings', element: <SettingsScreen /> }], {
@@ -34,57 +35,65 @@ beforeEach(() => {
 });
 
 describe('SettingsScreen', () => {
-  it('offers the three toggles', () => {
+  it('offers the three country sets and the two toggles', () => {
     renderSettings();
-    expect(screen.getByRole('checkbox', { name: /UN members only/i })).toBeInTheDocument();
+    expect(screen.getByRole('radio', { name: /UN countries/i })).toBeInTheDocument();
+    expect(screen.getByRole('radio', { name: /plus disputed/i })).toBeInTheDocument();
+    expect(screen.getByRole('radio', { name: /everything/i })).toBeInTheDocument();
     expect(screen.getByRole('checkbox', { name: /reduce motion/i })).toBeInTheDocument();
     expect(screen.getByRole('checkbox', { name: /sound/i })).toBeInTheDocument();
   });
 
-  it('persists a toggle so it survives a reload', async () => {
+  it('defaults to UN countries rather than everything', () => {
+    expect(useStatsStore.getState().data.settings.countrySet).toBe('un');
+    renderSettings();
+    expect(screen.getByRole('radio', { name: /UN countries/i })).toBeChecked();
+  });
+
+  it('persists the choice so it survives a reload', async () => {
     const user = userEvent.setup();
     renderSettings();
 
-    await user.click(screen.getByRole('checkbox', { name: /UN members only/i }));
-    expect(useStatsStore.getState().data.settings.unMembersOnly).toBe(true);
+    await user.click(screen.getByRole('radio', { name: /everything/i }));
+    expect(useStatsStore.getState().data.settings.countrySet).toBe('all');
 
     // Re-read from storage, as a fresh page load would.
     act(() => {
       useStatsStore.getState().reload();
     });
-    expect(useStatsStore.getState().data.settings.unMembersOnly).toBe(true);
+    expect(useStatsStore.getState().data.settings.countrySet).toBe('all');
   });
 
   /** §3.3: a filter on `status`, not a change to the data. */
-  it('shrinks the quiz pool to UN members when turned on', async () => {
+  it('widens the quiz pool when the set is widened', async () => {
     const user = userEvent.setup();
     const { unmount } = renderSetup();
-    expect(screen.getByTestId('pool-summary')).toHaveTextContent('from 250 countries');
+    // The default set is UN countries.
+    expect(screen.getByTestId('pool-summary')).toHaveTextContent('from 195 countries');
     unmount();
 
     renderSettings();
-    await user.click(screen.getByRole('checkbox', { name: /UN members only/i }));
+    await user.click(screen.getByRole('radio', { name: /everything/i }));
 
     renderSetup();
     expect(screen.getAllByTestId('pool-summary').at(-1)).toHaveTextContent(
-      'from 193 countries',
+      'from 250 countries',
     );
   });
 
-  it('carries the setting into the session it starts', async () => {
+  it('carries the default into the session it starts', async () => {
     const user = userEvent.setup();
-    act(() => {
-      useStatsStore.getState().updateSettings({ unMembersOnly: true });
-    });
-
     renderSetup();
     await user.click(screen.getByRole('button', { name: /start quiz/i }));
 
     const session = useSessionStore.getState().session!;
-    expect(session.questions).toHaveLength(20);
-    // Every question, and every option, is a UN member.
+    expect(session.config.pool.countrySet).toBe('un');
+    // No territory can appear, as a question or as a distractor.
     const ids = new Set(session.questions.flatMap((q) => [q.entityId, ...(q.options ?? [])]));
-    expect(ids.size).toBeGreaterThan(0);
+    for (const id of ids) {
+      const entity = entities.find((candidate) => candidate.id === id)!;
+      expect(['un-member', 'un-observer']).toContain(entity.status);
+    }
   });
 
   it('shows the neutral About copy from §3.3', () => {

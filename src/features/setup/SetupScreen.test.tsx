@@ -4,6 +4,8 @@ import userEvent from '@testing-library/user-event';
 import { createMemoryRouter, RouterProvider } from 'react-router-dom';
 import { SetupScreen } from './SetupScreen';
 import { useSessionStore } from '@/store/sessionStore';
+import { countrySetSize } from '@/engine/pool';
+import { DEFAULT_COUNTRY_SET } from '@/engine/types';
 
 function renderSetup(mode = 'flags') {
   const router = createMemoryRouter(
@@ -42,7 +44,11 @@ describe('SetupScreen', () => {
 
   it('shows the real pool size before the user starts', () => {
     renderSetup();
-    expect(poolSummary()).toHaveTextContent('20 questions from 250 countries');
+    // The number comes from the data, not from a constant in the test: a game
+    // starts on the default country set unless the player says otherwise.
+    expect(poolSummary()).toHaveTextContent(
+      `20 questions from ${countrySetSize(DEFAULT_COUNTRY_SET)} countries`,
+    );
   });
 
   /** The acceptance criterion for T1.4, in the plan's own words. */
@@ -67,7 +73,9 @@ describe('SetupScreen', () => {
     const user = userEvent.setup();
     renderSetup();
     await user.click(screen.getByRole('radio', { name: '50' }));
-    expect(poolSummary()).toHaveTextContent('50 questions from 250 countries');
+    expect(poolSummary()).toHaveTextContent(
+      `50 questions from ${countrySetSize(DEFAULT_COUNTRY_SET)} countries`,
+    );
     expect(poolSummary()).not.toHaveTextContent(/this quiz will be/);
   });
 
@@ -84,14 +92,34 @@ describe('SetupScreen', () => {
   });
 
   it('counts a capitals pool differently from a flags pool', async () => {
-    renderSetup('flags');
-    expect(poolSummary()).toHaveTextContent('from 250 countries');
+    const user = userEvent.setup();
 
-    // Entities with no capital drop out, so the capitals pool is smaller.
-    renderSetup('capitals');
-    const capitalsText = screen.getAllByTestId('pool-summary').at(-1)!.textContent!;
-    const capitalsPool = Number(/from (\d+) countries/.exec(capitalsText)![1]);
-    expect(capitalsPool).toBeLessThan(250);
+    /** The widest set, where the entities with no capital actually live. */
+    async function poolSizeOn(mode: string) {
+      renderSetup(mode);
+      const countries = screen.getAllByRole('group', { name: /^countries$/i }).at(-1)!;
+      await user.click(within(countries).getByRole('radio', { name: /everything/i }));
+      const text = screen.getAllByTestId('pool-summary').at(-1)!.textContent!;
+      return Number(/from (\d+) countries/.exec(text)![1]);
+    }
+
+    const flagsPool = await poolSizeOn('flags');
+    expect(flagsPool).toBe(countrySetSize('all'));
+
+    // Antarctica and the like have a flag but no capital, so they drop out.
+    expect(await poolSizeOn('capitals')).toBeLessThan(flagsPool);
+  });
+
+  it('lets the country set be widened for this game only', async () => {
+    const user = userEvent.setup();
+    renderSetup();
+    const countries = screen.getByRole('group', { name: /^countries$/i });
+
+    await user.click(within(countries).getByRole('radio', { name: /everything/i }));
+    expect(poolSummary()).toHaveTextContent(`from ${countrySetSize('all')} countries`);
+
+    await user.click(screen.getByRole('button', { name: /start quiz/i }));
+    expect(useSessionStore.getState().session!.config.pool.countrySet).toBe('all');
   });
 
   it('starts a session with the chosen config and navigates to play', async () => {

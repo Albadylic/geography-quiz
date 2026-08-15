@@ -2,7 +2,9 @@ import { entities as allEntities } from '@/data/entities.generated';
 import { templateById, type FlagTemplate } from '@/data/flag-templates';
 import { COLOUR_TOKENS, type ColourToken } from '@/data/constants';
 import type { Entity } from '@/data/schema';
+import { isInCountrySet } from './pool';
 import { shuffle, type Rng } from './rng';
+import type { CountrySet } from './types';
 
 /**
  * Colour the Flag — plan §7.
@@ -21,9 +23,17 @@ export const DECOY_COUNT: Record<ColourDifficulty, number> = {
   hard: 6,
 };
 
-/** Only entities with a colouring spec appear in this mode (§7). */
-export function colourablePool(entities: readonly Entity[] = allEntities): Entity[] {
-  return entities.filter((entity) => entity.colouring !== undefined);
+/**
+ * Only entities with a colouring spec appear in this mode (§7), narrowed to
+ * the player's country set so one choice governs the whole app.
+ */
+export function colourablePool(
+  countrySet: CountrySet = 'all',
+  entities: readonly Entity[] = allEntities,
+): Entity[] {
+  return entities.filter(
+    (entity) => entity.colouring !== undefined && isInCountrySet(entity, countrySet),
+  );
 }
 
 export interface ColourQuestion {

@@ -2,10 +2,10 @@ import {
   CURRENT_VERSION,
   DEFAULT_SETTINGS,
   emptyEntityStat,
-  emptyState,
   type AnyPersistedState,
   type PersistedStateV1,
   type PersistedStateV2,
+  type PersistedStateV3,
 } from './schema';
 
 /**
@@ -17,6 +17,33 @@ import {
  */
 
 /**
+ * v2 → v3.
+ *
+ * `unMembersOnly` could only say "the 193 UN members" or "all 250 entities",
+ * with nothing in between, and defaulted to the latter — which is how a quiz
+ * ended up mostly territories. It becomes a three-way `countrySet`.
+ *
+ * An explicit `true` maps to `un`, which is the closest set (it adds only
+ * Palestine and Vatican City). Everything else — an explicit `false`, or the
+ * field never having been touched — takes the new default rather than being
+ * pinned to `all`, because a player who never opened Settings did not choose
+ * 250 countries, they just got them.
+ */
+export function migrateV2ToV3(state: PersistedStateV2): PersistedStateV3 {
+  const { unMembersOnly, ...rest } = state.settings ?? {};
+
+  return {
+    ...state,
+    version: 3,
+    settings: {
+      ...DEFAULT_SETTINGS,
+      ...rest,
+      countrySet: unMembersOnly === true ? 'un' : DEFAULT_SETTINGS.countrySet,
+    },
+  };
+}
+
+/**
  * v1 → v2.
  *
  * v1 was the flags-only release: per-entity counts were a flat correct/wrong
@@ -26,7 +53,17 @@ import {
  * rather than invented.
  */
 export function migrateV1ToV2(state: PersistedStateV1): PersistedStateV2 {
-  const next = emptyState();
+  // Built as a v2 value, not by borrowing the current empty state: a step must
+  // produce the shape of *its own* target version, or adding v4 later would
+  // silently change what v1 migrates into.
+  const next: PersistedStateV2 = {
+    version: 2,
+    entityStats: {},
+    highScores: {},
+    streaks: {},
+    settings: {},
+    totals: { questionsAnswered: 0, correctAnswers: 0 },
+  };
 
   let questionsAnswered = 0;
   let correctAnswers = 0;
@@ -54,7 +91,7 @@ export function migrateV1ToV2(state: PersistedStateV1): PersistedStateV2 {
     };
   }
 
-  next.settings = { ...DEFAULT_SETTINGS, ...(state.settings ?? {}) };
+  next.settings = { ...(state.settings ?? {}) };
   next.totals = { questionsAnswered, correctAnswers };
 
   return next;
@@ -63,10 +100,11 @@ export function migrateV1ToV2(state: PersistedStateV1): PersistedStateV2 {
 /** Ordered migration steps, keyed by the version they upgrade *from*. */
 const STEPS: Record<number, (state: never) => AnyPersistedState> = {
   1: migrateV1ToV2 as (state: never) => AnyPersistedState,
+  2: migrateV2ToV3 as (state: never) => AnyPersistedState,
 };
 
 export interface MigrationResult {
-  state: PersistedStateV2;
+  state: PersistedStateV3;
   /** True when the payload was upgraded and should be written back. */
   migrated: boolean;
 }
@@ -91,5 +129,5 @@ export function migrate(input: AnyPersistedState): MigrationResult {
     migrated = true;
   }
 
-  return { state: state as PersistedStateV2, migrated };
+  return { state: state as PersistedStateV3, migrated };
 }

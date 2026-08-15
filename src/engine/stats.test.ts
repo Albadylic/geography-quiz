@@ -30,7 +30,7 @@ function config(overrides: Partial<QuizConfig> = {}): QuizConfig {
     direction: 'a-to-b',
     difficulty: 'easy',
     length: 20,
-    pool: { continents: 'all', source: 'all' },
+    pool: { continents: 'all', source: 'all', countrySet: 'all' },
     seed: 2024,
     ...overrides,
   };

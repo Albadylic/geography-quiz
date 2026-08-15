@@ -19,7 +19,7 @@ function config(overrides: Partial<QuizConfig> = {}): QuizConfig {
     direction: 'a-to-b',
     difficulty: 'easy',
     length: 20,
-    pool: { continents: 'all', source: 'all' },
+    pool: { continents: 'all', source: 'all', countrySet: 'all' },
     seed: 555,
     ...overrides,
   };
@@ -232,8 +232,8 @@ describe('config signature (§2)', () => {
       configSignature(config({ length: 100 })),
       configSignature(config({ mode: 'capitals' })),
       configSignature(config({ direction: 'b-to-a' })),
-      configSignature(config({ pool: { continents: ['Europe'], source: 'all' } })),
-      configSignature(config({ pool: { continents: 'all', source: 'hardest' } })),
+      configSignature(config({ pool: { continents: ['Europe'], source: 'all', countrySet: 'all' } })),
+      configSignature(config({ pool: { continents: 'all', source: 'hardest', countrySet: 'all' } })),
     ]);
     expect(signatures.size).toBe(7);
   });
@@ -243,8 +243,8 @@ describe('config signature (§2)', () => {
   });
 
   it('does not depend on the order continents were chosen in', () => {
-    const a = configSignature(config({ pool: { continents: ['Europe', 'Asia'], source: 'all' } }));
-    const b = configSignature(config({ pool: { continents: ['Asia', 'Europe'], source: 'all' } }));
+    const a = configSignature(config({ pool: { continents: ['Europe', 'Asia'], source: 'all', countrySet: 'all' } }));
+    const b = configSignature(config({ pool: { continents: ['Asia', 'Europe'], source: 'all', countrySet: 'all' } }));
     expect(a).toBe(b);
   });
 });

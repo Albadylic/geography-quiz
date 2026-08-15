@@ -35,11 +35,26 @@ beforeEach(() => {
 });
 
 describe('deck picker (§6.4)', () => {
-  it('offers a deck per continent', () => {
+  it('offers a deck per continent, with its size', () => {
     renderRevision();
-    for (const continent of ['Africa', 'Europe', 'Oceania', 'Antarctica']) {
-      expect(screen.getByRole('button', { name: continent })).toBeInTheDocument();
+    for (const continent of ['Africa', 'Europe', 'Oceania']) {
+      expect(
+        screen.getByRole('button', { name: new RegExp(`^${continent} \\d+ cards$`) }),
+      ).toBeInTheDocument();
     }
+  });
+
+  /** Antarctica is entirely dependencies, so the default set empties it. */
+  it('hides a continent with nothing in it under the chosen country set', async () => {
+    const user = userEvent.setup();
+    renderRevision();
+    expect(screen.queryByRole('button', { name: /^Antarctica/ })).toBeNull();
+
+    act(() => {
+      useStatsStore.getState().updateSettings({ countrySet: 'all' });
+    });
+    await user.click(screen.getByRole('button', { name: /^Antarctica/ }));
+    expect(screen.getByRole('button', { name: /tap to turn over/i })).toBeInTheDocument();
   });
 
   it('offers an untracked browse deck', () => {
@@ -64,7 +79,7 @@ describe('flashcards', () => {
   async function openEuropeDeck() {
     const user = userEvent.setup();
     renderRevision();
-    await user.click(screen.getByRole('button', { name: 'Europe' }));
+    await user.click(screen.getByRole('button', { name: /^Europe/ }));
     return user;
   }
 
@@ -119,7 +134,7 @@ describe('Leitner tracking (T5.3 wired into T5.4)', () => {
   it('promotes a card the learner knew', async () => {
     const user = userEvent.setup();
     renderRevision();
-    await user.click(screen.getByRole('button', { name: 'Europe' }));
+    await user.click(screen.getByRole('button', { name: /^Europe/ }));
     await user.click(screen.getByText(/tap to turn over/i));
 
     const shownName = screen.getByRole('img').getAttribute('alt')!.replace('Flag of ', '');
@@ -136,7 +151,7 @@ describe('Leitner tracking (T5.3 wired into T5.4)', () => {
   it('keeps a card the learner missed in box 1', async () => {
     const user = userEvent.setup();
     renderRevision();
-    await user.click(screen.getByRole('button', { name: 'Europe' }));
+    await user.click(screen.getByRole('button', { name: /^Europe/ }));
     await user.click(screen.getByText(/tap to turn over/i));
     await user.click(screen.getByRole('button', { name: /didn.t know it/i }));
 
@@ -180,7 +195,7 @@ describe('Leitner tracking (T5.3 wired into T5.4)', () => {
 
     const user = userEvent.setup();
     renderRevision();
-    await user.click(screen.getByRole('button', { name: 'Europe' }));
+    await user.click(screen.getByRole('button', { name: /^Europe/ }));
 
     // France is in box 5, so it cannot be the first card of a Europe deck.
     expect(screen.getByRole('button', { name: /tap to turn over/i }).textContent).not.toMatch(
@@ -192,9 +207,13 @@ describe('Leitner tracking (T5.3 wired into T5.4)', () => {
 describe('finishing a deck', () => {
   it('reports how many were known, with no score', async () => {
     const user = userEvent.setup();
+    // Antarctica is the smallest deck, so it finishes quickly — and it only
+    // exists at all on the widest country set.
+    act(() => {
+      useStatsStore.getState().updateSettings({ countrySet: 'all' });
+    });
     renderRevision();
-    // Antarctica is the smallest deck, so it finishes quickly.
-    await user.click(screen.getByRole('button', { name: 'Antarctica' }));
+    await user.click(screen.getByRole('button', { name: /^Antarctica/ }));
 
     for (let i = 0; i < 10; i++) {
       const front = screen.queryByText(/tap to turn over/i);

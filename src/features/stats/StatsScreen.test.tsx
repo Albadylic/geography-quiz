@@ -30,7 +30,7 @@ function config(overrides: Partial<QuizConfig> = {}): QuizConfig {
     direction: 'a-to-b',
     difficulty: 'easy',
     length: 20,
-    pool: { continents: 'all', source: 'all' },
+    pool: { continents: 'all', source: 'all', countrySet: 'all' },
     seed: 909,
     ...overrides,
   };
@@ -118,7 +118,7 @@ describe('streaks (§9)', () => {
 
 describe('high scores (§9)', () => {
   it('shows the config signature as a readable line', () => {
-    playAndRecord(() => true, { difficulty: 'hard', pool: { continents: ['Europe'], source: 'all' } });
+    playAndRecord(() => true, { difficulty: 'hard', pool: { continents: ['Europe'], source: 'all', countrySet: 'all' } });
     renderStats();
 
     const scores = screen.getByRole('heading', { name: /high scores/i }).parentElement!;

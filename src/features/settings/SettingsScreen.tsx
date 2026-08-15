@@ -1,6 +1,31 @@
 import { useState } from 'react';
 import { entities } from '@/data/entities.generated';
 import { useStatsStore } from '@/store/statsStore';
+import { countrySetSize } from '@/engine/pool';
+import type { CountrySet } from '@/engine/types';
+
+/** Mirrors the setup screen's choices, so the two never drift apart. */
+const COUNTRY_SET_OPTIONS: ReadonlyArray<{
+  value: CountrySet;
+  label: string;
+  hint: string;
+}> = [
+  {
+    value: 'un',
+    label: 'UN countries',
+    hint: 'The 193 member states plus Palestine and Vatican City — the countries most people expect to be asked about.',
+  },
+  {
+    value: 'un-plus-disputed',
+    label: 'Plus disputed',
+    hint: 'Adds Kosovo, Taiwan and Western Sahara — widely recognised, but not UN members.',
+  },
+  {
+    value: 'all',
+    label: 'Everything',
+    hint: 'Adds territories, dependencies and special administrative regions: Puerto Rico, Greenland, Hong Kong and the rest.',
+  },
+];
 
 /** Settings — plan §3.3 and T3.5. */
 export function SettingsScreen() {
@@ -16,13 +41,59 @@ export function SettingsScreen() {
     <div className="mx-auto w-full max-w-3xl px-4 py-10">
       <h1 className="display-xl text-4xl text-paper sm:text-5xl">Settings</h1>
 
-      <section className="mt-8 flex flex-col gap-px border-2 border-line bg-line">
-        <Toggle
-          label="UN members only"
-          hint={`Quiz on the ${unMembers} UN member states rather than all ${entities.length} countries and territories.`}
-          checked={settings.unMembersOnly}
-          onChange={(value) => updateSettings({ unMembersOnly: value })}
-        />
+      {/*
+        The default a new game starts from, not a lock: every setup screen
+        offers the same three sets and starts on whichever is chosen here.
+      */}
+      <fieldset className="mt-8">
+        <legend className="label-caps mb-2 text-xs text-paper-faint">
+          Countries to quiz on
+        </legend>
+        <div className="flex flex-col gap-px border-2 border-line bg-line">
+          {COUNTRY_SET_OPTIONS.map((option) => {
+            const selected = settings.countrySet === option.value;
+            return (
+              <label
+                key={option.value}
+                className={[
+                  'flex cursor-pointer items-start gap-4 p-4 transition-colors',
+                  'has-[:focus-visible]:outline-3 has-[:focus-visible]:outline-signal-yellow has-[:focus-visible]:-outline-offset-3',
+                  selected ? 'bg-paper text-ink' : 'bg-ink-raised text-paper',
+                ].join(' ')}
+              >
+                <input
+                  type="radio"
+                  name="default-country-set"
+                  checked={selected}
+                  onChange={() => updateSettings({ countrySet: option.value })}
+                  className="sr-only"
+                />
+                <span
+                  aria-hidden="true"
+                  className={`mt-1 block h-5 w-5 shrink-0 border-2 ${
+                    selected ? 'border-ink bg-signal-green' : 'border-line bg-ink'
+                  }`}
+                />
+                <span className="min-w-0">
+                  <span className="display-md block text-base">
+                    {option.label}{' '}
+                    <span className="text-sm opacity-60">
+                      {countrySetSize(option.value)}
+                    </span>
+                  </span>
+                  <span
+                    className={`mt-1 block text-sm ${selected ? 'text-ink/70' : 'text-paper-dim'}`}
+                  >
+                    {option.hint}
+                  </span>
+                </span>
+              </label>
+            );
+          })}
+        </div>
+      </fieldset>
+
+      <section className="mt-6 flex flex-col gap-px border-2 border-line bg-line">
         <Toggle
           label="Reduce motion"
           hint="Turns off flips and slides. Your system setting is respected either way."
@@ -44,9 +115,10 @@ export function SettingsScreen() {
           This app includes territories, dependencies and disputed regions alongside
           sovereign states, because they are all things people want to learn. Their
           inclusion is not a statement about sovereignty, and neither is the way any of
-          them is named or grouped. If you would rather practise only the {unMembers} UN
-          member states, turn on <strong className="text-paper">UN members only</strong>{' '}
-          above.
+          them is named or grouped. Quizzes start on{' '}
+          <strong className="text-paper">UN countries</strong> — the {unMembers} member
+          states plus Palestine and Vatican City — and you can widen that above, or per
+          game on any setup screen.
         </p>
         <p className="mt-3 max-w-prose text-paper-dim">
           Where a country has more than one capital, all of them are accepted and the
