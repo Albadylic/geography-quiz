@@ -4,7 +4,6 @@ import type { SessionResult } from '@/engine/session';
 import type { Answer, Question, QuizMode } from '@/engine/types';
 import { clear, load, save } from '@/storage/persist';
 import {
-  DEFAULT_SETTINGS,
   emptyState,
   type PersistedStateV4,
   type Settings,
@@ -72,7 +71,3 @@ export const useStatsStore = create<StatsState>((set, get) => ({
   },
 }));
 
-/** Convenience selector — settings are read far more often than written. */
-export function useSettings(): Settings {
-  return useStatsStore((state) => state.data.settings ?? DEFAULT_SETTINGS);
-}

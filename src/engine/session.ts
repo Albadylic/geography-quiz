@@ -130,7 +130,12 @@ export function isFinished(session: Session): boolean {
  * `answerQuestion` so expert mode (T2.4) and combo mode (T4.1), which grade
  * differently, can share the scoring and advance logic.
  */
-export function recordAnswer(session: Session, answer: Answer): Session {
+export function recordAnswer(
+  session: Session,
+  answer: Answer,
+  /** Injectable like the rest of the module, so the finish time is testable. */
+  now: number = Date.now(),
+): Session {
   if (isFinished(session)) return session;
 
   // A combo answer counts for the streak only when both halves were right —
@@ -151,15 +156,19 @@ export function recordAnswer(session: Session, answer: Answer): Session {
     score: session.score + gained,
     currentStreak,
     longestStreak: Math.max(session.longestStreak, currentStreak),
-    finishedAt: finished ? (session.finishedAt ?? Date.now()) : session.finishedAt,
+    finishedAt: finished ? (session.finishedAt ?? now) : session.finishedAt,
   };
 }
 
 /** Answers the current question by option id. `null` skips it. */
-export function answerQuestion(session: Session, chosenId: string | null): Session {
+export function answerQuestion(
+  session: Session,
+  chosenId: string | null,
+  now?: number,
+): Session {
   const question = currentQuestion(session);
   if (!question) return session;
-  return recordAnswer(session, gradeChoice(question, chosenId));
+  return recordAnswer(session, gradeChoice(question, chosenId), now);
 }
 
 export interface SessionResult {

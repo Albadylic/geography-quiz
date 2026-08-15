@@ -1,4 +1,5 @@
 import { useId, useMemo, useRef, useState } from 'react';
+import type { Entity } from '@/data/schema';
 import type { AnswerKind } from '@/engine/types';
 import { suggest } from '@/engine/suggest';
 
@@ -9,6 +10,13 @@ interface AutocompleteProps {
   /** Submits the current value as the answer. */
   onSubmit: () => void;
   answerKind: AnswerKind;
+  /**
+   * The countries that can actually be the answer. Suggesting outside this set
+   * offers answers the quiz cannot accept — in a UN-only game it was offering
+   * Niue and Puerto Rico — and quietly contradicts the country set the player
+   * chose. Omitted, the whole dataset is used.
+   */
+  pool?: readonly Entity[];
   disabled?: boolean;
   placeholder?: string;
 }
@@ -29,6 +37,7 @@ export function Autocomplete({
   onChange,
   onSubmit,
   answerKind,
+  pool,
   disabled = false,
   placeholder,
 }: AutocompleteProps) {
@@ -39,8 +48,8 @@ export function Autocomplete({
   const inputRef = useRef<HTMLInputElement>(null);
 
   const suggestions = useMemo(
-    () => (disabled || dismissed ? [] : suggest(value, answerKind)),
-    [value, answerKind, disabled, dismissed],
+    () => (disabled || dismissed ? [] : suggest(value, answerKind, pool)),
+    [value, answerKind, pool, disabled, dismissed],
   );
   const open = suggestions.length > 0;
   const active = activeIndex >= 0 ? suggestions[activeIndex] : undefined;

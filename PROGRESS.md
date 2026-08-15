@@ -967,8 +967,8 @@ shareable seeded quizzes, and scoring skips separately from wrong answers.
 - [x] **R9** — Service worker cache never rotates
 - [x] **R10** — CI, stale-dist budget test, more browsers
 - [ ] **R11** — README
-- [ ] **R12** — Autocomplete scoped to the pool
-- [ ] **R13** — Dead code and small inaccuracies
+- [x] **R12** — Autocomplete scoped to the pool
+- [x] **R13** — Dead code and small inaccuracies
 
 ### R1 — Country set in the high-score signature
 
@@ -1188,6 +1188,31 @@ Safari and Firefox behaviour will be found out — the storage adapter's
 private-mode guard, `aspect-ratio` and `fetchPriority` are the likely places.
 Anything it surfaces needs triage; nothing here should be read as evidence that
 those browsers pass.
+
+### R12 — Autocomplete suggested outside the pool
+
+`suggest()` always searched all 250 entities, so a UN-countries quiz offered
+Niue and Puerto Rico — answers it cannot accept — and a Europe-only quiz
+offered Brazil. It quietly contradicted the country set the player had chosen.
+The session's pool is now threaded through to it. `buildPool` already applies
+the mode filter, so a capitals question gets capitals of in-pool countries for
+free.
+
+### R13 — Dead code and small inaccuracies
+
+- `useSettings()` was exported and used nowhere. Removed.
+- `recordAnswer` called `Date.now()` directly while the rest of the module
+  takes an injectable `now`, making the finish timestamp the one thing tests
+  could not control. Threaded through.
+- The flag-preload effect keyed on the whole session object, so it re-ran on
+  every score change rather than on every question. Harmless — `new Image()`
+  on a cached URL costs nothing — but it said more than it meant.
+
+**Deliberately not done:** converting `OptionGrid`'s `aria-pressed` buttons to
+`radiogroup` semantics. It is a fair criticism — these are a single choice from
+a set, not toggles — but correct radio semantics mean owning tabindex and
+arrow-key handling, which is a real rewrite of a well-tested component for a
+small gain. Recorded here rather than half-done.
 
 ## Project status
 

@@ -3,6 +3,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom';
 import { entities } from '@/data/entities.generated';
 import type { Entity } from '@/data/schema';
 import { currentQuestion, isFinished } from '@/engine/session';
+import { buildPool } from '@/engine/pool';
 import { gradeChoice, gradeFreeText } from '@/engine/grading';
 import { optionLabel } from '@/engine/questions';
 import type { Answer, Question } from '@/engine/types';
@@ -127,12 +128,13 @@ export function PlayScreen() {
    * so an eight-option question could otherwise stall visibly the moment it
    * renders. Doing this a question early hides the download entirely.
    */
+  const nextQuestion = session?.questions[session.currentIndex + 1];
   useEffect(() => {
-    if (!session) return;
-    const next = session.questions[session.currentIndex + 1];
-    if (!next) return;
-    preloadFlags(flagsShownBy(next));
-  }, [session]);
+    if (!nextQuestion) return;
+    preloadFlags(flagsShownBy(nextQuestion));
+    // Keyed on the next question rather than on the whole session, which also
+    // changes when the score does — the effect said more than it meant.
+  }, [nextQuestion]);
 
   useEffect(() => {
     if (session && isFinished(session)) {
@@ -161,6 +163,8 @@ export function PlayScreen() {
 
   const isCombo = question.halves !== undefined;
   const isExpert = !isCombo && question.options === undefined;
+  // Only expert mode reads this, and only to bound its suggestions.
+  const pool = isExpert ? buildPool(session.config) : undefined;
   const answerEntity = byId.get(question.entityId);
   const questionNumber = session.currentIndex + 1;
   const total = session.questions.length;
@@ -250,6 +254,7 @@ export function PlayScreen() {
               onChange={setTyped}
               onSubmit={submitText}
               onSkip={skipQuestion}
+              pool={pool}
               revealed={revealed}
               answerEntity={answerEntity}
             />
@@ -323,6 +328,7 @@ function ExpertAnswer({
   onChange,
   onSubmit,
   onSkip,
+  pool,
   revealed,
   answerEntity,
 }: {
@@ -332,6 +338,8 @@ function ExpertAnswer({
   onSubmit: () => void;
   /** Gives up on the question outright, whatever is in the box. */
   onSkip: () => void;
+  /** The countries this quiz can actually ask about. */
+  pool: readonly Entity[] | undefined;
   revealed: Answer | null;
   answerEntity: Entity | undefined;
 }) {
@@ -349,6 +357,7 @@ function ExpertAnswer({
         onChange={onChange}
         onSubmit={onSubmit}
         answerKind={question.answerKind}
+        {...(pool ? { pool } : {})}
         placeholder="Type your answer"
       />
       <div className="flex gap-px">

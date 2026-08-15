@@ -254,3 +254,48 @@ describe('skipping in expert mode', () => {
     expect(screen.getByTestId('answer-announcement')).toHaveTextContent('Correct');
   });
 });
+
+/**
+ * R12. Suggestions came from all 250 entities regardless of the pool, so a
+ * UN-only quiz offered Niue and Puerto Rico — answers it cannot accept.
+ */
+describe('suggestions stay inside the pool', () => {
+  const suggestions = () =>
+    within(screen.getByRole('listbox')).queryAllByRole('option').map((o) => o.textContent);
+
+  it('does not offer a territory in a UN-countries quiz', async () => {
+    const user = userEvent.setup();
+    startOn('new-zealand', {
+      difficulty: 'expert',
+      direction: 'b-to-a',
+      pool: { continents: 'all', source: 'all', countrySet: 'un' },
+    });
+
+    await user.type(screen.getByRole('combobox'), 'niu');
+    expect(suggestions()).not.toContain('Niue');
+  });
+
+  it('still offers it when the player chose everything', async () => {
+    const user = userEvent.setup();
+    startOn('new-zealand', {
+      difficulty: 'expert',
+      direction: 'b-to-a',
+      pool: { continents: 'all', source: 'all', countrySet: 'all' },
+    });
+
+    await user.type(screen.getByRole('combobox'), 'niu');
+    expect(suggestions()).toContain('Niue');
+  });
+
+  it('does not offer a country from a continent the quiz excludes', async () => {
+    const user = userEvent.setup();
+    startOn('france', {
+      difficulty: 'expert',
+      direction: 'b-to-a',
+      pool: { continents: ['Europe'], source: 'all', countrySet: 'all' },
+    });
+
+    await user.type(screen.getByRole('combobox'), 'braz');
+    expect(suggestions()).not.toContain('Brazil');
+  });
+});
