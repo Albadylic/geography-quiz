@@ -118,6 +118,80 @@ export const FLAG_TEMPLATES: FlagTemplate[] = [
       { id: 'bottom', label: 'Bottom band', d: rect(0, 360, W, 120) },
     ],
   },
+  /*
+    Band templates for the flags that are *not* even thirds or halves — R7.
+    Naming them by ratio rather than by country keeps them reusable and makes a
+    wrong choice obvious in the data: `horizontal-3-1-2-1` says what it draws.
+    Every one of these replaced an even template that visibly misdrew its flag.
+  */
+  {
+    /** Lebanon and Laos: a double-height middle band. */
+    id: 'horizontal-3-1-2-1',
+    name: 'Three horizontal bands, wide centre',
+    viewBox: `0 0 ${W} ${H}`,
+    regions: [
+      { id: 'top', label: 'Top band', d: rect(0, 0, W, 120) },
+      { id: 'middle', label: 'Middle band', d: rect(0, 120, W, 240) },
+      { id: 'bottom', label: 'Bottom band', d: rect(0, 360, W, 120) },
+    ],
+  },
+  {
+    /** Latvia: a narrow centre stripe between two deep bands. */
+    id: 'horizontal-3-2-1-2',
+    name: 'Three horizontal bands, narrow centre',
+    viewBox: `0 0 ${W} ${H}`,
+    regions: [
+      { id: 'top', label: 'Top band', d: rect(0, 0, W, 192) },
+      { id: 'middle', label: 'Middle band', d: rect(0, 192, W, 96) },
+      { id: 'bottom', label: 'Bottom band', d: rect(0, 288, W, 192) },
+    ],
+  },
+  {
+    /** Tajikistan: 2:3:2. */
+    id: 'horizontal-3-2-3-2',
+    name: 'Three horizontal bands, deep centre',
+    viewBox: `0 0 ${W} ${H}`,
+    regions: [
+      { id: 'top', label: 'Top band', d: rect(0, 0, W, 137) },
+      { id: 'middle', label: 'Middle band', d: rect(0, 137, W, 206) },
+      { id: 'bottom', label: 'Bottom band', d: rect(0, 343, W, 137) },
+    ],
+  },
+  {
+    /** Portugal: the hoist band is two fifths. */
+    id: 'vertical-2-2-3',
+    name: 'Two vertical bands, narrow hoist',
+    viewBox: `0 0 ${W} ${H}`,
+    regions: [
+      { id: 'left', label: 'Left band', d: rect(0, 0, 256, H) },
+      { id: 'right', label: 'Right band', d: rect(256, 0, W - 256, H) },
+    ],
+  },
+  {
+    /** Pakistan: the white hoist band is a quarter. */
+    id: 'vertical-2-1-3',
+    name: 'Two vertical bands, quarter hoist',
+    viewBox: `0 0 ${W} ${H}`,
+    regions: [
+      { id: 'left', label: 'Left band', d: rect(0, 0, 160, H) },
+      { id: 'right', label: 'Right band', d: rect(160, 0, W - 160, H) },
+    ],
+  },
+  {
+    /**
+     * Guinea-Bissau and Benin: a full-height band at the hoist, with the fly
+     * divided into two horizontal bands. Not three vertical bands, which is
+     * what it had been spec'd as.
+     */
+    id: 'hoist-band-2',
+    name: 'Hoist band with two horizontal bands',
+    viewBox: `0 0 ${W} ${H}`,
+    regions: [
+      { id: 'hoist', label: 'Hoist band', d: rect(0, 0, 256, H) },
+      { id: 'top', label: 'Top band', d: rect(256, 0, W - 256, H / 2) },
+      { id: 'bottom', label: 'Bottom band', d: rect(256, H / 2, W - 256, H / 2) },
+    ],
+  },
   {
     /** Thailand and Costa Rica: five bands with a double-height centre. */
     id: 'horizontal-5',
@@ -178,12 +252,19 @@ export const FLAG_TEMPLATES: FlagTemplate[] = [
     ],
   },
   {
+    /**
+     * Papua New Guinea: the diagonal runs from the top-left corner to the
+     * bottom-right, so the two halves are upper-*right* and lower-*left*. It
+     * was drawn the other way round, which put the black half where the red
+     * one belongs — invisible to every check the build makes, because both
+     * colours are in the flag.
+     */
     id: 'diagonal-split',
     name: 'Diagonal split',
     viewBox: `0 0 ${W} ${H}`,
     regions: [
-      { id: 'upper', label: 'Upper triangle', d: `M0 0h${W}L0 ${H}z` },
-      { id: 'lower', label: 'Lower triangle', d: `M${W} 0v${H}H0z` },
+      { id: 'upper', label: 'Upper triangle', d: `M0 0h${W}v${H}z` },
+      { id: 'lower', label: 'Lower triangle', d: `M0 0v${H}h${W}z` },
     ],
   },
   {

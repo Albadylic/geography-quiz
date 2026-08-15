@@ -39,11 +39,11 @@ export const entities: readonly Entity[] = [
       "aspectRatio": 1.3333
     },
     "colouring": {
-      "templateId": "horizontal-3",
+      "templateId": "vertical-3",
       "regions": {
-        "top": "black",
+        "left": "black",
         "middle": "red",
-        "bottom": "green"
+        "right": "green"
       }
     },
     "tier": 1
@@ -3268,13 +3268,6 @@ export const entities: readonly Entity[] = [
       ],
       "aspectRatio": 1.3333
     },
-    "colouring": {
-      "templateId": "saltire",
-      "regions": {
-        "field": "green",
-        "saltire": "yellow"
-      }
-    },
     "tier": 3
   },
   {
@@ -3509,11 +3502,11 @@ export const entities: readonly Entity[] = [
       "aspectRatio": 1.3333
     },
     "colouring": {
-      "templateId": "vertical-3",
+      "templateId": "hoist-band-2",
       "regions": {
-        "left": "red",
-        "middle": "yellow",
-        "right": "green"
+        "hoist": "red",
+        "top": "yellow",
+        "bottom": "green"
       }
     },
     "tier": 2
@@ -3793,11 +3786,11 @@ export const entities: readonly Entity[] = [
       "aspectRatio": 1.3333
     },
     "colouring": {
-      "templateId": "vertical-3",
+      "templateId": "horizontal-3",
       "regions": {
-        "left": "orange",
+        "top": "orange",
         "middle": "white",
-        "right": "green"
+        "bottom": "green"
       }
     },
     "confusableWith": [
@@ -4553,7 +4546,7 @@ export const entities: readonly Entity[] = [
       "aspectRatio": 1.3333
     },
     "colouring": {
-      "templateId": "horizontal-3",
+      "templateId": "horizontal-3-1-2-1",
       "regions": {
         "top": "red",
         "middle": "blue",
@@ -4597,7 +4590,7 @@ export const entities: readonly Entity[] = [
       "aspectRatio": 1.3333
     },
     "colouring": {
-      "templateId": "horizontal-3-uneven",
+      "templateId": "horizontal-3-2-1-2",
       "regions": {
         "top": "maroon",
         "middle": "white",
@@ -4640,7 +4633,7 @@ export const entities: readonly Entity[] = [
       "aspectRatio": 1.3333
     },
     "colouring": {
-      "templateId": "horizontal-3",
+      "templateId": "horizontal-3-1-2-1",
       "regions": {
         "top": "red",
         "middle": "white",
@@ -6280,7 +6273,7 @@ export const entities: readonly Entity[] = [
       "aspectRatio": 1.3333
     },
     "colouring": {
-      "templateId": "vertical-2",
+      "templateId": "vertical-2-1-3",
       "regions": {
         "left": "white",
         "right": "green"
@@ -6451,8 +6444,8 @@ export const entities: readonly Entity[] = [
     "colouring": {
       "templateId": "diagonal-split",
       "regions": {
-        "upper": "black",
-        "lower": "red"
+        "upper": "red",
+        "lower": "black"
       },
       "decorations": [
         {
@@ -6711,7 +6704,7 @@ export const entities: readonly Entity[] = [
       "aspectRatio": 1.3333
     },
     "colouring": {
-      "templateId": "vertical-2",
+      "templateId": "vertical-2-2-3",
       "regions": {
         "left": "green",
         "right": "red"
@@ -6977,7 +6970,7 @@ export const entities: readonly Entity[] = [
       "aspectRatio": 1.3333
     },
     "colouring": {
-      "templateId": "horizontal-3",
+      "templateId": "horizontal-3-uneven",
       "regions": {
         "top": "light-blue",
         "middle": "yellow",
@@ -8288,7 +8281,7 @@ export const entities: readonly Entity[] = [
       "aspectRatio": 1.3333
     },
     "colouring": {
-      "templateId": "horizontal-3",
+      "templateId": "horizontal-3-2-3-2",
       "regions": {
         "top": "red",
         "middle": "white",

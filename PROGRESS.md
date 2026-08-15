@@ -962,7 +962,7 @@ shareable seeded quizzes, and scoring skips separately from wrong answers.
 - [x] **R4** — Expert mode's Skip is the Answer button
 - [x] **R5** — Combo announcement withholds the answer
 - [x] **R6** — Colouring fidelity audit
-- [ ] **R7** — Fix the worst flag templates
+- [x] **R7** — Fix the worst flag templates
 - [ ] **R8** — SPA deep links on static hosts
 - [ ] **R9** — Service worker cache never rotates
 - [ ] **R10** — CI, stale-dist budget test, more browsers
@@ -1078,6 +1078,51 @@ the saltire template is nothing like its flag), Papua New Guinea (47.5% — the
 two halves of the diagonal are coloured the wrong way round), Guinea-Bissau
 (36.3% — not three vertical bands at all), Pakistan (27.6% — 1:3, not 1:1) and
 Latvia (20.0% — 2:1:2, not 2:1:1). Fixed in R7.
+
+### R7 — Fix the flags the audit ranked worst
+
+Eleven specs corrected, six new templates, one flag dropped. Every change was
+looked at rendered beside its real flag, not just measured.
+
+| Entity | Was | Now | Unexplained, before → after |
+| --- | --- | --- | ---: |
+| Afghanistan | `horizontal-3` | `vertical-3` | 66.9% → 8.1% |
+| India | `vertical-3` | `horizontal-3` | 66.7% → 3.5% |
+| Grenada | `saltire` | *dropped* | 58.4% → — |
+| Papua New Guinea | diagonal drawn mirrored | corrected, colours swapped | 47.5% → 4.0% |
+| Guinea-Bissau | `vertical-3` | `hoist-band-2` | 36.3% → 8.4% |
+| Rwanda | `horizontal-3` | `horizontal-3-uneven` | 27.6% → 3.1% |
+| Pakistan | `vertical-2` | `vertical-2-1-3` | 27.6% → 8.5% |
+| Latvia | `horizontal-3-uneven` | `horizontal-3-2-1-2` | 20.0% → 0.0% |
+| Lebanon | `horizontal-3` | `horizontal-3-1-2-1` | 18.2% → 3.3% |
+| Laos | `horizontal-3` | `horizontal-3-1-2-1` | 17.7% → 2.6% |
+| Portugal | `vertical-2` | `vertical-2-2-3` | 17.1% → 10.3% |
+| Tajikistan | `horizontal-3` | `horizontal-3-2-3-2` | 13.1% → 3.6% |
+
+Mean across all specs: **8.9% → 4.9%**. Latvia reaches exactly 0.
+
+Three of these were not shape problems at all in the way the review assumed:
+
+1. **India and Afghanistan were exactly swapped** — one authoring slip that gave
+   each the other's template.
+2. **Papua New Guinea's diagonal ran the wrong way.** `diagonal-split` divided
+   the canvas top-right to bottom-left; the flag divides top-left to
+   bottom-right. The template was corrected and the spec's two colours swapped
+   to follow it. Nothing in the build could have seen this: both colours are in
+   the flag, and both regions are named.
+3. **Grenada was never a saltire.** Its flag is a bordered rectangle with a
+   quartered centre; the template drew a green field with a yellow X. Dropped
+   for the same reason Chile, Greece, Sri Lanka and Nauru were — no available
+   template renders it faithfully. 88 specs remain.
+
+The new templates are named by ratio (`horizontal-3-1-2-1`, `vertical-2-1-3`)
+rather than by country, so they are reusable and a wrong choice is legible in
+the data. `hoist-band-2` — a full-height hoist band with the fly split in two —
+also fits Benin, which has no spec yet.
+
+What is left at the top of the table is all irreducible: Burundi's white disc,
+Mauritania's red bands, Moldova's coat of arms. Those need artwork the
+templates cannot express, not a different template.
 
 ## Project status
 

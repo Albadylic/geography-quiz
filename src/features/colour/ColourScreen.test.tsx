@@ -224,12 +224,13 @@ describe('grading and the summary (T6.4)', () => {
 });
 
 /**
- * Emblems — follow-up F4. Seeded so the first flag is Jamaica, whose black
- * quarters are a decoration rather than a paintable region.
+ * Emblems — follow-up F4. Seeded so the first flag is one that has an emblem;
+ * the seed is pinned rather than left to chance because only 16 of the 88
+ * colourable flags carry one.
  */
 describe('flag decorations', () => {
   async function startDecoratedRound() {
-    vi.spyOn(rng, 'randomSeed').mockReturnValue(7);
+    vi.spyOn(rng, 'randomSeed').mockReturnValue(8);
     return startEasyRound();
   }
 
@@ -243,9 +244,8 @@ describe('flag decorations', () => {
 
     expect(emblems).not.toBeNull();
     expect(emblems.querySelectorAll('path').length).toBeGreaterThan(0);
-    // The saltire template has two regions; the emblem adds neither a third
-    // nor a clickable anything.
-    expect(regions()).toHaveLength(templateById('saltire')!.regions.length);
+    // The emblem adds neither a region to paint nor a clickable anything.
+    expect(regions()).toHaveLength(templateById('horizontal-3')!.regions.length);
     expect(within(emblems as HTMLElement).queryAllByRole('button')).toHaveLength(0);
   });
 
@@ -267,7 +267,7 @@ describe('flag decorations', () => {
     const user = await startDecoratedRound();
     // Fill every region correctly and check: a decorated flag still grades as
     // exactly right, so the emblem is not being counted as an unfilled region.
-    const entity = entities.find((candidate) => candidate.id === 'jamaica')!;
+    const entity = entities.find((candidate) => candidate.id === 'iraq')!;
     const spec = entity.colouring!;
     const template = templateById(spec.templateId)!;
 

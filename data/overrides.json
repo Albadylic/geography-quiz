@@ -3,12 +3,12 @@
   "$about": [
     "Hand-maintained corrections layered over the world-countries snapshot by",
     "scripts/build-data.ts. This file is the source of truth wherever it and the",
-    "snapshot disagree (plan §3.2). Every section is keyed by entity id (slug).",
+    "snapshot disagree (plan \u00a73.2). Every section is keyed by entity id (slug).",
     "",
     "Anything listed here appears in data-report.md, so the manual surface area",
     "of the dataset is auditable in one place."
   ],
-  "$statuses": "Status where it cannot be derived from unMember/independent. Notably the snapshot marks Vatican City as a UN member, which is wrong — it is a permanent observer, and without this the UN-member count comes out at 194.",
+  "$statuses": "Status where it cannot be derived from unMember/independent. Notably the snapshot marks Vatican City as a UN member, which is wrong \u2014 it is a permanent observer, and without this the UN-member count comes out at 194.",
   "statuses": {
     "vatican-city": "un-observer",
     "palestine": "un-observer",
@@ -72,7 +72,7 @@
     "hong-kong": "china",
     "macau": "china"
   },
-  "$altContinents": "Transcontinental entities, reachable through more than one continent filter (§3.3). The primary continent stays as derived from the snapshot's region.",
+  "$altContinents": "Transcontinental entities, reachable through more than one continent filter (\u00a73.3). The primary continent stays as derived from the snapshot's region.",
   "altContinents": {
     "russia": [
       "Asia"
@@ -99,7 +99,7 @@
       "Oceania"
     ]
   },
-  "$capitals": "Multi-capital entities and contested cases (§3.3). Replaces the snapshot's capital list wholesale. Exactly one entry carries isPrimary — that is the answer the quiz asks for; the others are accepted in expert mode and shown with their note in review.",
+  "$capitals": "Multi-capital entities and contested cases (\u00a73.3). Replaces the snapshot's capital list wholesale. Exactly one entry carries isPrimary \u2014 that is the answer the quiz asks for; the others are accepted in expert mode and shown with their note in review.",
   "capitals": {
     "south-africa": [
       {
@@ -231,10 +231,10 @@
     ],
     "western-sahara": [
       {
-        "name": "El Aaiún",
+        "name": "El Aai\u00fan",
         "aliases": [
           "Laayoune",
-          "Laâyoune"
+          "La\u00e2youne"
         ],
         "isPrimary": true,
         "note": "largest city; the territory is disputed"
@@ -276,7 +276,7 @@
     ],
     "ivory-coast": [
       "Cote d'Ivoire",
-      "Côte d'Ivoire"
+      "C\u00f4te d'Ivoire"
     ],
     "dr-congo": [
       "Democratic Republic of the Congo",
@@ -316,12 +316,12 @@
       "Russian Federation"
     ]
   },
-  "$squareFlags": "Entities whose flag is officially square. These ship the flag-icons 1x1 asset rather than the 4x3 one, so the rendered flag is the correct shape (§3.3).",
+  "$squareFlags": "Entities whose flag is officially square. These ship the flag-icons 1x1 asset rather than the 4x3 one, so the rendered flag is the correct shape (\u00a73.3).",
   "squareFlags": [
     "switzerland",
     "vatican-city"
   ],
-  "$confusableWith": "Curated visually-confusable pairs, the top rung of the distractor ladder (§5.2). Symmetric — the build adds the reverse of every entry.",
+  "$confusableWith": "Curated visually-confusable pairs, the top rung of the distractor ladder (\u00a75.2). Symmetric \u2014 the build adds the reverse of every entry.",
   "confusableWith": {
     "chad": [
       "romania",
@@ -450,7 +450,7 @@
       "cook-islands"
     ]
   },
-  "$tierOne": "Familiarity tier 1 (§3.1): entities a casual player is expected to recognise. The build assigns tier 1 to these plus any UN member over 300,000 km²; tier 3 to dependencies, SARs and anything under 1,000 km²; tier 2 to the rest. This is an explicit heuristic, not sourced data.",
+  "$tierOne": "Familiarity tier 1 (\u00a73.1): entities a casual player is expected to recognise. The build assigns tier 1 to these plus any UN member over 300,000 km\u00b2; tier 3 to dependencies, SARs and anything under 1,000 km\u00b2; tier 2 to the rest. This is an explicit heuristic, not sourced data.",
   "tierOne": [
     "united-kingdom",
     "ireland",
@@ -510,13 +510,13 @@
   "$notes": "Free-text explanations reproduced verbatim in data-report.md, so anyone reading the generated dataset can see why a value differs from the snapshot.",
   "notes": {
     "vatican-city": "The snapshot marks Vatican City as unMember: true. It is a UN permanent observer, not a member; corrected here, which brings the UN member count to the correct 193.",
-    "hong-kong": "The snapshot gives the capital as 'City of Victoria', a historic name rather than a current capital. Hong Kong is an SAR and has no capital, so the capital list is emptied — which excludes it from capitals and combo questions through the pool filter, not through a hard-coded exclusion (§3.3, locked decision 4).",
-    "palestine": "Ramallah is the de facto administrative seat and the primary answer; Jerusalem is listed as the declared capital and is accepted in expert mode. Inclusion is not a statement on sovereignty — see the About copy in Settings.",
-    "western-sahara": "Disputed territory. El Aaiún is the largest city and the answer used; the Sahrawi Republic administers from Tifariti. Alias 'Laayoune' accepted.",
+    "hong-kong": "The snapshot gives the capital as 'City of Victoria', a historic name rather than a current capital. Hong Kong is an SAR and has no capital, so the capital list is emptied \u2014 which excludes it from capitals and combo questions through the pool filter, not through a hard-coded exclusion (\u00a73.3, locked decision 4).",
+    "palestine": "Ramallah is the de facto administrative seat and the primary answer; Jerusalem is listed as the declared capital and is accepted in expert mode. Inclusion is not a statement on sovereignty \u2014 see the About copy in Settings.",
+    "western-sahara": "Disputed territory. El Aai\u00fan is the largest city and the answer used; the Sahrawi Republic administers from Tifariti. Alias 'Laayoune' accepted.",
     "kosovo": "Uses the user-assigned ISO code XK, which is what flag-icons ships the flag under.",
     "eswatini": "The snapshot lists only Lobamba. Mbabane is the administrative capital and the primary answer; both are accepted.",
     "sri-lanka": "The snapshot lists only Colombo. Sri Jayawardenepura Kotte is the official capital and the primary answer; both are accepted.",
-    "chile": "§5.2 names 'Chile/Texas-alikes' as a confusable pair, but Texas is not an entity in this dataset. Paired with Cuba instead, which is the closest genuine confusable in scope."
+    "chile": "\u00a75.2 names 'Chile/Texas-alikes' as a confusable pair, but Texas is not an entity in this dataset. Paired with Cuba instead, which is the closest genuine confusable in scope."
   },
   "$decorationsRejected": "Candidates the extractor produced that were rendered, looked at, and rejected, with the reason. Kept rather than deleted so the next person does not re-derive the same verdict - and so the build can insist that every candidate is in exactly one of these two lists.",
   "decorationsRejected": {
@@ -545,7 +545,7 @@
     "syria",
     "united-arab-emirates"
   ],
-  "$colouring": "Colour the Flag specs (§7). Each entity names a template and assigns every one of its regions a colour token. The build refuses a spec whose regions do not match its template, and refuses a colour that does not appear in the palette extracted from that entity's real SVG - which catches a mis-remembered flag rather than shipping it. Entities are only listed where the template is a faithful rendering of the flag's field: Chile, Greece, Sri Lanka and Nauru were dropped because no available template shows them without losing a colour or a defining feature.",
+  "$colouring": "Colour the Flag specs (\u00a77). Each entity names a template and assigns every one of its regions a colour token. The build refuses a spec whose regions do not match its template, and refuses a colour that does not appear in the palette extracted from that entity's real SVG - which catches a mis-remembered flag rather than shipping it. Entities are only listed where the template is a faithful rendering of the flag's field: Chile, Greece, Sri Lanka and Nauru were dropped because no available template shows them without losing a colour or a defining feature.",
   "colouring": {
     "france": {
       "templateId": "vertical-3",
@@ -676,19 +676,19 @@
       }
     },
     "india": {
-      "templateId": "vertical-3",
+      "templateId": "horizontal-3",
       "regions": {
-        "left": "orange",
+        "top": "orange",
         "middle": "white",
-        "right": "green"
+        "bottom": "green"
       }
     },
     "guinea-bissau": {
-      "templateId": "vertical-3",
+      "templateId": "hoist-band-2",
       "regions": {
-        "left": "red",
-        "middle": "yellow",
-        "right": "green"
+        "hoist": "red",
+        "top": "yellow",
+        "bottom": "green"
       }
     },
     "germany": {
@@ -844,7 +844,7 @@
       }
     },
     "lebanon": {
-      "templateId": "horizontal-3",
+      "templateId": "horizontal-3-1-2-1",
       "regions": {
         "top": "red",
         "middle": "white",
@@ -852,7 +852,7 @@
       }
     },
     "laos": {
-      "templateId": "horizontal-3",
+      "templateId": "horizontal-3-1-2-1",
       "regions": {
         "top": "red",
         "middle": "blue",
@@ -884,11 +884,11 @@
       }
     },
     "afghanistan": {
-      "templateId": "horizontal-3",
+      "templateId": "vertical-3",
       "regions": {
-        "top": "black",
+        "left": "black",
         "middle": "red",
-        "bottom": "green"
+        "right": "green"
       }
     },
     "indonesia": {
@@ -983,7 +983,7 @@
       }
     },
     "portugal": {
-      "templateId": "vertical-2",
+      "templateId": "vertical-2-2-3",
       "regions": {
         "left": "green",
         "right": "red"
@@ -1011,7 +1011,7 @@
       }
     },
     "pakistan": {
-      "templateId": "vertical-2",
+      "templateId": "vertical-2-1-3",
       "regions": {
         "left": "white",
         "right": "green"
@@ -1026,7 +1026,7 @@
       }
     },
     "latvia": {
-      "templateId": "horizontal-3-uneven",
+      "templateId": "horizontal-3-2-1-2",
       "regions": {
         "top": "maroon",
         "middle": "white",
@@ -1072,8 +1072,8 @@
     "papua-new-guinea": {
       "templateId": "diagonal-split",
       "regions": {
-        "upper": "black",
-        "lower": "red"
+        "upper": "red",
+        "lower": "black"
       }
     },
     "turkiye": {
@@ -1170,13 +1170,6 @@
         "saltire": "white"
       }
     },
-    "grenada": {
-      "templateId": "saltire",
-      "regions": {
-        "field": "green",
-        "saltire": "yellow"
-      }
-    },
     "uzbekistan": {
       "templateId": "horizontal-3",
       "regions": {
@@ -1186,7 +1179,7 @@
       }
     },
     "tajikistan": {
-      "templateId": "horizontal-3",
+      "templateId": "horizontal-3-2-3-2",
       "regions": {
         "top": "red",
         "middle": "white",
@@ -1234,7 +1227,7 @@
       }
     },
     "rwanda": {
-      "templateId": "horizontal-3",
+      "templateId": "horizontal-3-uneven",
       "regions": {
         "top": "light-blue",
         "middle": "yellow",

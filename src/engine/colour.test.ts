@@ -19,21 +19,29 @@ const byId = new Map(entities.map((e) => [e.id, e]));
 const entity = (id: string) => byId.get(id)!;
 
 describe('templates (T6.1, T6.5)', () => {
-  it('ships all fourteen templates §7 names', () => {
+  it('ships the fourteen templates §7 names, plus the R7 ratio variants', () => {
     expect(FLAG_TEMPLATES.map((template) => template.id).sort()).toEqual([
       'canton-plain',
       'crescent-star',
       'diagonal-split',
       'disc-centre',
       'disc-offset',
+      // Added in R7: flags whose bands are not even thirds or halves were
+      // being drawn on templates that were, which visibly misdrew them.
+      'hoist-band-2',
       'horizontal-2',
       'horizontal-3',
+      'horizontal-3-1-2-1',
+      'horizontal-3-2-1-2',
+      'horizontal-3-2-3-2',
       'horizontal-3-uneven',
       'horizontal-5',
       'nordic-cross',
       'saltire',
       'triangle-hoist',
       'vertical-2',
+      'vertical-2-1-3',
+      'vertical-2-2-3',
       'vertical-3',
     ]);
   });
