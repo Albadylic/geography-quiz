@@ -416,3 +416,97 @@ describe('country sets (§3.3)', () => {
     expect(pool.every((e) => e.capitals.length > 0)).toBe(true);
   });
 });
+
+describe('easy favours familiar countries (tier)', () => {
+  /** Mean familiarity tier of the countries a run of sessions asked about. */
+  function meanTier(difficulty: Difficulty, seeds: number[]): number {
+    const tiers = seeds.flatMap(
+      (seed) =>
+        generateQuestions(config({ difficulty, seed, length: 20 })).questions.map(
+          (question) => entity(question.entityId).tier,
+        ),
+    );
+    return tiers.reduce((total, tier) => total + tier, 0) / tiers.length;
+  }
+
+  const seeds = Array.from({ length: 40 }, (_, index) => index * 7919 + 1);
+
+  it('asks about more familiar countries on easy than on hard', () => {
+    const easy = meanTier('easy', seeds);
+    const hard = meanTier('hard', seeds);
+
+    // Not a hair's breadth: the whole point is that easy feels different.
+    expect(easy).toBeLessThan(hard - 0.3);
+    expect(easy).toBeLessThan(1.6);
+  });
+
+  it('still reaches the obscure ones, so a long easy quiz teaches something', () => {
+    const asked = new Set(
+      seeds.flatMap((seed) =>
+        generateQuestions(config({ difficulty: 'easy', seed, length: 20 })).questions.map(
+          (question) => entity(question.entityId).tier,
+        ),
+      ),
+    );
+    expect(asked).toContain(3);
+  });
+
+  it('stays deterministic and repeat-free', () => {
+    const first = generateQuestions(config({ difficulty: 'easy', seed: 4242, length: 50 }));
+    const second = generateQuestions(config({ difficulty: 'easy', seed: 4242, length: 50 }));
+    expect(first).toEqual(second);
+
+    const ids = first.questions.map((question) => question.entityId);
+    expect(new Set(ids).size).toBe(ids.length);
+  });
+
+  it('can still fill a pool too small to be choosy', () => {
+    // 12 countries in South America, 20 asked for: every one must appear
+    // exactly once rather than the weighting producing a short session.
+    const { questions } = generateQuestions(
+      config({
+        difficulty: 'easy',
+        length: 20,
+        pool: { continents: ['South America'], source: 'all', countrySet: 'all' },
+      }),
+    );
+    const pool = buildPool(
+      config({ pool: { continents: ['South America'], source: 'all', countrySet: 'all' } }),
+    );
+    expect(new Set(questions.map((q) => q.entityId))).toEqual(new Set(pool.map((e) => e.id)));
+  });
+
+  it('does not override hardest-countries mode, which is an explicit request', () => {
+    // Niue is tier 3 and would rarely be chosen by the easy weighting, but a
+    // player who asked for their weak countries gets their weak countries.
+    const weights = new Map([['niue', 100]]);
+    const { questions } = generateQuestions(
+      config({
+        difficulty: 'easy',
+        length: 20,
+        pool: { continents: 'all', source: 'hardest', countrySet: 'all' },
+      }),
+      { weights },
+    );
+    expect(questions.map((q) => q.entityId)).toContain('niue');
+  });
+
+  it('offers familiar distractors on easy, obscure ones on hard', () => {
+    const rng = mulberry32(99);
+    const pool = buildPool(config({ pool: { continents: 'all', source: 'all', countrySet: 'all' } }));
+
+    const obscureDistractors = (difficulty: Difficulty) =>
+      pool
+        .slice(0, 60)
+        .flatMap((answer) =>
+          buildOptions(rng, answer, pool, { difficulty, mode: 'flags' }, 'name', 'flag').filter(
+            (id) => id !== answer.id && entity(id).tier === 3,
+          ),
+        ).length;
+
+    // Easy has 174 familiar candidates to draw 3 from, so it never has to
+    // reach the tier-3 rung at all.
+    expect(obscureDistractors('easy')).toBe(0);
+    expect(obscureDistractors('hard')).toBeGreaterThan(0);
+  });
+});

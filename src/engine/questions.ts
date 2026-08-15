@@ -1,5 +1,5 @@
 import type { Entity } from '@/data/schema';
-import { aresKey, mulberry32, sample, shuffle, type Rng } from './rng';
+import { aresKey, mulberry32, sample, shuffle, weightedSample, type Rng } from './rng';
 import { buildPool, summarisePool, type PoolOptions } from './pool';
 import {
   optionCountFor,
@@ -98,6 +98,30 @@ function promptFor(
 }
 
 // ---------------------------------------------------------------------------
+// Familiarity
+// ---------------------------------------------------------------------------
+
+/**
+ * How much more likely a tier is to be picked on easy, relative to tier 3.
+ *
+ * `tier` is the build's familiarity heuristic (§3.1): 1 is a country a casual
+ * player is expected to recognise, 3 is a microstate or a dependency. Easy
+ * should mean "countries you have heard of", not just "four options" — before
+ * this, easy and hard drew from exactly the same pool and differed only in how
+ * many options they showed.
+ *
+ * The ratio is deliberately not extreme: 6:2:1 keeps tier 3 reachable, so a
+ * long easy quiz still teaches you something rather than cycling the same
+ * thirty countries.
+ */
+const EASY_TIER_WEIGHT: Record<1 | 2 | 3, number> = { 1: 6, 2: 2, 3: 1 };
+
+/** Tier 3 is the "never heard of it" tier; 1 and 2 are both fair game. */
+function isFamiliar(entity: Entity): boolean {
+  return entity.tier <= 2;
+}
+
+// ---------------------------------------------------------------------------
 // The ladder
 // ---------------------------------------------------------------------------
 
@@ -129,8 +153,17 @@ export function distractorTiers(
     const differentContinent = candidates.filter(
       (entity) => entity.continent !== answer.continent,
     );
-    const rest = candidates.filter((entity) => entity.continent === answer.continent);
-    return [differentContinent, rest];
+    const sameContinent = candidates.filter((entity) => entity.continent === answer.continent);
+
+    // Continent stays the primary rung — it is what makes the answer
+    // separable — but within each rung the familiar countries go first, so an
+    // easy question is not four names you have never heard of.
+    return [
+      differentContinent.filter(isFamiliar),
+      differentContinent.filter((entity) => !isFamiliar(entity)),
+      sameContinent.filter(isFamiliar),
+      sameContinent.filter((entity) => !isFamiliar(entity)),
+    ];
   }
 
   const confusableIds = new Set(useConfusable ? (answer.confusableWith ?? []) : []);
@@ -250,10 +283,7 @@ export function generateQuestions(
   const { questionCount } = summarisePool(pool, config.length);
   const rng = mulberry32(config.seed);
 
-  const selected =
-    config.pool.source === 'hardest' && options.weights
-      ? selectHardest(rng, pool, options.weights, questionCount)
-      : sample(rng, pool, questionCount);
+  const selected = selectEntities(rng, pool, config, options, questionCount);
 
   const questions: Question[] = [];
   for (const [index, entity] of selected.entries()) {
@@ -349,6 +379,35 @@ function buildComboQuestion(
       },
     ],
   };
+}
+
+/**
+ * Which entities get asked about.
+ *
+ * Three strategies, in priority order:
+ *
+ *  1. Hardest-countries mode, which is an explicit request for *your* weak
+ *    countries and so outranks everything else, easy included.
+ *  2. Easy, which biases towards familiar countries by tier.
+ *  3. Everything else: uniform, so a hard quiz can ask anything in the pool.
+ *
+ * All three sample without replacement, so no session repeats a country, and
+ * all three are deterministic in the session seed (§12).
+ */
+function selectEntities(
+  rng: Rng,
+  pool: readonly Entity[],
+  config: QuizConfig,
+  options: GenerateOptions,
+  count: number,
+): Entity[] {
+  if (config.pool.source === 'hardest' && options.weights) {
+    return selectHardest(rng, pool, options.weights, count);
+  }
+  if (config.difficulty === 'easy') {
+    return weightedSample(rng, pool, (entity) => EASY_TIER_WEIGHT[entity.tier], count);
+  }
+  return sample(rng, pool, count);
 }
 
 /**

@@ -790,7 +790,7 @@ original plan, so they are numbered F1–F4 rather than given ticket IDs.
 
 - [x] **F1** — Loading
 - [x] **F2** — Country sets
-- [ ] **F3** — Easy mode favours familiar countries
+- [x] **F3** — Easy mode favours familiar countries
 - [ ] **F4** — Flag decorations in Colour the Flag
 
 ### F1 — Loading
@@ -847,6 +847,35 @@ Two things the change surfaced, both fixed here:
 - The setup screen had two fieldsets that both amounted to "which countries".
   The existing one is renamed **Question pool** (Everything / My hardest), and
   the new one is **Countries**.
+
+### F3 — Easy favours familiar countries
+
+`tier` (§3.1's familiarity heuristic: 1 = France, 3 = Niue) was computed by the
+build and read by nothing. Easy and hard drew from exactly the same pool and
+differed only in how many options they showed.
+
+Two changes, both in `src/engine/questions.ts`:
+
+- **Selection.** Easy draws with `weightedSample` at 6:2:1 by tier, instead of
+  uniformly. The ratio is deliberately mild — tier 3 stays reachable, so a long
+  easy quiz still teaches you something rather than cycling the same thirty
+  countries.
+- **Distractors.** Continent stays the primary rung of the ladder, but within
+  each rung the familiar candidates go first. On easy there are 174 of them to
+  pick 3 from, so a tier-3 distractor never appears at all.
+
+Measured across 40 seeds × 20 questions, on the share of tier-3 countries asked
+about:
+
+| Country set | easy | medium/hard |
+| --- | ---: | ---: |
+| `un` (default) | 3.1% | 12.3% |
+| `all` | 8.1% | 30.3% |
+
+**Hardest-countries mode is not overridden.** Asking for your weak countries is
+an explicit request, and it outranks easy's preference for familiar ones —
+otherwise the mode would quietly stop showing you what you actually keep getting
+wrong.
 
 ---
 
