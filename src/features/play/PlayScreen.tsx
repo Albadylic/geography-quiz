@@ -11,11 +11,34 @@ import { FlagImage } from '@/components/FlagImage';
 import { OptionGrid } from '@/components/OptionGrid';
 import { Autocomplete } from '@/components/Autocomplete';
 import { ComboAnswer } from './ComboAnswer';
+import { preloadFlags } from '@/lib/prefetch';
 
 const byId = new Map(entities.map((entity) => [entity.id, entity]));
 
 /** How long the answer stays on screen before advancing (§10). */
 const REVEAL_MS = 1200;
+
+/**
+ * Every flag file a question will put on screen: the prompt flag, plus the
+ * option flags when the options *are* flags, plus a combo question's flag
+ * half. Returns nothing for a question that shows no flag at all.
+ */
+function flagsShownBy(question: Question): string[] {
+  const files = new Set<string>();
+
+  if (question.prompt.kind === 'flag') files.add(question.prompt.value);
+
+  const flagOptionIds =
+    question.halves?.find((half) => half.answerKind === 'flag')?.options ??
+    (question.answerKind === 'flag' ? (question.options ?? []) : []);
+
+  for (const id of flagOptionIds) {
+    const file = byId.get(id)?.flag.file;
+    if (file) files.add(file);
+  }
+
+  return [...files];
+}
 
 export function PlayScreen() {
   const { mode } = useParams();
@@ -82,6 +105,20 @@ export function PlayScreen() {
 
   // Leaving mid-question must not fire the pending advance.
   useEffect(() => clearTimer, []);
+
+  /**
+   * Fetch the *next* question's flags while this one is on screen (T7.4).
+   *
+   * Most flags are under a kilobyte, but 26 are over 20KB and Serbia is 177KB,
+   * so an eight-option question could otherwise stall visibly the moment it
+   * renders. Doing this a question early hides the download entirely.
+   */
+  useEffect(() => {
+    if (!session) return;
+    const next = session.questions[session.currentIndex + 1];
+    if (!next) return;
+    preloadFlags(flagsShownBy(next));
+  }, [session]);
 
   useEffect(() => {
     if (session && isFinished(session)) {

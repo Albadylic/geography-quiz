@@ -301,3 +301,59 @@ describe('option grid never shows an unanswerable pair', () => {
     }
   });
 });
+
+describe('preloading the next question (T7.4)', () => {
+  /** Records every image the screen asks the browser to fetch. */
+  function captureImageSources() {
+    const sources: string[] = [];
+    const original = globalThis.Image;
+    class FakeImage {
+      fetchPriority = '';
+      decoding = '';
+      set src(value: string) {
+        sources.push(value);
+      }
+    }
+    globalThis.Image = FakeImage as unknown as typeof Image;
+    return { sources, restore: () => (globalThis.Image = original) };
+  }
+
+  it('fetches the next question flags while the current one is on screen', () => {
+    const { sources, restore } = captureImageSources();
+    try {
+      startAndRender({ direction: 'b-to-a', difficulty: 'hard' });
+
+      const session = useSessionStore.getState().session!;
+      const next = session.questions[1]!;
+      const expected = next.options!.map((id) => byId.get(id)!.flag.file);
+
+      for (const file of expected) {
+        expect(sources, `next question flag ${file} was not preloaded`).toContain(file);
+      }
+    } finally {
+      restore();
+    }
+  });
+
+  it('preloads the prompt flag of the next question in flag-to-name mode', () => {
+    const { sources, restore } = captureImageSources();
+    try {
+      startAndRender({ direction: 'a-to-b' });
+      const session = useSessionStore.getState().session!;
+      expect(sources).toContain(session.questions[1]!.prompt.value);
+    } finally {
+      restore();
+    }
+  });
+
+  it('preloads nothing for a question with no flags on it', () => {
+    const { sources, restore } = captureImageSources();
+    try {
+      // Capitals, country -> capital: neither prompt nor options are flags.
+      startAndRender({ mode: 'capitals', direction: 'a-to-b' });
+      expect(sources).toEqual([]);
+    } finally {
+      restore();
+    }
+  });
+});
