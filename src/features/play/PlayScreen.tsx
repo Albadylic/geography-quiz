@@ -105,6 +105,18 @@ export function PlayScreen() {
     reveal(gradeFreeText(question, typed, entity));
   }, [question, typed, reveal]);
 
+  /**
+   * Skipping is an answer of nothing, not a submission of whatever happens to
+   * be in the box. Sharing `submitText` meant Skip graded half-typed text —
+   * two buttons doing the same thing under different names.
+   */
+  const skipQuestion = useCallback(() => {
+    if (!question) return;
+    const entity = byId.get(question.entityId);
+    if (!entity) return;
+    reveal(gradeFreeText(question, null, entity));
+  }, [question, reveal]);
+
   // Leaving mid-question must not fire the pending advance.
   useEffect(() => clearTimer, []);
 
@@ -237,6 +249,7 @@ export function PlayScreen() {
               value={typed}
               onChange={setTyped}
               onSubmit={submitText}
+              onSkip={skipQuestion}
               revealed={revealed}
               answerEntity={answerEntity}
             />
@@ -275,15 +288,26 @@ export function PlayScreen() {
 }
 
 /**
- * What the live region says once an answer is graded (§11). Combo reports each
- * half, because "incorrect" alone would not say which one was wrong.
+ * What the live region says once an answer is graded (§11).
+ *
+ * Combo reports each half, because "incorrect" alone would not say which one
+ * was wrong — and names the right answer for any half that was missed, so a
+ * screen-reader user learns exactly as much from a combo question as from an
+ * ordinary one. Getting only half of that was the §11 promise half-kept.
  */
 function announce(answer: Answer, question: Question, entity: Entity): string {
   if (question.halves) {
     const parts = question.halves.map((half) => {
       const right = answer.halfResults?.[half.statMode] === true;
       const label = half.statMode === 'flags' ? 'flag' : 'capital';
-      return `${label} ${right ? 'correct' : 'incorrect'}`;
+      if (right) return `${label} correct`;
+
+      const correct = optionLabel(entity, half.answerKind) || entity.name;
+      // The flag half's answer *is* the country, which the prompt already
+      // said; naming it again would be noise rather than information.
+      return half.answerKind === 'flag'
+        ? `${label} incorrect`
+        : `${label} incorrect, it is ${correct}`;
     });
     return `${entity.name}: ${parts.join(', ')}`;
   }
@@ -298,6 +322,7 @@ function ExpertAnswer({
   value,
   onChange,
   onSubmit,
+  onSkip,
   revealed,
   answerEntity,
 }: {
@@ -305,6 +330,8 @@ function ExpertAnswer({
   value: string;
   onChange: (value: string) => void;
   onSubmit: () => void;
+  /** Gives up on the question outright, whatever is in the box. */
+  onSkip: () => void;
   revealed: Answer | null;
   answerEntity: Entity | undefined;
 }) {
@@ -334,7 +361,10 @@ function ExpertAnswer({
         </button>
         <button
           type="button"
-          onClick={onSubmit}
+          onClick={onSkip}
+          // Says what it costs: a skip is graded as a miss, same as a wrong
+          // answer. Nothing here pretends it is free.
+          title="Give up on this one — it counts as incorrect"
           className="label-caps bg-ink-raised px-6 py-4 text-sm text-paper-dim transition-colors hover:bg-ink-sunken"
         >
           Skip

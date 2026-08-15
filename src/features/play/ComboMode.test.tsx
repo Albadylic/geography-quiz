@@ -326,3 +326,49 @@ describe('combo UI (T4.2)', () => {
     expect(useStatsStore.getState().data.streaks.flags).toBeUndefined();
   }, 60_000);
 });
+
+/**
+ * R5. §11 promises the outcome does not depend on seeing the colour. An
+ * ordinary wrong answer was announced with the right answer; a combo half was
+ * announced as "capital incorrect" and nothing else.
+ */
+describe('what the live region says about a missed half', () => {
+  it('names the capital when the capital half was wrong', async () => {
+    const user = userEvent.setup();
+    startAndRender();
+    const question = liveQuestion();
+    const entity = byId.get(question.entityId)!;
+    const flags = question.halves!.find((h) => h.statMode === 'flags')!;
+    const capitals = question.halves!.find((h) => h.statMode === 'capitals')!;
+
+    await pick(user, flagGrid(), flags.options, question.entityId, true);
+    await pick(user, capitalGrid(), capitals.options, question.entityId, false);
+    await user.click(screen.getByRole('button', { name: /check both answers/i }));
+
+    const capital = entity.capitals.find((one) => one.isPrimary)!.name;
+    expect(screen.getByTestId('answer-announcement')).toHaveTextContent(
+      `${entity.name}: flag correct, capital incorrect, it is ${capital}`,
+    );
+  });
+
+  /**
+   * The flag half's answer *is* the country, which the prompt already said.
+   * Repeating it would be noise, not information.
+   */
+  it('does not repeat the country for a missed flag half', async () => {
+    const user = userEvent.setup();
+    startAndRender();
+    const question = liveQuestion();
+    const entity = byId.get(question.entityId)!;
+    const flags = question.halves!.find((h) => h.statMode === 'flags')!;
+    const capitals = question.halves!.find((h) => h.statMode === 'capitals')!;
+
+    await pick(user, flagGrid(), flags.options, question.entityId, false);
+    await pick(user, capitalGrid(), capitals.options, question.entityId, true);
+    await user.click(screen.getByRole('button', { name: /check both answers/i }));
+
+    expect(screen.getByTestId('answer-announcement')).toHaveTextContent(
+      `${entity.name}: flag incorrect, capital correct`,
+    );
+  });
+});

@@ -959,8 +959,8 @@ shareable seeded quizzes, and scoring skips separately from wrong answers.
 - [x] **R1** — Country set in the high-score signature
 - [x] **R2** — "New best" fires on a tie
 - [x] **R3** — Quitting mid-quiz discards every answer
-- [ ] **R4** — Expert mode's Skip is the Answer button
-- [ ] **R5** — Combo announcement withholds the answer
+- [x] **R4** — Expert mode's Skip is the Answer button
+- [x] **R5** — Combo announcement withholds the answer
 - [ ] **R6** — Colouring fidelity audit
 - [ ] **R7** — Fix the worst flag templates
 - [ ] **R8** — SPA deep links on static hosts
@@ -1021,6 +1021,28 @@ and reads differently when nothing has been answered yet.
 
 Verified by removing the `recordPartialAnswers` call and watching only the
 "keeps the answers already given" test fail.
+
+### R4 — Expert mode's Skip was the Answer button
+
+Both buttons called the same handler, so Skip submitted whatever was in the
+box: type "Austria" correctly, press Skip, and it was graded as a correct
+answer. Skip now submits an answer of *nothing* regardless of the input, and
+carries a title saying it counts as incorrect.
+
+A distinct "skipped" outcome — so stats and adaptive weighting could tell
+"didn't know" from "got it wrong" — was considered and deliberately left out of
+this round. It remains an open question.
+
+### R5 — Combo told screen-reader users less than everyone else
+
+An ordinary wrong answer is announced with the right answer; a combo half was
+announced as "capital incorrect" and nothing more, so §11's promise that the
+outcome does not depend on seeing the colour was only half kept. A missed
+capital half now names the capital.
+
+A missed *flag* half deliberately does not name the country: the flag half's
+answer is the country, which the prompt already said, so repeating it would be
+noise rather than information.
 
 ## Project status
 

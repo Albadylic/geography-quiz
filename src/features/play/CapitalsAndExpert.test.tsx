@@ -212,3 +212,45 @@ describe('expert difficulty (T2.4)', () => {
     }
   });
 });
+
+/**
+ * R4. Skip and Answer shared one handler, so Skip graded whatever happened to
+ * be in the box — two buttons doing different things under the same name.
+ */
+describe('skipping in expert mode', () => {
+  it('gives up on the question even with a correct answer typed', async () => {
+    const user = userEvent.setup();
+    startOn('austria', { difficulty: 'expert', direction: 'b-to-a' });
+
+    await user.type(screen.getByRole('combobox'), 'Austria');
+    await user.click(screen.getByRole('button', { name: /^skip$/i }));
+
+    // Skipped, not accepted: the typed text is not what was submitted.
+    expect(screen.getByTestId('answer-announcement')).toHaveTextContent(
+      'Incorrect, the answer was Austria',
+    );
+  });
+
+  it('records nothing as the given answer, so review shows it as skipped', async () => {
+    const user = userEvent.setup();
+    startOn('austria', { difficulty: 'expert', direction: 'b-to-a' });
+
+    await user.type(screen.getByRole('combobox'), 'Austr');
+    await user.click(screen.getByRole('button', { name: /^skip$/i }));
+    await user.click(screen.getByRole('button', { name: /continue/i }));
+
+    const answer = useSessionStore.getState().session!.answers[0]!;
+    expect(answer.given).toBeNull();
+    expect(answer.correct).toBe(false);
+  });
+
+  it('still answers with the typed text when Answer is used', async () => {
+    const user = userEvent.setup();
+    startOn('austria', { difficulty: 'expert', direction: 'b-to-a' });
+
+    await user.type(screen.getByRole('combobox'), 'Austria');
+    await user.click(screen.getByRole('button', { name: /^answer$/i }));
+
+    expect(screen.getByTestId('answer-announcement')).toHaveTextContent('Correct');
+  });
+});
