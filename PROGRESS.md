@@ -965,7 +965,7 @@ shareable seeded quizzes, and scoring skips separately from wrong answers.
 - [x] **R7** — Fix the worst flag templates
 - [x] **R8** — SPA deep links on static hosts
 - [x] **R9** — Service worker cache never rotates
-- [ ] **R10** — CI, stale-dist budget test, more browsers
+- [x] **R10** — CI, stale-dist budget test, more browsers
 - [ ] **R11** — README
 - [ ] **R12** — Autocomplete scoped to the pool
 - [ ] **R13** — Dead code and small inaccuracies
@@ -1157,6 +1157,37 @@ Two smaller things in the same file: `caches.match('/index.html')` resolves
 *and* missing the shell would have broken the worker rather than shown a
 message; and the header comment still claimed the worker was not registered,
 which F1 made untrue.
+
+### R10 — CI, a budget test that could pass on stale output, more browsers
+
+**CI.** `.github/workflows/ci.yml` runs the gate — typecheck, lint, unit tests,
+then Playwright, which builds the app itself. A second job runs
+`npm run build:data` and fails if it changes any committed file: the dataset is
+generated deliberately rather than as part of `npm run build`, so an
+`overrides.json` edit that was never rebuilt would otherwise reach main
+unnoticed. Verified locally that the dataset is currently reproducible from its
+sources.
+
+**The stale-`dist` hole.** `reuseExistingServer` was `!process.env.CI`, so
+locally, with a preview server left running from an earlier build, Playwright
+skipped `npm run build` entirely. Four specs read `dist/` from disk — the 400KB
+budget, the service worker version, and both SPA-fallback assertions — and all
+of them would have measured whatever happened to be on disk and passed green.
+Now always false; the build takes under a second.
+
+**Cross-browser — wired up, but not verified by me.** Firefox and WebKit
+projects are added behind `PLAYWRIGHT_ALL_BROWSERS`, which the CI workflow
+sets after `playwright install`. They are gated rather than unconditional
+because this sandbox ships Chromium alone and a project that cannot launch
+fails the whole suite for a reason unrelated to the app.
+
+**I could not run them here.** Installing Firefox and WebKit in this
+environment fails on missing system libraries, so the only browser these
+changes have actually been exercised in is Chromium. The first CI run is where
+Safari and Firefox behaviour will be found out — the storage adapter's
+private-mode guard, `aspect-ratio` and `fetchPriority` are the likely places.
+Anything it surfaces needs triage; nothing here should be read as evidence that
+those browsers pass.
 
 ## Project status
 

@@ -1,0 +1,63 @@
+name: CI
+
+# The gate the project has always had, now run by something other than memory.
+on:
+  push:
+    branches: ['**']
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - run: npm run typecheck
+      - run: npm run lint
+      - run: npm run test
+
+      # Playwright builds the app itself (see webServer in playwright.config).
+      - run: npx playwright install --with-deps chromium firefox webkit
+      - run: npx playwright test
+        env:
+          PLAYWRIGHT_ALL_BROWSERS: '1'
+
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-report
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 7
+
+  # The dataset is generated deliberately, never as part of `npm run build`, so
+  # a spec change that was not rebuilt would otherwise reach main unnoticed.
+  data-is-current:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run build:data
+      - name: the committed dataset matches its sources
+        run: |
+          if ! git diff --quiet; then
+            echo "::error::build:data changed committed files — run it and commit the result"
+            git diff --stat
+            exit 1
+          fi

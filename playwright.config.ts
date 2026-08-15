@@ -40,11 +40,30 @@ export default defineConfig({
         ...(chromiumPath ? { launchOptions: { executablePath: chromiumPath } } : {}),
       },
     },
+    /*
+      Firefox and WebKit run only where their browsers are actually installed.
+      The sandbox this was built in ships Chromium alone, and a project that
+      cannot launch fails the whole suite for a reason that has nothing to do
+      with the app — so they are opt-in via PLAYWRIGHT_ALL_BROWSERS, which CI
+      sets after `playwright install`.
+    */
+    ...(process.env.PLAYWRIGHT_ALL_BROWSERS
+      ? [
+          { name: 'firefox', use: { ...devices['Desktop Firefox'] } },
+          { name: 'webkit', use: { ...devices['Desktop Safari'] } },
+        ]
+      : []),
   ],
   webServer: {
     command: 'npm run build && npm run preview -- --port 4173 --host 127.0.0.1',
     url: 'http://127.0.0.1:4173',
-    reuseExistingServer: !process.env.CI,
+    /*
+      Never reuse. Several specs read `dist/` from disk — the 400KB budget, the
+      service worker version, the SPA fallback — and reusing a preview server
+      left running from an earlier build skips `npm run build` entirely, so
+      those assertions silently measure stale output and pass green.
+    */
+    reuseExistingServer: false,
     timeout: 180_000,
   },
 });
