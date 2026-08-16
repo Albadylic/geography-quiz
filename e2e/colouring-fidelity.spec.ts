@@ -148,18 +148,52 @@ async function unexplained(page: Page, mapSvg: string, flagUrl: string): Promise
       const key = (i: number) =>
         ((real[i]! >> 4) << 8) | ((real[i + 1]! >> 4) << 4) | (real[i + 2]! >> 4);
 
+      const w = width as number;
+      const h = height as number;
+
+      /*
+        Which region owns each pixel. Green and blue are zero only on an
+        unblended fill, so an anti-aliased edge in the *map* lands on 0 here.
+      */
+      const regionAt = new Int16Array(w * h);
+      for (let p = 0; p < regionAt.length; p++) {
+        const i = p * 4;
+        regionAt[p] = map[i + 1] === 0 && map[i + 2] === 0 ? map[i]! : 0;
+      }
+
+      /*
+        Evidence only from the *interior* of a region: a pixel counts when it
+        and its four neighbours all belong to the same one.
+
+        Excluding blended pixels in the map is not enough, because the real
+        flag is anti-aliased too, and the two rasterisers need not blend the
+        same boundary over the same pixels. Without this erosion the metric
+        reads engine differences as geometry: eleven plain tricolours scored
+        exactly 0.0% in Chromium and exactly 1.3% in Firefox — one seam per
+        band edge — which says nothing whatever about whether the template
+        fits. Canvas-edge pixels drop out for the same reason.
+      */
+      const interior = (p: number, region: number) => {
+        const x = p % w;
+        const y = (p - x) / w;
+        if (x === 0 || y === 0 || x === w - 1 || y === h - 1) return false;
+        return (
+          regionAt[p - 1] === region &&
+          regionAt[p + 1] === region &&
+          regionAt[p - w] === region &&
+          regionAt[p + w] === region
+        );
+      };
+
       // Pass one: the real flag's commonest colour inside each region.
       const counts = new Map<number, Map<number, number>>();
-      for (let i = 0; i < map.length; i += 4) {
-        // Green and blue are zero only on an unblended region fill; anything
-        // else is an anti-aliased boundary pixel and is not evidence.
-        if (map[i + 1] !== 0 || map[i + 2] !== 0) continue;
-        const region = map[i]!;
-        if (region === 0) continue;
+      for (let p = 0; p < regionAt.length; p++) {
+        const region = regionAt[p]!;
+        if (region === 0 || !interior(p, region)) continue;
 
         let tally = counts.get(region);
         if (!tally) counts.set(region, (tally = new Map()));
-        const colour = key(i);
+        const colour = key(p * 4);
         tally.set(colour, (tally.get(colour) ?? 0) + 1);
       }
 
@@ -179,12 +213,11 @@ async function unexplained(page: Page, mapSvg: string, flagUrl: string): Promise
       // Pass two: how much of the flag that prediction gets wrong.
       let considered = 0;
       let wrong = 0;
-      for (let i = 0; i < map.length; i += 4) {
-        if (map[i + 1] !== 0 || map[i + 2] !== 0) continue;
-        const region = map[i]!;
-        if (region === 0) continue;
+      for (let p = 0; p < regionAt.length; p++) {
+        const region = regionAt[p]!;
+        if (region === 0 || !interior(p, region)) continue;
         considered++;
-        if (key(i) !== modal.get(region)) wrong++;
+        if (key(p * 4) !== modal.get(region)) wrong++;
       }
 
       return considered === 0 ? 1 : wrong / considered;
@@ -196,6 +229,21 @@ async function unexplained(page: Page, mapSvg: string, flagUrl: string): Promise
 const spec_entities = entities.filter((entity) => entity.colouring !== undefined);
 
 test.describe('colouring fidelity (R6)', () => {
+  /*
+    One renderer, deliberately.
+
+    This is a data-quality audit that needs a browser only because rasterising
+    SVG is the honest way to compare a template against artwork. Running the
+    identical pixel computation on three engines does not test the app three
+    ways — it measures three rasterisers against baselines that can only be
+    calibrated to one of them. The app's cross-browser behaviour is covered by
+    the specs that actually drive it.
+  */
+  test.skip(
+    ({ browserName }) => browserName !== 'chromium',
+    'a data audit needs one deterministic rasteriser, not three',
+  );
+
   test('every colouring spec is still the right shape for its flag', async ({ page }) => {
     expect(spec_entities.length, 'no colouring specs found').toBeGreaterThan(50);
 

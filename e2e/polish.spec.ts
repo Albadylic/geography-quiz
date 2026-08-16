@@ -9,6 +9,11 @@ const DIST = join(process.cwd(), 'dist');
 const INITIAL_JS_BUDGET = 400 * 1024;
 
 test.describe('performance budget (T7.4)', () => {
+  // Reads dist/ from the filesystem and never opens a page, so running it once
+  // per browser just re-reads identical bytes. See the note in
+  // colouring-fidelity.spec.ts — same principle.
+  test.skip(({ browserName }) => browserName !== 'chromium', 'inspects the build, not a browser');
+
   test('initial JS stays under 400KB', () => {
     const html = readFileSync(join(DIST, 'index.html'), 'utf8');
     // Only the entry script is downloaded up front; every screen is lazy.
@@ -49,6 +54,11 @@ test.describe('performance budget (T7.4)', () => {
  */
 test.describe('deep links survive a static host (R8)', () => {
   test('ships an SPA rewrite and a 404.html copy of the shell', () => {
+    // Reads dist/ from the filesystem and never opens a page, so running it
+    // once per browser just re-reads identical bytes. See the note in
+    // colouring-fidelity.spec.ts — same principle.
+    test.skip(test.info().project.name !== 'chromium', 'inspects the build, not a browser');
+
     const shell = readFileSync(join(DIST, 'index.html'), 'utf8');
 
     // Netlify and Cloudflare Pages.
@@ -73,6 +83,11 @@ test.describe('deep links survive a static host (R8)', () => {
  * index.html a user ever cached outlived every deploy.
  */
 test.describe('service worker cache version (R9)', () => {
+  // Reads dist/ from the filesystem and never opens a page, so running it once
+  // per browser just re-reads identical bytes. See the note in
+  // colouring-fidelity.spec.ts — same principle.
+  test.skip(({ browserName }) => browserName !== 'chromium', 'inspects the build, not a browser');
+
   const swVersion = () => /const VERSION = '([^']+)'/.exec(readFileSync(join(DIST, 'sw.js'), 'utf8'))?.[1];
 
   test('is stamped from the build, not left as a placeholder', () => {

@@ -969,6 +969,7 @@ shareable seeded quizzes, and scoring skips separately from wrong answers.
 - [x] **R11** — README
 - [x] **R12** — Autocomplete scoped to the pool
 - [x] **R13** — Dead code and small inaccuracies
+- [x] **R14** — Fix the fidelity audit's cross-browser failure
 
 ### R1 — Country set in the high-score signature
 
@@ -1221,6 +1222,56 @@ modes and country sets, every npm script, the engine boundary and why it is
 lint-enforced, why `build:data` is deliberate and separate, the deploy
 requirements from R8, and data provenance. `PROGRESS.md` stays the build log;
 the README is the front door.
+
+### R14 — The fidelity audit failed on Firefox and WebKit
+
+R10's first CI run failed: **58 of 60 passed**, and both failures were the same
+test — `colouring-fidelity.spec.ts` — on Firefox and WebKit. Chromium was
+green, and so was every other spec on all three engines.
+
+**The app was not at fault; R6's test was.** It measured the browser's SVG
+rasteriser as well as the template geometry, against baselines generated in
+Chromium.
+
+The failure list gave it away. Eleven plain tricolours — Belgium, France,
+Guinea, Ireland, Italy, Ivory Coast, Mali, Nigeria, Peru, Romania, UAE — scored
+**exactly 0.0% in Chromium and exactly 1.3% in Firefox**. Nothing about a
+tricolour's geometry is ambiguous. 1.3% of a 160×120 canvas is ~250 pixels =
+two 120-pixel columns, i.e. one seam per band boundary.
+
+The hole: `unexplained()` discarded anti-aliased pixels on the *region-map*
+side, where they blend away from the exact `rgb(n,0,0)` fills, but not on the
+*real-flag* side. Where two rasterisers place or blend a boundary differently,
+those pixels counted as the template failing to explain the flag.
+
+**The fix is erosion**: a pixel is evidence only when it and its four
+neighbours all belong to the same region, which drops the one-pixel band around
+every boundary from both passes. This is a better metric regardless of CI — a
+blended edge pixel is evidence about the renderer, not about whether a template
+fits — and it visibly cleaned up the flags with the most edges: Papua New
+Guinea 4.0% → 0.6%, Laos 2.6% → 0.0%, Gambia 3.3% → 0.0%, Philippines 12.1% →
+8.0%. Mean across all 88 specs: 4.9% → 4.3%. Median move 0.27pp, and R7's
+conclusions are unchanged.
+
+**The audit is now pinned to Chromium.** That is scoping, not silencing: it is
+a data-quality audit that needs a browser only because rasterising SVG is the
+honest way to compare a template against artwork. Running the identical pixel
+computation on three engines does not test the app three ways — it measures
+three rasterisers against baselines that can only be calibrated to one. The
+three build-artefact describes in `polish.spec.ts` are pinned for the same
+reason: they read `dist/` from disk and never open a page. The specs that
+actually drive the app — the 360px audit, the accessibility checks, every
+gameplay spec — still run on all three.
+
+**What the cross-browser projects actually bought.** They found no app bug on
+their first run. What they found was a defect in R6's own test, which is a less
+exciting result than a Safari bug but a real one, and it answers most of the
+caveat left open under R10.
+
+**One unexplained flake.** A single unit test failed once during this work and
+has not recurred in eight subsequent runs; the run was lost before I identified
+which one. Most likely a timeout under load. Recorded rather than ignored — if
+it is real, CI will show it again.
 
 ## Project status
 
