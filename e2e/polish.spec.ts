@@ -141,6 +141,90 @@ test.describe('responsive audit (T7.2)', () => {
   });
 });
 
+/**
+ * S4 — a whole question has to fit on a phone without scrolling.
+ *
+ * The audit above checks tap-target size and *horizontal* overflow, which is
+ * why it stayed green while an eight-option question ran 286px past the bottom
+ * of a 390x664 screen and combo pushed its own flag half off the top.
+ *
+ * 390x664 is an iPhone's 390px width with Safari's chrome taken off the
+ * height — the case the report came from, and tighter than the 360x740 used
+ * above.
+ */
+test.describe('a question fits on a phone (S4)', () => {
+  test.use({ viewport: { width: 390, height: 664 } });
+
+  /** Starts a quiz and returns how far past the fold it runs, in pixels. */
+  async function overflowOf(
+    page: import('@playwright/test').Page,
+    mode: string,
+    difficulty: string | null,
+    direction?: RegExp,
+  ) {
+    await page.goto(`/play/${mode}/setup`);
+    await page.getByRole('button', { name: /start quiz/i }).waitFor();
+    if (direction) {
+      await page.getByRole('group', { name: /direction/i }).getByText(direction).click();
+    }
+    if (difficulty) {
+      await page
+        .getByRole('group', { name: /difficulty/i })
+        .getByText(difficulty, { exact: true })
+        .click();
+    }
+    await page.getByRole('button', { name: /start quiz/i }).click();
+    await page.locator('ul li button').first().waitFor();
+    // Flags settle the layout, so measure only once they have all loaded.
+    await page.waitForFunction(() =>
+      [...document.querySelectorAll('main img')].every((image) => (image as HTMLImageElement).complete),
+    );
+    return page.evaluate(
+      () => document.documentElement.scrollHeight - document.documentElement.clientHeight,
+    );
+  }
+
+  const cases: Array<[string, string, string | null, RegExp?]> = [
+    ['four options', 'flags', 'Easy'],
+    ['six options', 'flags', 'Medium'],
+    ['eight options', 'flags', 'Hard'],
+    ['eight flag options', 'flags', 'Hard', /country . flag/i],
+    ['eight capitals', 'capitals', 'Hard'],
+    ['combo, both halves', 'combo', null],
+  ];
+
+  for (const [name, mode, difficulty, direction] of cases) {
+    test(`${name} fit without scrolling`, async ({ page }) => {
+      const overflow = await overflowOf(page, mode, difficulty, direction);
+      expect(overflow, `runs ${overflow}px past the bottom of the screen`).toBeLessThanOrEqual(0);
+    });
+  }
+
+  test('options stay tappable at three columns', async ({ page }) => {
+    // Three columns is where a 44px tap target is most at risk.
+    await overflowOf(page, 'flags', 'Hard', /country . flag/i);
+    const options = page.locator('ul li button');
+    await expect(options).toHaveCount(8);
+    for (let i = 0; i < 8; i++) {
+      const box = (await options.nth(i).boundingBox())!;
+      expect(box.height, `option ${i + 1} is too short to tap`).toBeGreaterThanOrEqual(44);
+      expect(box.width, `option ${i + 1} is too narrow to tap`).toBeGreaterThanOrEqual(44);
+    }
+  });
+
+  test('a chosen option is filled white before grading', async ({ page }) => {
+    // Combo is the only mode where a selection sits unconfirmed, and where
+    // the missing cue was actually reported.
+    await overflowOf(page, 'combo', null);
+    const flags = page.getByRole('list', { name: /flag options/i }).locator('li button');
+    await flags.nth(1).click();
+    await expect(flags.nth(1)).toHaveAttribute('aria-pressed', 'true');
+    // `bg-paper`, the same fill Settings uses for a chosen radio.
+    await expect(flags.nth(1)).toHaveCSS('background-color', 'rgb(245, 242, 234)');
+    await expect(flags.nth(0)).toHaveCSS('background-color', 'rgb(21, 21, 29)');
+  });
+});
+
 test.describe('accessibility (T7.1)', () => {
   test('offers a skip link that reaches the main content', async ({ page }) => {
     await page.goto('/');

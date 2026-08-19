@@ -39,7 +39,7 @@ export function ComboAnswer({ question, revealed, onSubmit }: ComboAnswerProps) 
   };
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-2 sm:gap-6">
       {halves.map((half) => {
         const options = half.options
           .map((id) => byId.get(id))
@@ -47,7 +47,7 @@ export function ComboAnswer({ question, revealed, onSubmit }: ComboAnswerProps) 
 
         return (
           <section key={half.statMode}>
-            <h2 className="label-caps mb-2 text-xs text-paper-faint">
+            <h2 className="label-caps mb-1 text-xs text-paper-faint sm:mb-2">
               {half.statMode === 'flags' ? 'Its flag' : 'Its capital'}
             </h2>
             <OptionGrid
@@ -74,7 +74,7 @@ export function ComboAnswer({ question, revealed, onSubmit }: ComboAnswerProps) 
           type="button"
           onClick={submit}
           disabled={!bothAnswered}
-          className="label-caps w-full bg-signal-red px-6 py-4 text-sm text-paper transition-colors hover:bg-paper hover:text-ink disabled:cursor-not-allowed disabled:bg-ink-raised disabled:text-paper-faint"
+          className="label-caps w-full bg-signal-red px-6 py-3 text-sm text-paper sm:py-4 transition-colors hover:bg-paper hover:text-ink disabled:cursor-not-allowed disabled:bg-ink-raised disabled:text-paper-faint"
         >
           {bothAnswered ? 'Check both answers' : 'Choose a flag and a capital'}
         </button>

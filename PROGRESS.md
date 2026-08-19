@@ -971,6 +971,16 @@ shareable seeded quizzes, and scoring skips separately from wrong answers.
 - [x] **R13** — Dead code and small inaccuracies
 - [x] **R14** — Fix the fidelity audit's cross-browser failure
 
+## Phone layout (S1–S4)
+
+From a screenshot of Combo on an iPhone: picking an option looked like nothing
+happened, and neither half of a Combo question could be seen without scrolling.
+
+- [x] **S1** — A visible selected state
+- [x] **S2** — Both Combo halves on one screen
+- [x] **S3** — Six and eight options on one screen
+- [x] **S4** — Assert the vertical fit
+
 ### R1 — Country set in the high-score signature
 
 **This was a bug I introduced in F2 and then wrongly reported as fixed.** The
@@ -1272,6 +1282,65 @@ caveat left open under R10.
 has not recurred in eight subsequent runs; the run was lost before I identified
 which one. Most likely a timeout under load. Recorded rather than ignored — if
 it is real, CI will show it again.
+
+### S1–S4 — Making a question fit on a phone
+
+**Nothing showed a selection.** `OptionGrid` computed `state` as `open` for
+every option until the answer was graded, so a chosen tile was styled exactly
+like an unchosen one. `aria-pressed` was set — a screen reader knew, the screen
+did not. It mattered most in Combo, where you pick a flag *and* a capital
+before pressing Check, so the first pick gave no feedback at all. Chosen tiles
+now take `bg-paper text-ink`, the same white fill `ChoiceGroup` and Settings
+already use for a chosen radio.
+
+**Nothing fitted.** Measured before touching anything, as page height against
+screen height:
+
+| | 360×740 | 390×664 |
+| --- | ---: | ---: |
+| flags, 4 options | fits | **+26px** |
+| flags, 6 options | **+57px** | **+156px** |
+| flags, 8 options | **+187px** | **+286px** |
+| combo | **+124px** | **+223px** |
+
+390×664 is an iPhone's width with Safari's chrome taken off the height — the
+case the report came from. Every case now fits at both sizes, including three
+the first pass did not cover: reversed flag options, capitals, and 6 options
+reversed.
+
+What changed, in order of how much it bought:
+
+1. **Text options go two-up on phones** instead of one-per-row. Four capitals
+   stacked vertically were pushing Combo's flag half off the top.
+2. **Six and eight *flag* options go three-up.** Only flags — at three columns
+   "Myanmar" and "Singapore" are wider than their tile and `break-words` splits
+   them mid-word, which the first attempt shipped and a screenshot caught. A
+   name tile is a fixed 64px however wide it is, so eight names two-up still
+   fit.
+3. **The prompt flag is sized by height on phones** (`h-[26vh] w-auto`). At
+   390px a full-width 4:3 flag is ~270px tall, the single biggest consumer on
+   the screen.
+4. **Option flags are width-capped** (`max-w-32`), which only binds in the
+   two-column layout.
+5. **The number badge is hidden on phones.** It advertises a keyboard shortcut
+   there is no keyboard for, and at three columns it was taking a third of the
+   tile away from the flag.
+6. Assorted vertical chrome — main padding, header, Combo gaps, the Check
+   button — tightened on phones only.
+
+**Two things only looking caught.** Capping the option flags by *height* was
+the obvious move and it was wrong: `FlagImage` puts `aspect-ratio` on a wrapper
+with `overflow-hidden`, so a max-height leaves the width at 100%, breaks the
+ratio, and letterboxes every flag in black bars. Capping width instead lets the
+ratio derive a correct, smaller height. And the mid-word name breaking above
+was invisible to every measurement — the page fitted, it just read badly.
+
+**S4 pins it.** The existing responsive audit checked tap targets and
+*horizontal* overflow, which is why it stayed green through all of this. There
+is now a check that each of six question shapes fits vertically at 390×664,
+that tap targets survive three columns, and that a chosen option is actually
+filled white. Six of the eight fail against the old layout — confirmed by
+reverting and re-running.
 
 ## Project status
 

@@ -189,7 +189,7 @@ export function PlayScreen() {
           </p>
         </div>
         <div
-          className="mx-auto mt-3 h-1 w-full max-w-3xl bg-line"
+          className="mx-auto mt-2 h-1 w-full max-w-3xl bg-line sm:mt-3"
           role="progressbar"
           aria-valuemin={0}
           aria-valuemax={total}
@@ -203,7 +203,7 @@ export function PlayScreen() {
         </div>
       </header>
 
-      <main className="mx-auto w-full max-w-3xl flex-1 px-4 py-6">
+      <main className="mx-auto w-full max-w-3xl flex-1 px-4 py-4 sm:py-6">
         <h1 className="sr-only">
           Question {questionNumber} of {total}
         </h1>
@@ -244,7 +244,7 @@ export function PlayScreen() {
 
         <Prompt question={question} />
 
-        <div className="mt-6">
+        <div className="mt-4 sm:mt-6">
           {isCombo ? (
             <ComboAnswer question={question} revealed={revealed} onSubmit={reveal} />
           ) : isExpert ? (
@@ -458,15 +458,25 @@ function Prompt({ question }: { question: Question }) {
   if (question.prompt.kind === 'flag' && entity) {
     return (
       <figure className="m-0">
-        <figcaption className="label-caps mb-3 text-xs text-paper-faint">
+        <figcaption className="label-caps mb-2 text-xs text-paper-faint sm:mb-3">
           Which country flies this flag?
         </figcaption>
-        {/* revealName is false: the alt text must not give the answer (§11). */}
+        {/*
+          revealName is false: the alt text must not give the answer (§11).
+
+          Sized by *height* on a phone, not width. At 390px a full-width 4:3
+          flag is ~270px tall — the biggest single consumer on the screen, and
+          most of the reason an eight-option question did not fit. FlagImage
+          puts `aspect-ratio` on a wrapper with `overflow-hidden`, so capping
+          with `max-h` alongside `w-full` would crop the flag rather than
+          shrink it; giving it a height and `w-auto` lets the ratio derive the
+          width, which keeps 1:1 and 2:1 flags honest too.
+        */}
         <FlagImage
           entity={entity}
           revealName={false}
           hiddenLabel="The flag in question"
-          className="w-full max-w-md"
+          className="h-[26vh] w-auto max-w-full sm:h-auto sm:w-full sm:max-w-md"
           loading="eager"
           fetchPriority="high"
         />
@@ -484,8 +494,8 @@ function Prompt({ question }: { question: Question }) {
 
   return (
     <div>
-      <p className="label-caps mb-2 text-xs text-paper-faint">{label}</p>
-      <p className="display-xl text-4xl text-paper sm:text-6xl">{question.prompt.value}</p>
+      <p className="label-caps mb-1 text-xs text-paper-faint sm:mb-2">{label}</p>
+      <p className="display-xl text-3xl text-paper sm:text-6xl">{question.prompt.value}</p>
     </div>
   );
 }

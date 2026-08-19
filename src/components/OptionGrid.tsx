@@ -42,6 +42,28 @@ export function OptionGrid({
 }: OptionGridProps) {
   const showsFlags = answerKind === 'flag';
 
+  /*
+    How many columns on a phone.
+
+    A whole question has to fit on screen without scrolling, and the old layout
+    did not: eight flags two-up ran 286px past a 390x664 viewport, and four
+    capitals stacked one-per-row pushed combo's flag half off the top.
+
+    So six and eight options go three-up on a phone, and text options — short
+    words like "Malabo" — go two-up instead of one-up. From `sm:` upward there
+    is room for the two-column grid §10 asks for, and that is what is used.
+
+    Three columns is for *flags* only. Country and capital names need the
+    width: at three columns "Myanmar" and "Singapore" are wider than their
+    tile, and `break-words` splits them mid-word rather than letting them
+    overflow. Eight names two-up still fits, because a name tile is a fixed
+    64px however wide it is, while a flag tile grows with its column.
+
+    Derived from the option count rather than passed in, so PlayScreen and
+    ComboAnswer do not have to agree about it.
+  */
+  const phoneColumns = showsFlags && options.length >= 6 ? 'grid-cols-3' : 'grid-cols-2';
+
   // Number keys 1–8 select an option (§11). Ignored while a text field has
   // focus so expert mode can share this screen.
   useEffect(() => {
@@ -64,18 +86,26 @@ export function OptionGrid({
   return (
     <ul
       {...(groupLabel ? { 'aria-label': groupLabel } : {})}
-      className={[
-        'grid gap-px border-2 border-line bg-line',
-        showsFlags ? 'grid-cols-2' : 'grid-cols-1 sm:grid-cols-2',
-      ].join(' ')}
+      className={['grid gap-px border-2 border-line bg-line', phoneColumns, 'sm:grid-cols-2'].join(
+        ' ',
+      )}
     >
       {options.map((option, index) => {
         const isCorrect = correctIds.includes(option.id);
         const isChosen = option.id === chosenId;
-        // After grading, the right answer is always shown — even when the
-        // player picked something else (locked decision 2).
+        /*
+          Before grading, a chosen option has to *look* chosen. It did not:
+          every open option rendered identically, so in combo — where you pick
+          a flag and a capital before pressing Check — the first pick gave no
+          feedback at all. `aria-pressed` said so; nothing on screen did.
+
+          After grading, the right answer is always shown, even when the player
+          picked something else (locked decision 2).
+        */
         const state = !revealed
-          ? 'open'
+          ? isChosen
+            ? 'chosen'
+            : 'open'
           : isCorrect
             ? 'correct'
             : isChosen
@@ -90,7 +120,7 @@ export function OptionGrid({
               onClick={() => onSelect(option.id)}
               aria-pressed={isChosen}
               className={[
-                'flex min-h-16 w-full items-center gap-3 p-3 text-left transition-colors',
+                'flex min-h-16 w-full items-center gap-2 p-2 text-left transition-colors sm:gap-3 sm:p-3',
                 'disabled:cursor-default',
                 stateClasses[state],
               ].join(' ')}
@@ -99,7 +129,12 @@ export function OptionGrid({
                 <span
                   aria-hidden="true"
                   className={[
-                    'label-caps flex h-7 w-7 shrink-0 items-center justify-center text-xs',
+                    // Hidden on phones: a number badge advertises a keyboard
+                    // shortcut there is no keyboard for, and at three columns
+                    // it was taking a third of the tile away from the flag.
+                    'label-caps hidden h-7 w-7 shrink-0 items-center justify-center text-xs sm:flex',
+                    // Every state but `open` is a light or saturated tile, so
+                    // the chip has to darken rather than lighten.
                     state === 'open' ? 'bg-ink text-paper-faint' : 'bg-black/20 text-current',
                   ].join(' ')}
                 >
@@ -112,7 +147,21 @@ export function OptionGrid({
                   entity={option}
                   revealName={revealed}
                   hiddenLabel={`Flag option ${index + 1}`}
-                  className="w-full min-w-0 flex-1"
+                  /*
+                    Width-capped on a phone, so a two-column grid of flags
+                    cannot grow past the screen.
+
+                    Capping the *width* rather than the height matters:
+                    FlagImage sets `aspect-ratio` on a wrapper with
+                    `overflow-hidden`, so a max-height leaves the width at 100%,
+                    breaks the ratio and letterboxes every flag in black bars —
+                    which is what the first attempt at this did. Constraining
+                    width lets the ratio derive a correct, smaller height.
+
+                    The cap only binds in the two-column layout; at three
+                    columns the tile is already narrower than this.
+                  */
+                  className="mx-auto w-full min-w-0 max-w-32 flex-1 sm:max-w-none"
                 />
               ) : (
                 <span className="display-md min-w-0 flex-1 text-base break-words sm:text-lg">
@@ -132,6 +181,8 @@ export function OptionGrid({
 
 const stateClasses: Record<string, string> = {
   open: 'bg-ink-raised text-paper hover:bg-ink-sunken',
+  // The same white fill ChoiceGroup and Settings use for a chosen radio.
+  chosen: 'bg-paper text-ink',
   correct: 'bg-correct text-paper',
   wrong: 'bg-wrong text-paper',
   dimmed: 'bg-ink-raised text-paper-faint opacity-60',
