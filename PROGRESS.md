@@ -1342,6 +1342,68 @@ that tap targets survive three columns, and that a chosen option is actually
 filled white. Six of the eight fail against the old layout — confirmed by
 reverting and re-running.
 
+## Code review round (P0, C1–C4)
+
+A full review looking for cleanliness, performance and efficiency wins.
+
+- [x] **P0** — Profile under CPU throttling before concluding anything
+- [ ] **C1** — Revision skips cards
+- [ ] **C2** — One entity lookup, not five
+- [ ] **C3** — Split PlayScreen
+- [ ] **C4** — Honest derived state in PlayScreen
+
+### P0 — What the profiler actually said
+
+The static reading suggested the app was already efficient: entry chunk 88.7KB
+gzip (React + Router, little to trim without replacing the router), dataset
+21.7KB gzip, no zod in the client, 118KB of headroom against the bundle budget,
+and expert-mode autocomplete at 0.34ms per keystroke on this machine. Rather
+than conclude from that, the interactions were profiled on a throttled CPU.
+
+`npm run measure:interaction` measures **main-thread blocking inside the page**
+via the longtask observer, not wall-clock around Playwright calls — each
+`click` is a CDP round trip costing milliseconds, and timing around those
+measures the harness. A longtask is reported only when the main thread was
+genuinely occupied for 50ms or more, which is what a player feels.
+
+Longtasks (count / worst / total ms) during each interaction:
+
+| interaction | 1× | 4× | 6× |
+| --- | --- | --- | --- |
+| expert: typing a 10-letter answer | 0/0/0 | 0/0/0 | **0/0/0** |
+| hard quiz: 5 question advances | 0/0/0 | 1/72/72 | 7/71/400 |
+| revision: open a 45-card deck | 0/0/0 | 1/54/54 | 1/72/72 |
+| colour: paint all regions + grade | 0/0/0 | 0/0/0 | 1/51/51 |
+| cold: load + boot the setup screen | 0/0/0 | 3/164/298 | 3/229/433 |
+
+**Typing never blocks, at any throttle level.** That settles the one path I
+suspected: the unmemoised `buildPool` and the busted `useMemo` behind it are a
+tidiness problem, not a speed problem, and C4 should not be sold as a
+performance fix.
+
+**One real finding: rasterising the option flags.** An A/B over five repeats at
+6× CPU, total longtask ms per five advances:
+
+| | median | runs |
+| --- | ---: | --- |
+| 8 flag options | 373ms | 373, 369, 419, 386, 364 |
+| 1 flag (name options) | 208ms | 259, 361, 174, 208, 177 |
+| 0 images (capitals) | 106ms | 62, 168, 106, 112, 60 |
+
+So roughly **50ms per question of main-thread blocking is SVG rasterisation of
+the eight option flags** on a slow CPU. Note the variance on the control rows —
+a single run of this proves nothing, which is why the first version of this
+comparison was thrown away.
+
+**A fix was tried and rejected on the evidence.** Calling `image.decode()` in
+`preloadFlags` to decode ahead of render made it *worse*: median 373ms → 511ms,
+because `decode()` does the rasterisation eagerly on the main thread during the
+reveal rather than removing it. Reverted.
+
+What would actually help is pre-rasterising flags to bitmaps at display size,
+which is an image-pipeline change that trades crispness and build complexity
+for it. Left as a decision rather than folded into a cleanup round.
+
 ## Project status
 
 All 40 tickets complete. 487 unit and component tests, 14 Playwright specs,
