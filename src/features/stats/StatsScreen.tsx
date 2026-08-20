@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import { entities } from '@/data/entities.generated';
+import { entityById } from '@/data/lookup';
 import {
   HARDEST_UNLOCK_THRESHOLD,
   masteredCount,
@@ -9,8 +9,6 @@ import {
 } from '@/engine/stats';
 import { useStatsStore } from '@/store/statsStore';
 import { describeSignature } from '@/lib/format';
-
-const byId = new Map(entities.map((entity) => [entity.id, entity]));
 
 /** Stats screen — plan §9. */
 export function StatsScreen() {
@@ -114,7 +112,7 @@ export function StatsScreen() {
           <>
             <ul className="mt-4 flex flex-col gap-px border-2 border-line bg-line">
               {weakest.map((summary) => {
-                const entity = byId.get(summary.entityId);
+                const entity = entityById(summary.entityId);
                 return (
                   <li
                     key={summary.entityId}

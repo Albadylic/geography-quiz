@@ -1,5 +1,5 @@
 import { Link, useParams } from 'react-router-dom';
-import { entities } from '@/data/entities.generated';
+import { entityById } from '@/data/lookup';
 import type { Entity } from '@/data/schema';
 import { optionLabel } from '@/engine/questions';
 import type { Answer, Question } from '@/engine/types';
@@ -7,8 +7,6 @@ import { describeConfig } from '@/lib/format';
 import { useSessionStore } from '@/store/sessionStore';
 import { useStatsStore } from '@/store/statsStore';
 import { FlagImage } from '@/components/FlagImage';
-
-const byId = new Map(entities.map((entity) => [entity.id, entity]));
 
 /**
  * End-of-quiz summary (T3.3): the numbers, then a review of everything the
@@ -130,7 +128,7 @@ export function ResultsScreen() {
 
 /** One incorrect answer, with everything needed to learn from it. */
 function ReviewRow({ question, answer }: { question: Question; answer: Answer }) {
-  const entity = byId.get(question.entityId);
+  const entity = entityById(question.entityId);
   if (!entity) return null;
 
   const correctLabel = optionLabel(entity, question.answerKind) || entity.name;
@@ -183,7 +181,7 @@ function ReviewRow({ question, answer }: { question: Question; answer: Answer })
  */
 function describeGiven(answer: Answer, question: Question): string {
   if (answer.given === null) return 'Skipped';
-  const chosen: Entity | undefined = byId.get(answer.given);
+  const chosen: Entity | undefined = entityById(answer.given);
   if (chosen) return optionLabel(chosen, question.answerKind) || chosen.name;
   return answer.given;
 }

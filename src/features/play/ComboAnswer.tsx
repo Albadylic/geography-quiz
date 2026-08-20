@@ -1,11 +1,9 @@
 import { useMemo, useState } from 'react';
-import { entities } from '@/data/entities.generated';
+import { entityById } from '@/data/lookup';
 import type { Entity } from '@/data/schema';
 import { gradeCombo } from '@/engine/grading';
 import type { Answer, Question, StatMode } from '@/engine/types';
 import { OptionGrid } from '@/components/OptionGrid';
-
-const byId = new Map(entities.map((entity) => [entity.id, entity]));
 
 interface ComboAnswerProps {
   question: Question;
@@ -42,7 +40,7 @@ export function ComboAnswer({ question, revealed, onSubmit }: ComboAnswerProps) 
     <div className="flex flex-col gap-2 sm:gap-6">
       {halves.map((half) => {
         const options = half.options
-          .map((id) => byId.get(id))
+          .map((id) => entityById(id))
           .filter((entity): entity is Entity => entity !== undefined);
 
         return (

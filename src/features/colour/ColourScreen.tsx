@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import type { ColourToken } from '@/data/schema';
-import { entities } from '@/data/entities.generated';
+import { entityById } from '@/data/lookup';
 import {
   buildColourQuestion,
   colourablePool,
@@ -14,8 +14,6 @@ import {
 import { mulberry32, randomSeed, shuffle } from '@/engine/rng';
 import { FlagImage } from '@/components/FlagImage';
 import { useStatsStore } from '@/store/statsStore';
-
-const byId = new Map(entities.map((entity) => [entity.id, entity]));
 
 const ROUND_LENGTH = 10;
 
@@ -124,7 +122,7 @@ function ColourRound({
     );
   }
 
-  const entity = byId.get(question.entityId)!;
+  const entity = entityById(question.entityId)!;
   const grade = graded ? gradeColouring(question, filled) : null;
   const decorations = entity.colouring?.decorations ?? [];
 
