@@ -1,4 +1,6 @@
-import type { CountrySet, QuizConfig } from '@/engine/types';
+import type { Entity } from '@/data/schema';
+import { optionLabel } from '@/engine/questions';
+import type { Answer, CountrySet, QuizConfig, Question } from '@/engine/types';
 
 /**
  * How a country set is named in a config line. The default is left unlabelled:
@@ -68,4 +70,33 @@ export function describeSignature(signature: string): string {
   if (set) parts.push(set);
 
   return parts.join(' · ');
+}
+
+/**
+ * What the live region says once an answer is graded (§11).
+ *
+ * Combo reports each half, because "incorrect" alone would not say which one
+ * was wrong — and names the right answer for any half that was missed, so a
+ * screen-reader user learns exactly as much from a combo question as from an
+ * ordinary one. Getting only half of that was the §11 promise half-kept.
+ */
+export function announce(answer: Answer, question: Question, entity: Entity): string {
+  if (question.halves) {
+    const parts = question.halves.map((half) => {
+      const right = answer.halfResults?.[half.statMode] === true;
+      const label = half.statMode === 'flags' ? 'flag' : 'capital';
+      if (right) return `${label} correct`;
+
+      const correct = optionLabel(entity, half.answerKind) || entity.name;
+      // The flag half's answer *is* the country, which the prompt already
+      // said; naming it again would be noise rather than information.
+      return half.answerKind === 'flag'
+        ? `${label} incorrect`
+        : `${label} incorrect, it is ${correct}`;
+    });
+    return `${entity.name}: ${parts.join(', ')}`;
+  }
+
+  if (answer.correct) return 'Correct';
+  return `Incorrect, the answer was ${optionLabel(entity, question.answerKind) || entity.name}`;
 }

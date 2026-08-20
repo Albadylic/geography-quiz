@@ -1457,6 +1457,43 @@ with optional chaining so the guards still read the same way.
 The `pool` recomputation was self-inflicted — R12 added it for autocomplete
 scoping without memoising it.
 
+### C3 — Split `PlayScreen`
+
+501 lines holding five components plus the quit-confirmation panel inline in
+the JSX. `ComboAnswer` already lived in its own file next door and was the
+pattern to follow:
+
+| | |
+| --- | --- |
+| `PlayScreen.tsx` | 501 → 300 lines |
+| `ExpertAnswer.tsx` | `ExpertAnswer` + `ExpertFeedback`, only ever used together and only by expert mode |
+| `Prompt.tsx` | the question prompt |
+| `QuitConfirmation.tsx` | the panel, which has its own careful copy to maintain |
+| `lib/format.ts` | `announce()` — presentation logic that builds a string, now beside `describeConfig` |
+
+A move, not a rewrite. **All 561 unit tests and 28 Playwright specs passed
+untouched**, which is the evidence that it was a move: the three screen tests
+drive `PlayScreen` from the outside, so a behaviour change would have shown up
+there. No new tests were added, deliberately — if a pure move needed new tests
+to stay safe it was not a pure move. `announce` is already exercised through
+`ComboMode.test.tsx` and `CapitalsAndExpert.test.tsx`.
+
+**The bundle is not quite byte-neutral, and it is worth saying which way.**
+
+| | before | after |
+| --- | --- | --- |
+| entry chunk | 281,794 raw / 88,691 gzip | 281,846 / **88,716** |
+| PlayScreen chunk | 14,362 / 4,974 | 14,137 / **4,905** |
+
+The lazy `PlayScreen` chunk lost 69 gzip bytes and the always-loaded entry
+chunk gained 25. That is `announce` moving out of a lazily-loaded route and
+into `lib/format.ts`, which Vite hoists into the shared chunk because three
+lazy routes import it. Net −44 bytes across both, but 25 of them moved from
+"loaded when you play" to "loaded always". At this size it is noise; it is
+recorded because the plan asked for the number either way, and because the
+direction of the trade is the sort of thing that stops being noise if the
+pattern is repeated.
+
 ## Project status
 
 All 40 tickets complete. 487 unit and component tests, 14 Playwright specs,
