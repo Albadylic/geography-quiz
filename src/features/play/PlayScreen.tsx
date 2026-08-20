@@ -1,6 +1,6 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import { entities } from '@/data/entities.generated';
+import { entityById } from '@/data/lookup';
 import type { Entity } from '@/data/schema';
 import { currentQuestion, isFinished } from '@/engine/session';
 import { buildPool } from '@/engine/pool';
@@ -13,8 +13,6 @@ import { OptionGrid } from '@/components/OptionGrid';
 import { Autocomplete } from '@/components/Autocomplete';
 import { ComboAnswer } from './ComboAnswer';
 import { preloadFlags } from '@/lib/prefetch';
-
-const byId = new Map(entities.map((entity) => [entity.id, entity]));
 
 /** How long the answer stays on screen before advancing (§10). */
 const REVEAL_MS = 1200;
@@ -34,7 +32,7 @@ function flagsShownBy(question: Question): string[] {
     (question.answerKind === 'flag' ? (question.options ?? []) : []);
 
   for (const id of flagOptionIds) {
-    const file = byId.get(id)?.flag.file;
+    const file = entityById(id)?.flag.file;
     if (file) files.add(file);
   }
 
@@ -101,7 +99,7 @@ export function PlayScreen() {
 
   const submitText = useCallback(() => {
     if (!question) return;
-    const entity = byId.get(question.entityId);
+    const entity = entityById(question.entityId);
     if (!entity) return;
     reveal(gradeFreeText(question, typed, entity));
   }, [question, typed, reveal]);
@@ -113,10 +111,42 @@ export function PlayScreen() {
    */
   const skipQuestion = useCallback(() => {
     if (!question) return;
-    const entity = byId.get(question.entityId);
+    const entity = entityById(question.entityId);
     if (!entity) return;
     reveal(gradeFreeText(question, null, entity));
   }, [question, reveal]);
+
+  const isCombo = question?.halves !== undefined;
+  const isExpert = question !== undefined && !isCombo && question.options === undefined;
+
+  /*
+    Memoised for identity, not for speed.
+
+    Both are cheap — `buildPool` measures at 0.016ms — but both were rebuilt on
+    every render, including every keystroke in expert mode, and a fresh array
+    identity each time defeated the very memos that consume them: the
+    `useMemo` inside `Autocomplete` lists `pool` as a dependency, and the
+    keydown `useEffect` in `OptionGrid` lists `options`. Neither was doing
+    anything. Profiling (P0) found no main-thread blocking on this path even at
+    6x CPU, so this is a correctness-of-contract fix and nothing more.
+
+    They sit above the early return because hooks may not be conditional.
+  */
+  const optionIds = question?.options;
+  const options = useMemo(
+    () =>
+      (optionIds ?? [])
+        .map((id) => entityById(id))
+        .filter((entity): entity is Entity => entity !== undefined),
+    [optionIds],
+  );
+
+  // Only expert mode reads this, and only to bound its suggestions.
+  const config = session?.config;
+  const pool = useMemo(
+    () => (isExpert && config ? buildPool(config) : undefined),
+    [isExpert, config],
+  );
 
   // Leaving mid-question must not fire the pending advance.
   useEffect(() => clearTimer, []);
@@ -157,15 +187,7 @@ export function PlayScreen() {
     );
   }
 
-  const options = (question.options ?? [])
-    .map((id) => byId.get(id))
-    .filter((entity): entity is Entity => entity !== undefined);
-
-  const isCombo = question.halves !== undefined;
-  const isExpert = !isCombo && question.options === undefined;
-  // Only expert mode reads this, and only to bound its suggestions.
-  const pool = isExpert ? buildPool(session.config) : undefined;
-  const answerEntity = byId.get(question.entityId);
+  const answerEntity = entityById(question.entityId);
   const questionNumber = session.currentIndex + 1;
   const total = session.questions.length;
 
@@ -453,7 +475,7 @@ function ExpertFeedback({
 
 /** Renders whichever half of the pair is being asked about (§6.1, §6.2). */
 function Prompt({ question }: { question: Question }) {
-  const entity = byId.get(question.entityId);
+  const entity = entityById(question.entityId);
 
   if (question.prompt.kind === 'flag' && entity) {
     return (

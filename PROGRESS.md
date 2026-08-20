@@ -1426,6 +1426,37 @@ the same non-reactive read `answer()` already uses to write. Two tests cover
 it: every card shown exactly once when all are known, and the same when none
 are, which is the control that always passed.
 
+### C2 — One entity lookup, not five
+
+`const byId = new Map(entities.map(...))` was copy-pasted into five feature
+modules — `PlayScreen`, `ComboAnswer`, `ResultsScreen`, `StatsScreen` and
+`ColourScreen` — each building its own 250-entry map at module load, and read
+at 13 call sites. That is 1,250 entries of the same thing and five places for
+the lookup to drift.
+
+`src/data/lookup.ts` now owns it: `entitiesById` plus a named `entityById(id)`
+accessor. Purely mechanical; no test changed.
+
+### C4 — Honest derived state in `PlayScreen`
+
+`options` and `pool` were rebuilt on every render, including every keystroke in
+expert mode. **This was not a speed problem and is not fixed as one** — P0
+found no main-thread blocking on this path even at 6x CPU, and `buildPool`
+measures at 0.016ms.
+
+It was a contract problem. A fresh array identity on every render defeated the
+memos downstream that name these as dependencies: the `useMemo` inside
+`Autocomplete` keyed on `pool`, and the keydown `useEffect` in `OptionGrid`
+keyed on `options` — which was therefore detaching and re-attaching its window
+listener on every keystroke. Neither memo was doing anything.
+
+Both are now `useMemo`d on what they actually derive from. They sit above the
+early return, because hooks may not be conditional; `isCombo`/`isExpert` derive
+with optional chaining so the guards still read the same way.
+
+The `pool` recomputation was self-inflicted — R12 added it for autocomplete
+scoping without memoising it.
+
 ## Project status
 
 All 40 tickets complete. 487 unit and component tests, 14 Playwright specs,
