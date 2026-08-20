@@ -226,3 +226,52 @@ describe('finishing a deck', () => {
     expect(screen.getByText(/you knew \d+ of \d+/i)).toBeInTheDocument();
   }, 30_000);
 });
+
+/**
+ * C1 — the deck must not change under the player.
+ *
+ * `useDeck` memoised on the whole persisted `data`, and `orderByBox` sorts by
+ * Leitner box. Answering "knew it" raises that card's box, so the deck
+ * re-sorted after every card while `index` was a positional pointer into the
+ * previous order — and the card that shifted into the vacated slot was never
+ * shown.
+ */
+describe('the deck does not shift under the player', () => {
+  /** Every card title shown, in order, answering `knewIt` to each. */
+  async function walkDeck(knewIt: boolean) {
+    const user = userEvent.setup();
+    act(() => {
+      useStatsStore.getState().updateSettings({ countrySet: 'all' });
+    });
+    renderRevision();
+    await user.click(screen.getByRole('button', { name: /^Antarctica/ }));
+
+    const seen: string[] = [];
+    for (let i = 0; i < 20; i++) {
+      const front = screen.queryByRole('button', { name: /tap to turn over/i });
+      if (!front) break;
+      seen.push(front.textContent!.replace(/tap to turn over/i, '').trim());
+      await user.click(front);
+      await user.click(
+        screen.getByRole('button', { name: knewIt ? /^knew it$/i : /didn.t know it/i }),
+      );
+    }
+    return seen;
+  }
+
+  it('shows every card exactly once when they are all known', async () => {
+    const seen = await walkDeck(true);
+
+    // Antarctica has five cards on the widest set.
+    expect(seen).toHaveLength(5);
+    expect(new Set(seen).size, `saw a card twice: ${seen.join(', ')}`).toBe(seen.length);
+  });
+
+  it('shows every card exactly once when none are known', async () => {
+    // The control: a wrong answer returns the card to box 1, so the order
+    // never changed and this case always passed.
+    const seen = await walkDeck(false);
+    expect(seen).toHaveLength(5);
+    expect(new Set(seen).size).toBe(seen.length);
+  });
+});

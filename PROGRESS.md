@@ -1347,7 +1347,7 @@ reverting and re-running.
 A full review looking for cleanliness, performance and efficiency wins.
 
 - [x] **P0** — Profile under CPU throttling before concluding anything
-- [ ] **C1** — Revision skips cards
+- [x] **C1** — Revision skips cards
 - [ ] **C2** — One entity lookup, not five
 - [ ] **C3** — Split PlayScreen
 - [ ] **C4** — Honest derived state in PlayScreen
@@ -1403,6 +1403,28 @@ reveal rather than removing it. Reverted.
 What would actually help is pre-rasterising flags to bitmaps at display size,
 which is an image-pipeline change that trades crispness and build complexity
 for it. Left as a decision rather than folded into a cleanup round.
+
+### C1 — Revision was skipping cards
+
+`useDeck` memoised on the whole persisted `data`, and `orderByBox` sorts by
+Leitner box. Answering "knew it" raises that card's box, so **the deck
+re-sorted after every card** while `index` remained a positional pointer into
+the previous order.
+
+Walking a five-card Antarctica deck answering "knew it" to everything showed:
+
+    South Georgia, French Southern…, Antarctica, French Southern…, French Southern…
+
+Three distinct cards out of five, one of them three times, and two cards never
+shown at all. A wrong answer returns the card to box 1 and changes nothing,
+which is why this only bit players who actually knew the material — and why the
+existing "finishing a deck" test never caught it, since it only asserts a count.
+
+The deck is a decision made when it is opened, not a view of live stats. It is
+now built once in a `useState` initialiser reading `useStatsStore.getState()` —
+the same non-reactive read `answer()` already uses to write. Two tests cover
+it: every card shown exactly once when all are known, and the same when none
+are, which is the control that always passed.
 
 ## Project status
 

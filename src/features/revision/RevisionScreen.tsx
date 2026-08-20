@@ -108,16 +108,34 @@ function DeckPicker({ onPick }: { onPick: (deck: DeckKind) => void }) {
   );
 }
 
-/** Cards for a deck, ordered so the least-known come first (except shuffle). */
+/**
+ * Cards for a deck, ordered so the least-known come first (except shuffle).
+ *
+ * Built **once, when the deck is opened**, and deliberately not derived from
+ * live stats.
+ *
+ * It used to memoise on the whole persisted `data`. `orderByBox` sorts by
+ * Leitner box and answering "knew it" raises that card's box, so the deck
+ * re-sorted after every single card while `index` stayed a positional pointer
+ * into the previous order. Cards were skipped and others repeated: walking a
+ * five-card deck answering "knew it" to everything showed three distinct
+ * cards, one of them three times. A wrong answer returns the card to box 1 and
+ * changes nothing, which is why the bug only bit players who knew the
+ * material.
+ *
+ * Reading the store through `getState()` in a `useState` initialiser is what
+ * fixes it: the order is decided at open and cannot move underneath the
+ * player. `answer()` already writes the same way.
+ */
 function useDeck(deck: DeckKind, seed: number): Entity[] {
-  const data = useStatsStore((state) => state.data);
-  const countrySet = data.settings.countrySet;
-
-  return useMemo(() => {
+  const [cards] = useState(() => {
+    const data = useStatsStore.getState().data;
     const rng = mulberry32(seed);
     // One choice governs the whole app: a deck never contains a country the
     // player has excluded from their quizzes.
-    const inSet = entities.filter((entity) => isInCountrySet(entity, countrySet));
+    const inSet = entities.filter((entity) =>
+      isInCountrySet(entity, data.settings.countrySet),
+    );
 
     if (deck.kind === 'shuffle') return shuffle(rng, inSet);
 
@@ -141,7 +159,9 @@ function useDeck(deck: DeckKind, seed: number): Entity[] {
     return orderByBox(data, shuffle(rng, weakest))
       .map((id) => byId.get(id))
       .filter((entity): entity is Entity => entity !== undefined);
-  }, [deck, seed, data, countrySet]);
+  });
+
+  return cards;
 }
 
 function Flashcards({
